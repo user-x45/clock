@@ -1033,8 +1033,12 @@
     const playBtn = grid.querySelector(`[data-play="${t.id}"]`);
     const resetBtn = grid.querySelector(`[data-reset="${t.id}"]`);
     if (!ring || !timeEl) return;
-    const elapsedFrac = t.totalMs > 0 ? (1 - t.remainingMs / t.totalMs) : 0;
-    ring.setAttribute('stroke-dashoffset', CIRC_CARD * (1 - elapsedFrac));
+    let offset = CIRC_CARD;
+    if (t.totalMs > 0 && t.remainingMs !== t.totalMs) {
+      const remainingFrac = t.remainingMs / t.totalMs;
+      offset = CIRC_CARD * (1 - remainingFrac);
+    }
+    ring.setAttribute('stroke-dashoffset', offset);
     timeEl.textContent = formatHMS(t.remainingMs);
     timeEl.classList.toggle('finished', t.finished);
     if (icon) {
@@ -1067,6 +1071,19 @@
     t.rafId = requestAnimationFrame(() => tickTimer(t));
   }
 
+  function syncVisualNoTransition(t) {
+    const ring = grid.querySelector(`[data-ring="${t.id}"]`);
+    if (!ring) {
+      syncVisual(t);
+      return;
+    }
+    ring.style.transition = 'none';
+    syncVisual(t);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => { ring.style.transition = ''; });
+    });
+  }
+
   function toggleTimer(id) {
     const t = timers.find(x => x.id === id);
     if (!t) return;
@@ -1078,6 +1095,8 @@
       t.running = true;
       t.lastTick = performance.now();
       t.rafId = requestAnimationFrame(() => tickTimer(t));
+      syncVisualNoTransition(t);
+      return;
     } else {
       t.running = false;
       cancelAnimationFrame(t.rafId);
@@ -1092,7 +1111,7 @@
     t.finished = false;
     cancelAnimationFrame(t.rafId);
     t.remainingMs = t.totalMs;
-    syncVisual(t);
+    syncVisualNoTransition(t);
   }
 
   function deleteTimer(id) {
