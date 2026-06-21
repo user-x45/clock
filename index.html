@@ -1186,7 +1186,7 @@
     arrow.addEventListener('click', () => {
       const input = document.getElementById(arrow.dataset.target);
       const dir = parseInt(arrow.dataset.dir, 10);
-      const max = input === dH ? 23 : 59;
+      const max = input === dH ? 99 : 59;
       let v = (parseInt(input.value, 10) || 0) + dir;
       if (v < 0) v = max;
       if (v > max) v = 0;
