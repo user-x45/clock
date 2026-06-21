@@ -1140,7 +1140,7 @@
     editingId = null;
     dialogTitle.textContent = '新しいタイマーの追加';
     dDelete.style.display = 'none';
-    dH.value = '00'; dM.value = '05'; dS.value = '00';
+    dH.value = '00'; dM.value = '00'; dS.value = '00';
     dName.value = '';
     dName.placeholder = generateUniqueTimerName();
     overlay.classList.add('active');
@@ -1178,7 +1178,7 @@
     if (v > max) v = max;
     input.value = pad(v);
   }
-  dH.addEventListener('change', () => clampSpinner(dH, 23));
+  dH.addEventListener('change', () => clampSpinner(dH, 99));
   dM.addEventListener('change', () => clampSpinner(dM, 59));
   dS.addEventListener('change', () => clampSpinner(dS, 59));
 
