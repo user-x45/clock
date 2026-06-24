@@ -1004,8 +1004,8 @@
       sound.muted = wasMuted;
     });
   }
-  document.addEventListener('click', unlockSound, { once: true });
-  document.addEventListener('touchend', unlockSound, { once: true });
+  document.addEventListener('click', unlockSound, { capture: true, once: true });
+  document.addEventListener('touchend', unlockSound, { capture: true, once: true });
 
   function formatHMS(ms) {
     const totalSec = Math.ceil(ms / 1000);
