@@ -993,6 +993,21 @@
 
   let editMode = false;
   const sound = document.getElementById('timer-sound');
+  let soundUnlocked = false;
+
+  function unlockSound() {
+    if (soundUnlocked) return;
+    soundUnlocked = true;
+    sound.muted = true;
+    sound.play().then(() => {
+      sound.pause();
+      sound.currentTime = 0;
+      sound.muted = false;
+    }).catch(() => {
+      sound.muted = false;
+    });
+  }
+
   const grid = document.getElementById('timer-grid');
 
   function formatHMS(ms) {
@@ -1071,6 +1086,7 @@
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (editMode) return;
+        unlockSound();
         toggleTimer(parseInt(btn.dataset.play, 10));
       });
     });
