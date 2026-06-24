@@ -716,6 +716,9 @@
       padding-top: 0;
       padding-bottom: 60px;
     }
+  }
+
+  @media (max-width: 700px) {
     .toast-stack {
       top: 16px;
       right: 16px;
@@ -899,7 +902,7 @@
 <div class="toast-stack" id="toast-stack"></div>
 
 <audio id="timer-sound" preload="auto" loop>
-  <source src="alarm.wav" type="audio/wav">
+  <source src="https://user-x45.github.io/clock/alarm.wav" type="audio/wav">
 </audio>
 
 <script>
@@ -992,20 +995,6 @@
   let editMode = false;
   const sound = document.getElementById('timer-sound');
   const grid = document.getElementById('timer-grid');
-
-  function unlockSound() {
-    const wasMuted = sound.muted;
-    sound.muted = true;
-    sound.play().then(() => {
-      sound.pause();
-      sound.currentTime = 0;
-      sound.muted = wasMuted;
-    }).catch(() => {
-      sound.muted = wasMuted;
-    });
-  }
-  document.addEventListener('click', unlockSound, { capture: true, once: true });
-  document.addEventListener('touchend', unlockSound, { capture: true, once: true });
 
   function formatHMS(ms) {
     const totalSec = Math.ceil(ms / 1000);
