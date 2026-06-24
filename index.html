@@ -709,19 +709,6 @@
     .spinner-row {
       gap: 2px;
     }
-    .toast-stack {
-      left: 16px;
-      right: 16px;
-      top: 16px;
-      bottom: auto;
-      align-items: stretch;
-    }
-    .toast {
-      width: 100%;
-      transform: translateY(-120px);
-    }
-    .toast.show { transform: translateY(0); opacity: 1; }
-    .toast.hide { transform: translateY(-120px); opacity: 0; }
   }
 
   @media (max-width: 700px) {
@@ -729,6 +716,20 @@
       padding-top: 0;
       padding-bottom: 60px;
     }
+    .toast-stack {
+      top: 16px;
+      bottom: auto;
+      left: 16px;
+      right: 16px;
+      align-items: center;
+    }
+    .toast {
+      width: 100%;
+      max-width: 400px;
+      transform: translateY(-120px);
+    }
+    .toast.show { transform: translateY(0); }
+    .toast.hide { transform: translateY(-120px); }
   }
 
   button:focus-visible, input:focus-visible, .nav-item:focus-visible {
@@ -992,15 +993,6 @@
 
   let editMode = false;
   const sound = document.getElementById('timer-sound');
-  let soundStarted = false;
-  function startSilentLoop() {
-    if (soundStarted) return;
-    soundStarted = true;
-    sound.muted = true;
-    sound.currentTime = 0;
-    const p = sound.play();
-    if (p && typeof p.catch === 'function') p.catch(() => {});
-  }
   const grid = document.getElementById('timer-grid');
 
   function formatHMS(ms) {
@@ -1140,7 +1132,7 @@
       t.running = false;
       t.finished = true;
       syncVisual(t);
-      try { sound.currentTime = 0; sound.muted = false; } catch (e) {}
+      try { sound.currentTime = 0; sound.play().catch(() => {}); } catch (e) {}
       showTimerToast(t);
       updateBrowserTitle();
       return;
@@ -1171,7 +1163,6 @@
       t.remainingMs = t.totalMs;
     }
     if (!t.running) {
-      startSilentLoop();
       t.running = true;
       t.lastTick = performance.now();
       t.rafId = requestAnimationFrame(() => tickTimer(t));
@@ -1369,7 +1360,6 @@
 
     startBtn.addEventListener('click', () => {
       if (!running) {
-        startSilentLoop();
         running = true;
         swRunning = true;
         startTime = performance.now();
@@ -1447,7 +1437,7 @@
 
   function stopAlarmSound() {
     try {
-      sound.muted = true;
+      sound.pause();
       sound.currentTime = 0;
     } catch (e) {}
   }
