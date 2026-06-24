@@ -558,13 +558,6 @@
     z-index: 100;
     pointer-events: none;
   }
-  @media (max-width: 700px) {
-    .toast-stack {
-      right: 16px;
-      top: 16px;
-      bottom: auto;
-    }
-  }
   .toast {
     width: 360px;
     background: #2c333ce6;
@@ -723,6 +716,18 @@
       padding-top: 0;
       padding-bottom: 60px;
     }
+    .toast-stack {
+      top: 16px;
+      right: 16px;
+      left: 16px;
+      bottom: auto;
+    }
+    .toast {
+      width: 100%;
+      transform: translateY(-120px);
+    }
+    .toast.show { transform: translateY(0); }
+    .toast.hide { transform: translateY(-120px); }
   }
 
   button:focus-visible, input:focus-visible, .nav-item:focus-visible {
@@ -988,6 +993,15 @@
   const sound = document.getElementById('timer-sound');
   const grid = document.getElementById('timer-grid');
 
+  function unlockSound() {
+    sound.play().then(() => {
+      sound.pause();
+      sound.currentTime = 0;
+    }).catch(() => {});
+  }
+  document.addEventListener('click', unlockSound, { once: true });
+  document.addEventListener('touchend', unlockSound, { once: true });
+
   function formatHMS(ms) {
     const totalSec = Math.ceil(ms / 1000);
     const h = Math.floor(totalSec / 3600);
@@ -1125,10 +1139,7 @@
       t.running = false;
       t.finished = true;
       syncVisual(t);
-      try { 
-        sound.currentTime = 0; 
-        sound.play().catch(() => {}); 
-      } catch (e) {}
+      try { sound.currentTime = 0; sound.play().catch(() => {}); } catch (e) {}
       showTimerToast(t);
       updateBrowserTitle();
       return;
@@ -1535,20 +1546,6 @@
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-' + targetView).classList.add('active');
   }
-
-  function unlockAudio() {
-    sound.load();
-    const unlockPromise = sound.play();
-    if (unlockPromise) {
-      unlockPromise.then(() => {
-        sound.pause();
-        sound.currentTime = 0;
-      }).catch(() => {});
-    }
-  }
-
-  document.addEventListener('touchstart', unlockAudio, { once: true });
-  document.addEventListener('click', unlockAudio, { once: true });
 </script>
 </body>
 </html>
