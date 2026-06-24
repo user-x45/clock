@@ -994,10 +994,15 @@
   const grid = document.getElementById('timer-grid');
 
   function unlockSound() {
+    const wasMuted = sound.muted;
+    sound.muted = true;
     sound.play().then(() => {
       sound.pause();
       sound.currentTime = 0;
-    }).catch(() => {});
+      sound.muted = wasMuted;
+    }).catch(() => {
+      sound.muted = wasMuted;
+    });
   }
   document.addEventListener('click', unlockSound, { once: true });
   document.addEventListener('touchend', unlockSound, { once: true });
