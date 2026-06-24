@@ -900,10 +900,6 @@
 
 <div class="toast-stack" id="toast-stack"></div>
 
-<audio id="timer-sound" preload="auto" loop>
-  <source src="alarm.wav" type="audio/wav">
-</audio>
-
 <script>
   function pad(n, len = 2) { return String(Math.max(0, Math.floor(n))).padStart(len, '0'); }
 
@@ -992,22 +988,22 @@
   }
 
   let editMode = false;
-  const sound = document.getElementById('timer-sound');
+  const sound = new Audio('alarm.wav');
+  sound.preload = 'auto';
+  sound.loop = true;
   let soundUnlocked = false;
-  let audioCtx = null;
 
   function unlockSound() {
     if (soundUnlocked) return;
     soundUnlocked = true;
-    try {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const buffer = audioCtx.createBuffer(1, 1, 22050);
-      const src = audioCtx.createBufferSource();
-      src.buffer = buffer;
-      src.connect(audioCtx.destination);
-      src.start(0);
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-    } catch (e) {}
+    sound.muted = true;
+    sound.play().then(() => {
+      sound.pause();
+      sound.currentTime = 0;
+      sound.muted = false;
+    }).catch(() => {
+      sound.muted = false;
+    });
   }
 
   const grid = document.getElementById('timer-grid');
