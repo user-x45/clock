@@ -996,14 +996,10 @@
   function unlockSound() {
     if (soundUnlocked) return;
     soundUnlocked = true;
-    sound.muted = true;
-    sound.play().then(() => {
-      sound.pause();
-      sound.currentTime = 0;
-      sound.muted = false;
-    }).catch(() => {
-      sound.muted = false;
-    });
+    const p = sound.play();
+    sound.pause();
+    sound.currentTime = 0;
+    if (p && typeof p.catch === 'function') p.catch(() => {});
   }
   const grid = document.getElementById('timer-grid');
 
@@ -1144,7 +1140,7 @@
       t.running = false;
       t.finished = true;
       syncVisual(t);
-      try { sound.currentTime = 0; sound.play().catch(() => {}); } catch (e) {}
+      try { sound.muted = false; sound.currentTime = 0; sound.play().catch(() => {}); } catch (e) {}
       showTimerToast(t);
       updateBrowserTitle();
       return;
