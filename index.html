@@ -709,6 +709,19 @@
     .spinner-row {
       gap: 2px;
     }
+    .toast-stack {
+      left: 16px;
+      right: 16px;
+      top: 16px;
+      bottom: auto;
+      align-items: stretch;
+    }
+    .toast {
+      width: 100%;
+      transform: translateY(-120px);
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.hide { transform: translateY(-120px); opacity: 0; }
   }
 
   @media (max-width: 700px) {
@@ -979,6 +992,19 @@
 
   let editMode = false;
   const sound = document.getElementById('timer-sound');
+  let soundUnlocked = false;
+  function unlockSound() {
+    if (soundUnlocked) return;
+    soundUnlocked = true;
+    sound.muted = true;
+    sound.play().then(() => {
+      sound.pause();
+      sound.currentTime = 0;
+      sound.muted = false;
+    }).catch(() => {
+      sound.muted = false;
+    });
+  }
   const grid = document.getElementById('timer-grid');
 
   function formatHMS(ms) {
@@ -1149,6 +1175,7 @@
       t.remainingMs = t.totalMs;
     }
     if (!t.running) {
+      unlockSound();
       t.running = true;
       t.lastTick = performance.now();
       t.rafId = requestAnimationFrame(() => tickTimer(t));
@@ -1346,11 +1373,11 @@
 
     startBtn.addEventListener('click', () => {
       if (!running) {
+        unlockSound();
         running = true;
         swRunning = true;
         startTime = performance.now();
         swStartTime = startTime;
-        elapsed = 0;
         startBtn.classList.add('is-running');
         setIconPause();
         lapBtn.disabled = false;
