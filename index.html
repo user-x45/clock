@@ -558,6 +558,13 @@
     z-index: 100;
     pointer-events: none;
   }
+  @media (max-width: 700px) {
+    .toast-stack {
+      right: 16px;
+      top: 16px;
+      bottom: auto;
+    }
+  }
   .toast {
     width: 360px;
     background: #2c333ce6;
@@ -716,20 +723,6 @@
       padding-top: 0;
       padding-bottom: 60px;
     }
-    .toast-stack {
-      top: 16px;
-      bottom: auto;
-      left: 16px;
-      right: 16px;
-      align-items: center;
-    }
-    .toast {
-      width: 100%;
-      max-width: 400px;
-      transform: translateY(-120px);
-    }
-    .toast.show { transform: translateY(0); }
-    .toast.hide { transform: translateY(-120px); }
   }
 
   button:focus-visible, input:focus-visible, .nav-item:focus-visible {
@@ -900,6 +893,10 @@
 
 <div class="toast-stack" id="toast-stack"></div>
 
+<audio id="timer-sound" preload="auto" loop>
+  <source src="alarm.wav" type="audio/wav">
+</audio>
+
 <script>
   function pad(n, len = 2) { return String(Math.max(0, Math.floor(n))).padStart(len, '0'); }
 
@@ -988,24 +985,7 @@
   }
 
   let editMode = false;
-  const sound = new Audio('alarm.wav');
-  sound.preload = 'auto';
-  sound.loop = true;
-  let soundUnlocked = false;
-
-  function unlockSound() {
-    if (soundUnlocked) return;
-    soundUnlocked = true;
-    sound.muted = true;
-    sound.play().then(() => {
-      sound.pause();
-      sound.currentTime = 0;
-      sound.muted = false;
-    }).catch(() => {
-      sound.muted = false;
-    });
-  }
-
+  const sound = document.getElementById('timer-sound');
   const grid = document.getElementById('timer-grid');
 
   function formatHMS(ms) {
@@ -1084,7 +1064,6 @@
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (editMode) return;
-        unlockSound();
         toggleTimer(parseInt(btn.dataset.play, 10));
       });
     });
@@ -1146,7 +1125,10 @@
       t.running = false;
       t.finished = true;
       syncVisual(t);
-      try { sound.currentTime = 0; sound.play().catch(() => {}); } catch (e) {}
+      try { 
+        sound.currentTime = 0; 
+        sound.play().catch(() => {}); 
+      } catch (e) {}
       showTimerToast(t);
       updateBrowserTitle();
       return;
@@ -1553,6 +1535,20 @@
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-' + targetView).classList.add('active');
   }
+
+  function unlockAudio() {
+    sound.load();
+    const unlockPromise = sound.play();
+    if (unlockPromise) {
+      unlockPromise.then(() => {
+        sound.pause();
+        sound.currentTime = 0;
+      }).catch(() => {});
+    }
+  }
+
+  document.addEventListener('touchstart', unlockAudio, { once: true });
+  document.addEventListener('click', unlockAudio, { once: true });
 </script>
 </body>
 </html>
