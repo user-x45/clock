@@ -755,6 +755,7 @@
     .toast {
       width: 100%;
       transform: translateY(-120px);
+      touch-action: pan-x;
     }
     .toast.show { transform: translateY(0); }
     .toast.hide { transform: translateY(-120px); }
@@ -1479,7 +1480,58 @@
     } catch (e) {}
   }
 
+  function isMobileLayout() {
+    return window.matchMedia('(max-width: 700px)').matches;
+  }
+
+  function dismissToast(toast) {
+    toast.classList.remove('show');
+    toast.classList.add('hide');
+    stopAlarmSound();
+    setTimeout(() => toast.remove(), 350);
+  }
+
+  function attachSwipeToDismiss(toast) {
+    let startY = 0;
+    let currentY = 0;
+    let dragging = false;
+
+    toast.addEventListener('touchstart', (e) => {
+      if (e.touches.length !== 1) return;
+      dragging = true;
+      startY = e.touches[0].clientY;
+      currentY = startY;
+      toast.style.transition = 'none';
+    }, { passive: true });
+
+    toast.addEventListener('touchmove', (e) => {
+      if (!dragging) return;
+      currentY = e.touches[0].clientY;
+      const deltaY = Math.min(0, currentY - startY);
+      toast.style.transform = `translateY(${deltaY}px)`;
+      toast.style.opacity = String(1 - Math.min(1, Math.abs(deltaY) / 120));
+    }, { passive: true });
+
+    toast.addEventListener('touchend', () => {
+      if (!dragging) return;
+      dragging = false;
+      toast.style.transition = '';
+      toast.style.transform = '';
+      toast.style.opacity = '';
+      const deltaY = currentY - startY;
+      if (deltaY < -40) {
+        dismissToast(toast);
+      } else {
+        toast.classList.add('show');
+      }
+    });
+  }
+
   function showTimerToast(t) {
+    if (isMobileLayout()) {
+      toastStack.querySelectorAll('.toast').forEach(dismissToast);
+    }
+
     const toast = document.createElement('div');
     toast.className = 'toast';
     const timeLabel = formatClockTime(new Date());
@@ -1499,22 +1551,16 @@
       <button class="toast-action">閉じる</button>
     `;
 
-    function dismiss() {
-      toast.classList.remove('show');
-      toast.classList.add('hide');
-      stopAlarmSound();
-      setTimeout(() => toast.remove(), 350);
-    }
-
-    toast.addEventListener('click', dismiss);
+    toast.addEventListener('click', () => dismissToast(toast));
     toast.querySelector('.toast-close').addEventListener('click', (e) => {
       e.stopPropagation();
-      dismiss();
+      dismissToast(toast);
     });
     toast.querySelector('.toast-action').addEventListener('click', (e) => {
       e.stopPropagation();
-      dismiss();
+      dismissToast(toast);
     });
+    attachSwipeToDismiss(toast);
 
     toastStack.appendChild(toast);
     requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.add('show')));
