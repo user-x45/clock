@@ -1480,10 +1480,6 @@
     } catch (e) {}
   }
 
-  function isMobileLayout() {
-    return window.matchMedia('(max-width: 700px)').matches;
-  }
-
   function dismissToast(toast, stopSound = true) {
     toast.classList.remove('show');
     toast.classList.add('hide');
@@ -1532,9 +1528,7 @@
   }
 
   function showTimerToast(t) {
-    if (isMobileLayout()) {
-      replaceToastsInstantly();
-    }
+    replaceToastsInstantly();
 
     const toast = document.createElement('div');
     toast.className = 'toast';
