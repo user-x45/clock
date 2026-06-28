@@ -1021,6 +1021,9 @@
 
   let editMode = false;
   const sound = document.getElementById('timer-sound');
+  const unlockSound = new Audio(sound.querySelector('source').src);
+  unlockSound.volume = 0;
+  unlockSound.muted = true;
   const grid = document.getElementById('timer-grid');
 
   function formatHMS(ms) {
@@ -1194,9 +1197,10 @@
       t.running = true;
       t.lastTick = performance.now();
       try {
-        sound.play().then(() => {
-          sound.pause();
-          sound.currentTime = 0;
+        unlockSound.currentTime = 0;
+        unlockSound.play().then(() => {
+          unlockSound.pause();
+          unlockSound.currentTime = 0;
         }).catch(() => {});
       } catch (e) {}
       t.rafId = requestAnimationFrame(() => tickTimer(t));
