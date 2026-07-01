@@ -537,16 +537,10 @@
     margin: 0; width: 18px; height: 18px;
     accent-color: var(--accent);
   }
-  .danger-btn {
-    display: flex; align-items: center; gap: 8px;
-    padding: 10px 16px; border-radius: 4px;
-    font-size: 14px; font-weight: 500;
-    border: none; cursor: pointer;
-    background: #ff7b6b22; color: #ff7b6b;
-    transition: background 0.1s;
+  .about-text {
+    font-size: 14px; line-height: 1.7; color: var(--text-secondary);
+    margin: 0;
   }
-  .danger-btn:hover { background: #ff7b6b33; }
-  .danger-btn:active { background: #ff7b6b44; }
 
   .toast-stack {
     position: fixed;
@@ -677,38 +671,11 @@
       width: calc(100% - 40px);
     }
     .timer-grid-wrap {
-      padding: 16px 12px 100px;
+      padding: 20px 16px 100px;
     }
     .timer-grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-    .timer-card {
-      padding: 12px;
-      min-height: 220px;
-    }
-    .timer-card-title {
-      font-size: 13px;
-    }
-    .timer-card-body {
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 16px;
-    }
-    .timer-ring-box {
-      width: 120px;
-      height: 120px;
-    }
-    .timer-card-time {
-      font-size: 16px;
-    }
-    .pill-btn {
-      width: 34px;
-      height: 34px;
-    }
-    .pill-btn i {
-      font-size: 12px;
-    }
-    .add-card {
-      min-height: 220px;
     }
     .fab-row {
       right: 16px;
@@ -735,24 +702,6 @@
     }
     .spinner-row {
       gap: 2px;
-    }
-  }
-  @media (max-width: 400px) {
-    .timer-grid {
-      grid-template-columns: 1fr;
-    }
-    .timer-ring-box {
-      width: 140px;
-      height: 140px;
-    }
-    .timer-card-time {
-      font-size: 18px;
-    }
-    .timer-card {
-      min-height: 260px;
-    }
-    .add-card {
-      min-height: 200px;
     }
   }
 
@@ -889,11 +838,11 @@
           </div>
         </div>
         <div class="settings-section">
-          <h2>アプリのリセット</h2>
-          <button class="danger-btn" id="app-reset-btn">
-            <i class="fa-solid fa-trash-arrow-up"></i>
-            アプリをリセット
-          </button>
+          <h2>このアプリについて</h2>
+          <p class="about-text">
+            タイマーとストップウォッチが使えるシンプルな時計アプリです。
+            タイマーはいくつでも作れて、ラップタイムの計測もできます。
+          </p>
         </div>
       </div>
     </div>
@@ -1568,13 +1517,6 @@
       });
     });
 
-    document.getElementById('app-reset-btn').addEventListener('click', () => {
-      if (confirm('アプリ設定とすべてのタイマーを初期状態にリセットしますか？')) {
-        localStorage.removeItem('clock_app_timers');
-        localStorage.removeItem('clock_app_theme');
-        location.reload();
-      }
-    });
   })();
 
   const urlParams = new URLSearchParams(window.location.search);
