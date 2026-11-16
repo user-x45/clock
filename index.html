@@ -24,7 +24,7 @@
     -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
   main { height: 100%; display: flex; flex-direction: row; align-items: stretch; gap: 2vw;
     padding: calc(2.5vh + env(safe-area-inset-top)) calc(3vw + env(safe-area-inset-right)) calc(4.5vh + env(safe-area-inset-bottom)) calc(3vw + env(safe-area-inset-left)); }
-  #left { gap: 1.6vh; flex: 1.45; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  #left { gap: 1vh; flex: 1.45; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   #right { overflow: hidden; flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 1.5vh; }
   .card { overflow: hidden; background: rgba(0,0,0,.28); border-radius: 12px; padding: 1.2vh 1.1vw; text-shadow: none; }
   .card h3 { font-size: min(1.4vw, 2.6vh); font-weight: 400; color: var(--sub); letter-spacing: .1em; margin-bottom: .6vh; }
@@ -51,6 +51,19 @@
   #today .lbl { font-size: .72em; font-weight: 500; color: var(--sub); white-space: nowrap; letter-spacing: .1em; }
   #todayname { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: opacity .5s; }
   #weather.stale { opacity: .5; }
+  #dayinfo, #weather2, #sunrow { white-space: nowrap; line-height: 1.2; letter-spacing: .04em; }
+  #dayinfo { font-size: min(2.4vw, 4.8vh); } #dayinfo:empty, #weather2:empty, #sunrow:empty { display: none; }
+  #dayinfo .rk { color: var(--acc); } #dayinfo .hol { color: #ff9b9b; margin-left: .7em; } #dayinfo .sep { opacity: .6; margin: 0 .5em; }
+  #weather2 { font-size: min(2.6vw, 5.2vh); } #weather2 .hi { color: #ff9b8a; } #weather2 .lo { color: #8ec8ff; } #weather2 .k { color: var(--sub); font-size: .7em; margin: 0 .3em 0 .9em; } #weather2 i, #sunrow i { color: var(--acc); margin-right: .3em; }
+  #sunrow { font-size: min(2.4vw, 4.8vh); } #sunrow .k { color: var(--sub); font-size: .7em; margin: 0 .3em 0 .2em; } #sunrow .sp { display: inline-block; width: 1.2em; }
+  #garbage { display: flex; flex-direction: column; align-items: center; gap: .25em; background: rgba(0,0,0,.28); border-radius: 12px; padding: .3em .9em; font-size: min(3vw, 6vh); text-shadow: none; }
+  #garbage[hidden] { display: none; }
+  #garbage .g1, #garbage .g2 { white-space: nowrap; line-height: 1.25; }
+  #garbage .g2 { font-size: .6em; color: var(--sub); }
+  #garbage .lbl { font-size: .62em; font-weight: 500; color: var(--sub); letter-spacing: .1em; margin-right: .7em; }
+  #garbage .g2 .lbl { font-size: 1em; margin-right: .5em; }
+  #garbage .gi b { display: inline-block; width: .7em; height: .7em; border-radius: 50%; margin-right: .3em; vertical-align: -.02em; }
+  #garbage .pl { margin: 0 .35em; opacity: .7; } #garbage .none { color: var(--sub); }
   #newslist li[data-link] { cursor: pointer; }
   #hourly, #tomorrow { cursor: pointer; }
   .card:has(#hourly), .card:has(#tomorrow) { cursor: pointer; }
@@ -116,7 +129,7 @@
   main { position: relative; z-index: 1; text-shadow: 0 1px 3px rgba(0,0,0,.75), 0 2px 14px rgba(0,0,0,.55); }
   /* 夜間モード: 黒背景に時刻のみ */
   body.nm .bg { opacity: 0 !important; }
-  body.nm #right, body.nm #date, body.nm #weather, body.nm #today, body.nm #status { display: none !important; }
+  body.nm #right, body.nm #date, body.nm #dayinfo, body.nm #weather, body.nm #weather2, body.nm #sunrow, body.nm #garbage, body.nm #today, body.nm #status { display: none !important; }
   body.nm main { text-shadow: none; }
   #dim { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity 3s; z-index: 10; }
   #status { z-index: 2; text-shadow: 0 1px 6px rgba(0,0,0,.4); position: fixed; bottom: calc(8px + env(safe-area-inset-bottom)); left: 0; right: 0; text-align: center;
@@ -149,7 +162,11 @@
   <div id="left">
     <div id="time">--:--<span id="sec">--</span></div>
     <div id="date">----年--月--日<span id="wday">-曜日</span></div>
+    <div id="dayinfo"></div>
     <div id="weather"><span class="city">札幌</span>天気を取得中…</div>
+    <div id="weather2"></div>
+    <div id="sunrow"></div>
+    <div id="garbage" hidden><div class="g1"></div><div class="g2"></div></div>
     <div id="today" hidden><span class="lbl">今日は何の日</span><span id="todayname"></span></div>
   </div>
   <div id="right">
@@ -240,7 +257,7 @@
     $("wday").textContent = WD[d.getDay()] + "曜日";
     // 日付が変わった瞬間に天気・ニュース・今日は何の日をまとめて再取得
     const dk = d.getDate();
-    if (lastDay !== null && dk !== lastDay) { weather(); news(); today(); }
+    if (lastDay !== null && dk !== lastDay) { weather(); news(); today(); renderDay(); holidays(); }
     lastDay = dk;
     const h = d.getHours();
     document.body.dataset.p = h >= 5 && h < 9 ? "morning" : h >= 9 && h < 16 ? "day" : h >= 16 && h < 19 ? "evening" : "night";
@@ -300,12 +317,69 @@
       // 明日
       const D = j.daily, [dic, dlabel] = WMAP(D.weather_code[1], true);
       $("tomorrow").innerHTML = `<i class="fa-solid ${dic}"></i><span>${dlabel}</span><span>${Math.round(D.temperature_2m_max[1])}° / ${Math.round(D.temperature_2m_min[1])}°</span><span class="p">降水確率 ${D.precipitation_probability_max[1]}%</span>`;
-      wLast = Date.now(); wErr = false; retryOk("weather"); renderStatus(); relayout();
+      renderWx2(); wLast = Date.now(); wErr = false; retryOk("weather"); renderStatus(); relayout();
     } catch (e) {
       wErr = true; retryLater("weather", weather); renderStatus();
       if (wLast) el.className = "stale"; // 取得失敗時は前回値を薄く表示
       else el.innerHTML = '<span class="city">札幌</span>天気を取得できません';
     }
+  }
+
+
+  // ---- 今日のごみ・祝日・六曜・日の出入り・今日の気温 ----
+  // ごみ収集日は garbage.json(札幌市 北区-5 / 2026年9月〜2027年9月)から読み込む
+  const RK = ["大安", "赤口", "先勝", "友引", "先負", "仏滅"];
+  const ROK = "0123450123450123451234501234501234501234501234523450123450123450123450123450134501234501234501234501234501450123450123450123450123450123501234501234501234501234501230123450123450123450123450123412345012345012345012345012345023450123450123450123450123450345012345012345012345012345014501234501234501234501234501235012345012345012345012345012340123450123450123450123450123451234501234501234501234501234523450123450123450123450123450134501234501234501234501234501245012345012345012345012345012501234501234501234501234501234012345012345012345012345012341234501234501234501234501234523450123450123450123450123450134501234501234501234501234501450123450123450123450123450125012345012345012345012345012340123450123450123450123450123451234501234501234501234501234523450123450123450123450123450134501234501234501234501234501245012345012345012345012345012350123450123450123450123450123012345012345012345012345012345012345012345012345012345012341234501234501234501234501234523450123450123450123450123450134501234501234501234501234501450123450123450123450123450125012345012345012345012345012340123450123450123450123450123451234501234501234501234501234523450123450123450123450123450134501234501234501234501234501245012345012345012345012345012501234501234501234501234501234012345012345012345012345012341234501234501234501234501234502345012345012345012345012345034501234501234501234501234501245012345012345012345012345012501234501234501234501234501230123450123450123450123450123451234501234501234501234501234502345012345012345012345012345034501234501234501234501234501245012345012345012345012345012501234501234501234501234501234012345012345012345012345012345123450123450123450123450123452345012345012345012345012345013450123450123450123450123450145012345012345012345012345012350123450123450123450123450123012345012345012345012345012345123450123450123450123450123452345012345012345012345012345034501234501234501234501234501245012345012345012345012345012345012345012345012345012345012501234501234501234501234501234012345012345012345012345012341234501234501234501234501234502345012345012345012345012345013450123450123450123450123450145012345012345012345012345012350123450123450123450123450123012345012345012345012345012345123450123450123450123450123452345012345012345012345012345013450123450123450123450123450145012345012345012345012345012501234501234501234501234501234012345012345012345012345012341234501234501234501234501234502345012345012345012345012345013450123450123450123450123450145012345012345012345012345012350123450123450123450123450123401234501234501234501234501234"; // 2026-01-01〜2032-12-31 の六曜(RK の添字)
+  const HOLFB = { "2026-11-03": "文化の日", "2026-11-23": "勤労感謝の日",
+    "2027-01-01": "元日", "2027-01-11": "成人の日", "2027-02-11": "建国記念の日", "2027-02-23": "天皇誕生日", "2027-03-21": "春分の日", "2027-03-22": "休日",
+    "2027-04-29": "昭和の日", "2027-05-03": "憲法記念日", "2027-05-04": "みどりの日", "2027-05-05": "こどもの日", "2027-07-19": "海の日", "2027-08-11": "山の日",
+    "2027-09-20": "敬老の日", "2027-09-23": "秋分の日", "2027-10-11": "スポーツの日", "2027-11-03": "文化の日", "2027-11-23": "勤労感謝の日" };
+  let hol = Object.assign({}, HOLFB), gJ = null;
+  const ymd = d => `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
+  function rokuyo(d) {
+    const i = Math.round((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(2026, 0, 1)) / 864e5);
+    return i >= 0 && i < ROK.length ? RK[+ROK[i]] : "";
+  }
+  async function holidays() {
+    try {
+      const r = await fetch("https://holidays-jp.github.io/api/v1/date.json", { cache: "no-cache" });
+      if (!r.ok) throw new Error(r.status);
+      hol = Object.assign({}, HOLFB, await r.json()); retryOk("hol"); renderDay();
+    } catch (e) { retryLater("hol", holidays); }
+  }
+  async function garbageLoad() {
+    try {
+      const r = await fetch("garbage.json", { cache: "no-cache" });
+      if (!r.ok) throw new Error(r.status);
+      gJ = await r.json(); retryOk("garbage"); renderDay();
+    } catch (e) { retryLater("garbage", garbageLoad); }
+  }
+  function gItems(d) {
+    if (!gJ) return null;
+    const key = ymd(d), [a, b] = gJ.meta.period.split("/");
+    if (key < a || key > b) return "out";
+    const it = gJ.days[key];
+    if (!it) return [];
+    return it.map(id => gJ.categories[id]).filter(Boolean);
+  }
+  const gHtml = it => it.map(c => `<span class="gi"><b style="background:${c.color}"></b>${c.short || c.name}</span>`).join('<span class="pl">+</span>');
+  function renderDay() {
+    const d = new Date(now()), tm = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+    const rk = rokuyo(d), hn = hol[ymd(d)];
+    $("dayinfo").innerHTML = (rk ? `<span class="rk">六曜 ${rk}</span>` : "") + (hn ? `<span class="hol">${hn}</span>` : "");
+    const box = $("garbage"), t = gItems(d), n = gItems(tm);
+    if (t === null || t === "out") { box.hidden = true; relayout(); return; }
+    const noc = gJ.noCollection.includes(ymd(d));
+    box.querySelector(".g1").innerHTML = `<span class="lbl">今日のごみ</span>` + (t.length ? gHtml(t) : `<span class="none">${noc ? "収集なし(お休み)" : "収集なし"}</span>`);
+    box.querySelector(".g2").innerHTML = n === "out" ? "" : `<span class="lbl">明日</span>` + (n.length ? gHtml(n) : `<span class="none">収集なし</span>`);
+    box.hidden = false; relayout();
+  }
+  function renderWx2() {
+    if (!wJ) return;
+    const D = wJ.daily, R = Math.round, hm = s => String(s).slice(11, 16).replace(/^0/, "");
+    $("weather2").innerHTML = `<span class="hi">最高 ${R(D.temperature_2m_max[0])}°</span> / <span class="lo">最低 ${R(D.temperature_2m_min[0])}°</span>` +
+      `<span class="k">降水確率</span>${D.precipitation_probability_max[0]}%`;
+    $("sunrow").innerHTML = `<i class="fa-solid fa-sun"></i><span class="k">日の出</span>${hm(D.sunrise[0])}<span class="sp"></span><i class="fa-solid fa-moon"></i><span class="k">日の入</span>${hm(D.sunset[0])}`;
   }
 
   // ---- ニュース(RSS → rss2json経由。APIキー不要) ----
@@ -366,10 +440,14 @@
   function layout() {
     const L = $("left"), W = L.clientWidth * 0.97, H = L.clientHeight;
     const one = (el, hMax, lo = 8) => fit(el, () => el.offsetWidth <= W && el.offsetHeight <= H * hMax, lo, 600);
-    one($("time"), 0.46);
-    one($("date"), 0.12);
-    one($("weather"), 0.11);
-    if (!$("today").hidden) one($("today"), 0.11, 12);
+    one($("time"), 0.30);
+    one($("date"), 0.085);
+    one($("dayinfo"), 0.06);
+    one($("weather"), 0.08);
+    one($("weather2"), 0.07);
+    one($("sunrow"), 0.06);
+    if (!$("garbage").hidden) one($("garbage"), 0.14, 10);
+    if (!$("today").hidden) one($("today"), 0.07, 12);
     const R = $("right");
     if (getComputedStyle(R).display === "none") return;
     const RH = R.clientHeight, cards = R.querySelectorAll(".card");
@@ -537,9 +615,9 @@
   let wl = null;
   async function keepAwake() { try { wl = await navigator.wakeLock?.request("screen"); } catch (e) {} }
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") { keepAwake(); sync(); render(); weather(); news(); today(); eqConnect(); }
+    if (document.visibilityState === "visible") { keepAwake(); sync(); render(); weather(); news(); today(); renderDay(); holidays(); eqConnect(); }
   });
-  window.addEventListener("online", () => { sync(); weather(); news(); today(); eqConnect(); });
+  window.addEventListener("online", () => { sync(); weather(); news(); today(); garbageLoad(); holidays(); eqConnect(); });
 
   keepAwake();
   render();
@@ -551,6 +629,9 @@
   news();
   setInterval(news, NEWS_INTERVAL);
   today();
+  garbageLoad();
+  holidays();
+  renderDay();
   eqConnect();
 
 })();
