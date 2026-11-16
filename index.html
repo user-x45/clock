@@ -29,6 +29,7 @@
   #weather .city { color: var(--sub); font-size: .6em; margin-right: .6em; }
   #weather .wi { margin-right: .35em; color: var(--acc); }
   #weather.stale { opacity: .5; }
+  #dim { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity 3s; z-index: 10; }
   #status { position: fixed; bottom: calc(8px + env(safe-area-inset-bottom)); left: 0; right: 0; text-align: center;
     font-size: 12px; color: var(--sub); }
   #status.warn { color: var(--warn); }
@@ -48,13 +49,17 @@
   <div id="weather"><span class="city">札幌</span>天気を取得中…</div>
 </main>
 <div id="hint">タップで全画面</div>
+<div id="dim"></div>
 <div id="status">時刻を同期中…</div>
 
 <script>
 (() => {
   const SYNC_INTERVAL = 5 * 60 * 1000;   // 5分ごとに同期
   const SAMPLES = 3;                      // 往復遅延が最小のサンプルを採用
-  const TZ = "UTC";
+  // 夜間の自動減光(端末のローカル時刻)
+  const NIGHT_START = 22;  // 22:00から
+  const NIGHT_END = 6;     // 6:00まで
+  const DIM_LEVEL = 0.75;  // 暗さ(0〜1、大きいほど暗い)
 
   // 時刻ソース(順番に試行)。CORS対応のAPIのみ。
   const SOURCES = [
@@ -104,6 +109,9 @@
     $("sec").textContent = p2(d.getSeconds());
     $("date").firstChild.nodeValue = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
     $("wday").textContent = WD[d.getDay()] + "曜日";
+    const h = d.getHours();
+    const night = NIGHT_START > NIGHT_END ? (h >= NIGHT_START || h < NIGHT_END) : (h >= NIGHT_START && h < NIGHT_END);
+    $("dim").style.opacity = night ? DIM_LEVEL : 0;
     setTimeout(render, 1000 - (now() % 1000) + 5); // 秒の境界に合わせて更新
   }
 
