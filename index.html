@@ -135,6 +135,10 @@
   body.nm .bg { opacity: 0 !important; }
   body.nm #right, body.nm #date, body.nm #dayinfo, body.nm #wx, body.nm #weather, body.nm #weather2, body.nm #sunrow, body.nm #garbage, body.nm #today, body.nm #status { display: none !important; }
   body.nm main { text-shadow: none; }
+  #greet { position: fixed; inset: 0; z-index: 12; display: flex; align-items: center; justify-content: center; text-align: center;
+    background: rgba(0,0,0,.6); color: #fff; text-shadow: 0 2px 16px rgba(0,0,0,.6); font-size: min(8vw, 14vh); font-weight: 300; letter-spacing: .12em;
+    opacity: 0; pointer-events: none; transition: opacity 1.5s ease-in-out; }
+  #greet.show { opacity: 1; }
   #dim { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity 3s; z-index: 10; }
   #status { z-index: 2; text-shadow: 0 1px 6px rgba(0,0,0,.4); position: fixed; bottom: calc(8px + env(safe-area-inset-bottom)); left: 0; right: 0; text-align: center;
     font-size: 12px; color: var(--sub); }
@@ -184,6 +188,7 @@
 <div id="wm" hidden><div id="wbox"><div id="wtitle"></div><div id="wsum"></div><table id="wtbl"></table></div></div>
 <div id="qr" hidden><div id="qrbox"><iframe id="artf" title="記事" sandbox referrerpolicy="no-referrer"></iframe><div id="qrside"><canvas id="qrcv"></canvas><div id="qrtxt"><div id="qrtitle"></div><div id="qrnote">本文だけを抜き出したリーダー表示です。うまく表示されないときや、スマートフォンで読むときは、QRコードを読み取ってください。</div><button id="qrclose" type="button">閉じる</button></div></div></div></div>
 <div id="alert"><div id="atitle"></div><div id="amain"></div><div id="asub"></div></div>
+<div id="greet"></div>
 <div id="dim"></div>
 <div id="status">時刻を同期中…</div>
 
@@ -195,7 +200,9 @@
   // 夜間の自動減光(端末のローカル時刻)
   const NIGHT_START = 0;   // 0:00から
   const NIGHT_END = 5;     // 5:00まで
-  const DIM_LEVEL = 0.75;  // 暗さ(0〜1、大きいほど暗い)
+  const DIM_LEVEL = 0.5;   // 暗さ(0〜1、大きいほど暗い)
+  const GREET_MS = 10 * 1000; // あいさつの表示時間
+  let prevNight = null, greetUntil = 0;
 
   // 時刻ソース(順番に試行、失敗したら次へ)
   // 小数秒を3桁に揃えてからパース
@@ -268,8 +275,18 @@
     const h = d.getHours();
     document.body.dataset.p = h >= 5 && h < 9 ? "morning" : h >= 9 && h < 16 ? "day" : h >= 16 && h < 19 ? "evening" : "night";
     const night = NIGHT_START > NIGHT_END ? (h >= NIGHT_START || h < NIGHT_END) : (h >= NIGHT_START && h < NIGHT_END);
-    document.body.classList.toggle("nm", night);
-    $("dim").style.opacity = (night && !alertOn) ? DIM_LEVEL : 0;
+    // 夜間モードの前後にあいさつを表示(おやすみなさい → 表示後に夜間モードへ / おはようございます)
+    if (prevNight !== null && night !== prevNight) {
+      greetUntil = now() + GREET_MS;
+      $("greet").textContent = night ? "おやすみなさい" : "おはようございます";
+      $("greet").classList.add("show");
+    }
+    prevNight = night;
+    const greeting = now() < greetUntil;
+    if (!greeting) $("greet").classList.remove("show");
+    const nmOn = night && !greeting; // おやすみなさい表示中は通常画面のまま
+    document.body.classList.toggle("nm", nmOn);
+    $("dim").style.opacity = (nmOn && !alertOn) ? DIM_LEVEL : 0;
     setTimeout(render, 1000 - (now() % 1000) + 5); // 秒の境界に合わせて更新
   }
 
