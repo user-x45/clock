@@ -1,780 +1,105 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Clock App - Guide Edition</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --bg-color: #f8fafc;
-            --sidebar-bg: #ffffff;
-            --card-bg: rgba(255, 255, 255, 0.9);
-            --text-color: #1e293b;
-            --accent-color: #6366f1;
-            --secondary-text: #64748b;
-            --border-color: #e2e8f0;
-            --picker-bg: rgba(0, 0, 0, 0.03);
-            --dropdown-bg: #ffffff;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-color: #0f172a;
-                --sidebar-bg: #1e293b;
-                --card-bg: rgba(30, 41, 59, 0.9);
-                --text-color: #f1f5f9;
-                --accent-color: #818cf8;
-                --secondary-text: #94a3b8;
-                --border-color: #334155;
-                --picker-bg: rgba(255, 255, 255, 0.05);
-                --dropdown-bg: #1e293b;
-            }
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            margin: 0;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-            transition: background-color 0.3s ease;
-        }
-
-        .sidebar {
-            width: 260px;
-            background-color: var(--sidebar-bg);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            padding: 2rem 1rem;
-            z-index: 40;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--accent-color);
-            padding: 0 1rem 2.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 0.875rem 1.25rem;
-            border-radius: 0.75rem;
-            color: var(--secondary-text);
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-
-        .nav-item:hover { background: rgba(99, 102, 241, 0.1); color: var(--accent-color); }
-        .nav-item.active { background: var(--accent-color); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
-
-        .main-container { 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
-            overflow-y: auto; 
-            padding: 3rem; 
-        }
-
-        .glass-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border-color);
-            border-radius: 2rem;
-            padding: 2.5rem;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-            max-width: 850px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .tab-content { display: none; animation: fadeIn 0.4s ease-out; }
-        .tab-content.active { display: block; }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .info-note {
-            background: rgba(99, 102, 241, 0.05);
-            border: 1px solid rgba(99, 102, 241, 0.2);
-            color: var(--secondary-text);
-            padding: 0.75rem 1rem;
-            border-radius: 1rem;
-            font-size: 0.875rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            justify-content: center;
-        }
-
-        /* Toggle Switch Styles */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 48px;
-            height: 24px;
-        }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: var(--border-color);
-            transition: .3s;
-            border-radius: 24px;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px; width: 18px;
-            left: 3px; bottom: 3px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
-        }
-        input:checked + .slider { background-color: var(--accent-color); }
-        input:checked + .slider:before { transform: translateX(24px); }
-
-        .custom-select-wrapper { position: relative; flex: 1; }
-        .custom-select-trigger {
-            background: var(--picker-bg);
-            border: 1px solid var(--border-color);
-            padding: 0.875rem 1.25rem;
-            border-radius: 1rem;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        .custom-select-trigger:hover { border-color: var(--accent-color); }
-        .custom-options {
-            position: absolute;
-            top: calc(100% + 8px);
-            left: 0;
-            right: 0;
-            background: var(--dropdown-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 1rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            display: none;
-            z-index: 50;
-            max-height: 250px;
-            overflow-y: auto;
-        }
-        .custom-options.open { display: block; }
-        .custom-option {
-            padding: 0.75rem 1.25rem;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .custom-option:hover { background: rgba(99, 102, 241, 0.1); color: var(--accent-color); }
-
-        .picker-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            height: 200px;
-            overflow: hidden;
-            position: relative;
-            user-select: none;
-            background: var(--picker-bg);
-            border-radius: 1.5rem;
-            margin: 20px 0;
-        }
-
-        .picker-column {
-            height: 100%;
-            flex: 1;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            padding: 80px 0; 
-        }
-
-        .picker-column::-webkit-scrollbar { display: none; }
-
-        .picker-item {
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: 500;
-            color: var(--secondary-text);
-            scroll-snap-align: center;
-            transition: all 0.2s;
-        }
-
-        .picker-item.selected {
-            color: var(--accent-color);
-            font-size: 2rem;
-            font-weight: 800;
-        }
-
-        .picker-selection-overlay {
-            position: absolute;
-            top: 50%;
-            left: 5%;
-            right: 5%;
-            height: 44px;
-            transform: translateY(-50%);
-            border-top: 1px solid var(--border-color);
-            border-bottom: 1px solid var(--border-color);
-            pointer-events: none;
-            background: rgba(99, 102, 241, 0.05);
-            border-radius: 4px;
-        }
-
-        .digital-clock { font-size: 5rem; font-weight: 800; text-align: center; font-variant-numeric: tabular-nums; }
-        .btn { 
-            padding: 0.8rem 1.5rem; 
-            border-radius: 1rem; 
-            font-weight: 600; 
-            cursor: pointer; 
-            border: none; 
-            display: inline-flex; 
-            align-items: center; 
-            justify-content: center; 
-            text-align: center;      
-            gap: 0.5rem; 
-            transition: transform 0.1s; 
-        }
-        .btn:active { transform: scale(0.96); }
-        .btn-primary { background: var(--accent-color); color: white; }
-        .btn-secondary { background: var(--border-color); color: var(--text-color); }
-        
-        .list-item { 
-            background: rgba(0,0,0,0.02); 
-            border: 1px solid var(--border-color); 
-            padding: 1rem 1.5rem; 
-            border-radius: 1.25rem; 
-            margin-bottom: 0.75rem; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            list-style: none; 
-        }
-
-        .guide-section {
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-        .guide-section:last-child { border: none; }
-
-        .animate-pulse-slow {
-            animation: pulse-bg 2s infinite;
-        }
-        @keyframes pulse-bg {
-            0%, 100% { background-color: rgba(0, 0, 0, 0.6); }
-            50% { background-color: rgba(99, 102, 241, 0.4); }
-        }
-
-        /* スマホ対応（下部タブバー） */
-        @media (max-width: 768px) {
-            body {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                width: 100%;
-                height: 76px;
-                padding: 0.5rem 1rem;
-                border-right: none;
-                border-top: 1px solid var(--border-color);
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-around;
-                box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
-                z-index: 50;
-                border-radius: 0;
-            }
-
-            .logo {
-                display: none;
-            }
-
-            .nav-list {
-                display: flex;
-                width: 100%;
-                justify-content: space-between;
-                align-items: center;
-            }
-
-            .nav-item {
-                margin-bottom: 0;
-                padding: 0.5rem 0.75rem;
-                font-size: 0.8125rem;
-                flex-direction: column;
-                gap: 0.25rem;
-                border-radius: 0.75rem;
-                min-width: 64px;
-                text-align: center;
-            }
-
-            .nav-item i {
-                font-size: 1.375rem;
-            }
-
-            .nav-item span {
-                font-size: 0.6875rem;
-                line-height: 1;
-            }
-
-            .main-container {
-                padding: 1.5rem 1rem 5.5rem 1rem;
-                overflow-y: auto;
-                height: 100vh;
-                box-sizing: border-box;
-            }
-
-            .glass-card {
-                padding: 1.75rem 1.25rem;
-                border-radius: 1.5rem;
-            }
-
-            .digital-clock {
-                font-size: 3.75rem;
-            }
-
-            .picker-container {
-                height: 160px;
-                margin: 16px 0;
-            }
-
-            .picker-item {
-                font-size: 1.375rem;
-            }
-
-            .picker-item.selected {
-                font-size: 1.75rem;
-            }
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>電波時計</title>
+<style>
+:root{--bg:#d9dde2;--ink:#2a2f36;--sub:#59616b;--btn:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1e22;--ink:#e6e8eb;--sub:#9aa2ab;--btn:#2a2f36}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:16px}
+svg#clk{width:min(100%,860px);height:auto;display:block;filter:drop-shadow(0 14px 26px rgba(0,0,0,.3))}
+.ctl{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+button{font:inherit;color:var(--ink);background:var(--btn);border:1px solid rgba(128,128,128,.4);border-radius:8px;padding:10px 16px;cursor:pointer}
+button:focus-visible{outline:3px solid #3b7ddd;outline-offset:2px}
+.note{font-size:13px;color:var(--sub);text-align:center;max-width:620px;margin:0;line-height:1.6}
+</style>
 </head>
 <body>
-
-    <audio id="alarm-sound" loop preload="auto">
-        <source src="https://user-b4h.github.io/timer/alerm1.mp3" type="audio/mpeg">
-    </audio>
-
-    <aside class="sidebar">
-        <div class="logo"><i class="fa-solid fa-clock"></i><span>TIME PRO</span></div>
-        <nav class="nav-list">
-            <div class="nav-item active" onclick="switchTab('world-clock', this)"><i class="fa-solid fa-globe"></i><span>世界時計</span></div>
-            <div class="nav-item" onclick="switchTab('alarm', this)"><i class="fa-regular fa-clock"></i><span>アラーム</span></div>
-            <div class="nav-item" onclick="switchTab('stopwatch', this)"><i class="fa-solid fa-stopwatch"></i><span>ストップウォッチ</span></div>
-            <div class="nav-item" onclick="switchTab('timer', this)"><i class="fa-solid fa-hourglass-half"></i><span>タイマー</span></div>
-            <div class="nav-item" onclick="switchTab('guide', this)"><i class="fa-solid fa-circle-question"></i><span>使い方</span></div>
-        </nav>
-    </aside>
-
-    <main class="main-container">
-        <div class="glass-card">
-            
-            <!-- World Clock -->
-            <div id="world-clock" class="tab-content active">
-                <header class="mb-10 text-center"><h1 class="text-3xl font-bold">世界時計</h1></header>
-                <div class="digital-clock mb-2" id="main-clock">00:00:00</div>
-                <p class="text-center text-secondary-text mb-10" id="current-date">--月 --日 (---)</p>
-                
-                <div class="flex gap-2 mb-8">
-                    <div class="custom-select-wrapper" id="city-dropdown-wrapper">
-                        <div class="custom-select-trigger" onclick="toggleDropdown()">
-                            <span id="selected-city-name">東京 (GMT+9)</span>
-                            <i class="fa-solid fa-chevron-down text-xs opacity-50"></i>
-                        </div>
-                        <div class="custom-options" id="city-options">
-                            <div class="custom-option" data-value="Asia/Tokyo" data-name="東京 (GMT+9)">東京 (GMT+9)</div>
-                            <div class="custom-option" data-value="America/New_York" data-name="ニューヨーク (GMT-5)">ニューヨーク (GMT-5)</div>
-                            <div class="custom-option" data-value="Europe/London" data-name="ロンドン (GMT+0)">ロンドン (GMT+0)</div>
-                            <div class="custom-option" data-value="Australia/Sydney" data-name="シドニー (GMT+11)">シドニー (GMT+11)</div>
-                            <div class="custom-option" data-value="Asia/Dubai" data-name="ドバイ (GMT+4)">ドバイ (GMT+4)</div>
-                            <div class="custom-option" data-value="Asia/Seoul" data-name="ソウル (GMT+9)">ソウル (GMT+9)</div>
-                            <div class="custom-option" data-value="Europe/Paris" data-name="パリ (GMT+1)">パリ (GMT+1)</div>
-                            <div class="custom-option" data-value="America/Los_Angeles" data-name="ロサンゼルス (GMT-8)">ロサンゼルス (GMT-8)</div>
-                        </div>
-                    </div>
-                    <button onclick="addCity()" class="btn btn-primary px-6"><i class="fa-solid fa-plus mr-1"></i>追加</button>
-                </div>
-                <div id="city-list" class="space-y-3"></div>
-            </div>
-
-            <!-- Alarm -->
-            <div id="alarm" class="tab-content">
-                <header class="mb-4 text-center"><h1 class="text-3xl font-bold">アラーム</h1></header>
-                <div class="info-note mb-6"><i class="fa-solid fa-circle-exclamation"></i><span>このタブを閉じるとアラームは動作しません</span></div>
-                <div class="picker-container" id="alarm-picker">
-                    <div class="picker-selection-overlay"></div>
-                    <div class="picker-column" id="alarm-h" onscroll="handlePickerScroll(this)"></div>
-                    <div class="text-2xl font-bold">:</div>
-                    <div class="picker-column" id="alarm-m" onscroll="handlePickerScroll(this)"></div>
-                </div>
-                <button onclick="addAlarm()" class="btn btn-primary w-full py-4 mb-8 text-lg">アラームを追加</button>
-                <div id="alarm-list" class="space-y-2"></div>
-            </div>
-
-            <!-- Stopwatch -->
-            <div id="stopwatch" class="tab-content">
-                <header class="mb-10 text-center"><h1 class="text-3xl font-bold">ストップウォッチ</h1></header>
-                <div class="digital-clock mb-10" id="stopwatch-display">00:00.00</div>
-                <div class="flex justify-center gap-4 mb-8 flex-wrap">
-                    <button id="sw-start" onclick="toggleStopwatch()" class="btn btn-primary w-32 py-4">スタート</button>
-                    <button onclick="lapStopwatch()" class="btn btn-secondary w-32 py-4">ラップ</button>
-                    <button onclick="resetStopwatch()" class="btn bg-red-500 text-white w-32 py-4">リセット</button>
-                </div>
-                <div id="sw-laps" class="max-h-48 overflow-y-auto"></div>
-            </div>
-
-            <!-- Timer -->
-            <div id="timer" class="tab-content">
-                <header class="mb-4 text-center"><h1 class="text-3xl font-bold">タイマー</h1></header>
-                <div class="info-note mb-6"><i class="fa-solid fa-circle-exclamation"></i><span>動作中はタブを開いたままにしてください</span></div>
-                <div id="timer-ui-set">
-                    <div class="picker-container" id="timer-picker">
-                        <div class="picker-selection-overlay"></div>
-                        <div class="picker-column" id="timer-h" onscroll="handlePickerScroll(this)"></div>
-                        <div class="text-2xl font-bold">:</div>
-                        <div class="picker-column" id="timer-m" onscroll="handlePickerScroll(this)"></div>
-                        <div class="text-2xl font-bold">:</div>
-                        <div class="picker-column" id="timer-s" onscroll="handlePickerScroll(this)"></div>
-                    </div>
-                </div>
-                <div id="timer-ui-run" class="hidden py-10 text-center">
-                    <div class="relative w-48 h-48 mx-auto mb-8">
-                        <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
-                            <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="2" class="opacity-10" />
-                            <circle id="timer-progress" cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="4" stroke-dasharray="282.7" stroke-dashoffset="0" stroke-linecap="round" class="text-indigo-500 transition-all duration-100 ease-linear" />
-                        </svg>
-                        <div class="absolute inset-0 flex items-center justify-center text-4xl font-bold" id="timer-text">00:00</div>
-                    </div>
-                </div>
-                <div class="flex justify-center gap-4 mt-6 flex-wrap">
-                    <button id="timer-main-btn" onclick="toggleTimer()" class="btn btn-primary w-40 py-4 text-lg">スタート</button>
-                    <button onclick="resetTimer()" class="btn btn-secondary w-40 py-4 text-lg">リセット</button>
-                </div>
-            </div>
-
-            <!-- Guide Tab -->
-            <div id="guide" class="tab-content">
-                <header class="mb-8 text-center"><h1 class="text-3xl font-bold">アプリの使い方</h1></header>
-                <div class="space-y-6">
-                    <section class="guide-section">
-                        <div class="flex items-center gap-3 mb-3 text-indigo-500 font-bold text-xl">
-                            <i class="fa-solid fa-globe"></i> <span>世界時計</span>
-                        </div>
-                        <ul class="list-disc list-inside space-y-2 text-secondary-text">
-                            <li>プルダウンから都市を選択し、「追加」ボタンで一覧に追加できます。</li>
-                            <li>各都市の現在時刻をリアルタイムで確認できます。</li>
-                            <li>ゴミ箱アイコンでリストから削除できます。</li>
-                        </ul>
-                    </section>
-
-                    <section class="guide-section">
-                        <div class="flex items-center gap-3 mb-3 text-indigo-500 font-bold text-xl">
-                            <i class="fa-regular fa-clock"></i> <span>アラーム</span>
-                        </div>
-                        <ul class="list-disc list-inside space-y-2 text-secondary-text">
-                            <li>上下のスワイプ（スクロール）で「時:分」を選択し、追加します。</li>
-                            <li>右側のスイッチでアラームのON/OFFを切り替えられます。</li>
-                            <li>指定の時間になると、通知音とアラート画面が表示されます。</li>
-                        </ul>
-                    </section>
-
-                    <section class="guide-section">
-                        <div class="flex items-center gap-3 mb-3 text-indigo-500 font-bold text-xl">
-                            <i class="fa-solid fa-stopwatch"></i> <span>ストップウォッチ</span>
-                        </div>
-                        <ul class="list-disc list-inside space-y-2 text-secondary-text">
-                            <li>「スタート」で計測開始、「停止」で一時停止します。</li>
-                            <li>「ラップ」を押すと、その時点のタイムをリストに記録します。</li>
-                            <li>「リセット」でタイムとラップ記録をすべて消去します。</li>
-                        </ul>
-                    </section>
-
-                    <section class="guide-section">
-                        <div class="flex items-center gap-3 mb-3 text-indigo-500 font-bold text-xl">
-                            <i class="fa-solid fa-hourglass-half"></i> <span>タイマー</span>
-                        </div>
-                        <ul class="list-disc list-inside space-y-2 text-secondary-text">
-                            <li>「時:分:秒」をホイールで設定してスタートします。</li>
-                            <li>計測中は円形プログレスバーで残り時間が視覚的にわかります。</li>
-                            <li>終了時にアラートが表示されます。リセットで設定画面に戻ります。</li>
-                        </ul>
-                    </section>
-                </div>
-            </div>
-
-        </div>
-    </main>
-
-    <div id="alert-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-6 animate-pulse-slow">
-        <div class="glass-card max-w-sm text-center border-indigo-500 shadow-2xl shadow-indigo-500/20">
-            <div class="w-20 h-20 bg-indigo-500 text-white rounded-full flex items-center justify-center mx-auto mb-6 text-3xl animate-bounce">
-                <i class="fa-regular fa-clock"></i>
-            </div>
-            <h2 class="text-3xl font-bold mb-4" id="alert-title">通知</h2>
-            <p class="text-xl font-medium text-secondary-text mb-8" id="alert-msg">時間になりました！</p>
-            <button onclick="stopAlarmSound()" class="btn btn-primary w-full py-5 text-xl rounded-2xl shadow-lg shadow-indigo-500/40">止める</button>
-        </div>
-    </div>
-
-    <script>
-        let alarms = JSON.parse(localStorage.getItem('alarms_v6') || '[]');
-        let worldCities = JSON.parse(localStorage.getItem('cities_v6') || '["Asia/Tokyo"]');
-        let pickerSelection = { alarmH: 0, alarmM: 0, timerH: 0, timerM: 0, timerS: 0 };
-        let selectedCityValue = 'Asia/Tokyo';
-        const alarmAudio = document.getElementById('alarm-sound');
-
-        function switchTab(tabId, el) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            el.classList.add('active');
-        }
-
-        function toggleDropdown() {
-            document.getElementById('city-options').classList.toggle('open');
-        }
-
-        function initDropdown() {
-            const options = document.querySelectorAll('.custom-option');
-            options.forEach(opt => {
-                opt.addEventListener('click', () => {
-                    selectedCityValue = opt.dataset.value;
-                    document.getElementById('selected-city-name').textContent = opt.dataset.name;
-                    document.getElementById('city-options').classList.remove('open');
-                });
-            });
-            window.addEventListener('click', (e) => {
-                if (!document.getElementById('city-dropdown-wrapper').contains(e.target)) {
-                    document.getElementById('city-options').classList.remove('open');
-                }
-            });
-        }
-
-        function initPickers() {
-            fillPicker('alarm-h', 24);
-            fillPicker('alarm-m', 60);
-            fillPicker('timer-h', 24);
-            fillPicker('timer-m', 60);
-            fillPicker('timer-s', 60);
-        }
-
-        function fillPicker(id, count) {
-            const col = document.getElementById(id);
-            if (!col) return;
-            let html = '';
-            for (let i = 0; i < count; i++) {
-                html += `<div class="picker-item" data-val="${i}">${String(i).padStart(2, '0')}</div>`;
-            }
-            col.innerHTML = html;
-            setTimeout(() => updatePickerSelection(col), 100);
-        }
-
-        function handlePickerScroll(el) {
-            clearTimeout(el.scrollTimeout);
-            el.scrollTimeout = setTimeout(() => updatePickerSelection(el), 100);
-        }
-
-        function updatePickerSelection(el) {
-            const items = el.querySelectorAll('.picker-item');
-            const center = el.scrollTop + el.offsetHeight / 2;
-            let selectedItem = null;
-            let minDist = Infinity;
-            items.forEach(item => {
-                const itemCenter = item.offsetTop + item.offsetHeight / 2;
-                const dist = Math.abs(center - itemCenter);
-                item.classList.remove('selected');
-                if (dist < minDist) { minDist = dist; selectedItem = item; }
-            });
-            if (selectedItem) {
-                selectedItem.classList.add('selected');
-                const val = parseInt(selectedItem.dataset.val);
-                if (el.id === 'alarm-h') pickerSelection.alarmH = val;
-                if (el.id === 'alarm-m') pickerSelection.alarmM = val;
-                if (el.id === 'timer-h') pickerSelection.timerH = val;
-                if (el.id === 'timer-m') pickerSelection.timerM = val;
-                if (el.id === 'timer-s') pickerSelection.timerS = val;
-            }
-        }
-
-        function playAlarmSound() {
-            alarmAudio.currentTime = 0;
-            alarmAudio.play().catch(() => {});
-        }
-
-        function stopAlarmSound() {
-            alarmAudio.pause();
-            alarmAudio.currentTime = 0;
-            document.getElementById('alert-overlay').classList.add('hidden');
-        }
-
-        function updateClock() {
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('ja-JP', { hour12: false });
-            const clockEl = document.getElementById('main-clock');
-            if(clockEl) clockEl.textContent = timeStr;
-            const dateEl = document.getElementById('current-date');
-            if(dateEl) dateEl.textContent = now.toLocaleDateString('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' });
-
-            const curHM = timeStr.substring(0, 5);
-            alarms.forEach(a => {
-                if (a.time === curHM && a.enabled && !a.triggered) {
-                    showTriggerAlert(`アラーム: ${a.time}`);
-                    a.triggered = true;
-                } else if (a.time !== curHM) { a.triggered = false; }
-            });
-            renderWorldCities();
-        }
-        setInterval(updateClock, 1000);
-
-        function addCity() {
-            const tz = selectedCityValue;
-            if (!worldCities.includes(tz)) {
-                worldCities.push(tz);
-                localStorage.setItem('cities_v6', JSON.stringify(worldCities));
-                renderWorldCities();
-            }
-        }
-        function renderWorldCities() {
-            const container = document.getElementById('city-list');
-            if(!container) return;
-            container.innerHTML = '';
-            worldCities.forEach((tz, idx) => {
-                const time = new Date().toLocaleTimeString('ja-JP', { timeZone: tz, hour: '2-digit', minute: '2-digit' });
-                const item = document.createElement('div');
-                item.className = 'list-item';
-                item.innerHTML = `<div><div class="font-bold">${tz.split('/').pop().replace('_', ' ')}</div><div class="text-xs opacity-50">${tz}</div></div>
-                                  <div class="flex items-center gap-4"><span class="text-xl font-mono font-bold">${time}</span>
-                                  <button onclick="worldCities.splice(${idx},1);localStorage.setItem('cities_v6', JSON.stringify(worldCities));renderWorldCities();" class="text-red-400 p-2 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors"><i class="fa-solid fa-trash"></i></button></div>`;
-                container.appendChild(item);
-            });
-        }
-
-        function addAlarm() {
-            const time = `${String(pickerSelection.alarmH).padStart(2, '0')}:${String(pickerSelection.alarmM).padStart(2, '0')}`;
-            alarms.push({ time, enabled: true, triggered: false });
-            localStorage.setItem('alarms_v6', JSON.stringify(alarms));
-            renderAlarms();
-        }
-        function renderAlarms() {
-            const container = document.getElementById('alarm-list');
-            if(!container) return;
-            container.innerHTML = '';
-            alarms.forEach((a, i) => {
-                const div = document.createElement('div');
-                div.className = `list-item`;
-                div.innerHTML = `
-                    <span class="text-3xl font-mono font-bold ${a.enabled ? '' : 'opacity-20'} transition-opacity">${a.time}</span>
-                    <div class="flex gap-4 items-center">
-                        <label class="switch">
-                            <input type="checkbox" ${a.enabled ? 'checked' : ''} onchange="alarms[${i}].enabled=!alarms[${i}].enabled;localStorage.setItem('alarms_v6', JSON.stringify(alarms));renderAlarms();">
-                            <span class="slider"></span>
-                        </label>
-                        <button onclick="alarms.splice(${i},1);localStorage.setItem('alarms_v6', JSON.stringify(alarms));renderAlarms();" class="text-red-400 p-2 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>`;
-                container.appendChild(div);
-            });
-        }
-
-        let swI, swS, swE = 0, swR = false;
-        function toggleStopwatch() {
-            const btn = document.getElementById('sw-start');
-            if (!swR) {
-                swS = Date.now() - swE;
-                swI = setInterval(() => {
-                    swE = Date.now() - swS;
-                    document.getElementById('stopwatch-display').textContent = formatMs(swE);
-                }, 10);
-                swR = true; btn.textContent = '停止';
-            } else { clearInterval(swI); swR = false; btn.textContent = '開始'; }
-        }
-        function formatMs(ms) {
-            const d = new Date(ms);
-            return `${String(d.getUTCMinutes()).padStart(2,'0')}:${String(d.getUTCSeconds()).padStart(2,'0')}.${String(Math.floor(d.getUTCMilliseconds()/10)).padStart(2,'0')}`;
-        }
-        function resetStopwatch() {
-            clearInterval(swI); swE = 0; swR = false;
-            document.getElementById('stopwatch-display').textContent = '00:00.00';
-            document.getElementById('sw-start').textContent = 'スタート';
-            document.getElementById('sw-laps').innerHTML = '';
-        }
-        function lapStopwatch() {
-            if (swE === 0) return;
-            const lap = document.createElement('div');
-            lap.className = 'py-3 border-b border-gray-200 dark:border-white/5 flex justify-between px-2';
-            lap.innerHTML = `<span class="opacity-50 font-bold">LAP ${document.getElementById('sw-laps').children.length + 1}</span><span class="font-mono text-lg">${formatMs(swE)}</span>`;
-            document.getElementById('sw-laps').prepend(lap);
-        }
-
-        let tI, tTotal, tRem, tR = false;
-        function toggleTimer() {
-            const btn = document.getElementById('timer-main-btn');
-            if (!tR) {
-                if (!tRem) {
-                    tTotal = (pickerSelection.timerH * 3600 + pickerSelection.timerM * 60 + pickerSelection.timerS) * 1000;
-                    if (tTotal <= 0) return;
-                    tRem = tTotal;
-                    document.getElementById('timer-ui-set').classList.add('hidden');
-                    document.getElementById('timer-ui-run').classList.remove('hidden');
-                }
-                tI = setInterval(updateTimer, 100);
-                tR = true; btn.textContent = '停止';
-            } else { clearInterval(tI); tR = false; btn.textContent = '再開'; }
-        }
-        function updateTimer() {
-            tRem -= 100;
-            if (tRem <= 0) { resetTimer(); showTriggerAlert('タイマー終了'); return; }
-            const sec = Math.ceil(tRem / 1000);
-            const m = Math.floor(sec / 60);
-            const s = sec % 60;
-            document.getElementById('timer-text').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-            document.getElementById('timer-progress').style.strokeDashoffset = 282.7 - (tRem / tTotal * 282.7);
-        }
-        function resetTimer() {
-            clearInterval(tI); tR = false; tRem = null;
-            document.getElementById('timer-main-btn').textContent = 'スタート';
-            document.getElementById('timer-ui-set').classList.remove('hidden');
-            document.getElementById('timer-ui-run').classList.add('hidden');
-            document.getElementById('timer-progress').style.strokeDashoffset = 0;
-        }
-
-        function showTriggerAlert(msg) {
-            document.getElementById('alert-msg').textContent = msg;
-            document.getElementById('alert-overlay').classList.remove('hidden');
-            playAlarmSound();
-        }
-
-        window.onload = () => {
-            initPickers();
-            initDropdown();
-            updateClock();
-            renderAlarms();
-            renderWorldCities();
-            document.body.addEventListener('click', () => { alarmAudio.load(); }, { once: true });
-        };
-    </script>
+<svg id="clk" viewBox="0 0 860 624" role="img" aria-label="電波時計">
+  <defs><linearGradient id="fg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7f8f9"/><stop offset="1" stop-color="#e2e5e8"/></linearGradient></defs>
+  <rect width="860" height="624" rx="14" fill="url(#fg)" stroke="#fff" stroke-width="3"/>
+  <text x="44" y="42" font-family="Georgia,serif" font-size="15" letter-spacing="3" fill="#333">RADIO CLOCK</text>
+  <rect x="44" y="62" width="772" height="320" rx="4" fill="#c4cfc6" stroke="#e9ecea" stroke-width="4"/>
+  <rect x="44" y="418" width="772" height="150" rx="4" fill="#c4cfc6" stroke="#e9ecea" stroke-width="4"/>
+  <g stroke="#15181a" stroke-opacity=".55" stroke-width="2"><line x1="290" y1="428" x2="290" y2="558"/><line x1="440" y1="428" x2="440" y2="558"/><line x1="640" y1="428" x2="640" y2="558"/></g>
+  <g font-size="14" fill="#222" text-anchor="middle"><text x="100" y="408">月</text><text x="190" y="408">日</text><text x="365" y="408">曜日</text><text x="540" y="408">温度</text><text x="728" y="408">湿度</text></g>
+  <text x="816" y="596" font-size="9" letter-spacing="1.5" fill="#444" text-anchor="end" font-family="sans-serif">RADIO CONTROLLED</text>
+  <g font-family="sans-serif" font-weight="700" fill="#15181a">
+    <text id="am" x="62" y="104" font-size="24">AM</text><text id="pm" x="62" y="134" font-size="24">PM</text>
+  </g>
+  <g id="sig" fill="#15181a"><rect x="740" y="98" width="10" height="10"/><rect x="756" y="88" width="10" height="20"/><rect x="772" y="78" width="10" height="30"/><rect x="788" y="68" width="10" height="40"/></g>
+  <g id="ok"><rect x="752" y="120" width="44" height="24" rx="4" fill="none" stroke="#15181a" stroke-width="2.5"/><text x="774" y="138" font-size="15" font-weight="700" text-anchor="middle" fill="#15181a" font-family="sans-serif">OK</text></g>
+  <rect x="381" y="150" width="14" height="14" fill="#15181a"/><rect x="381" y="236" width="14" height="14" fill="#15181a"/>
+  <g id="digits"></g>
+  <text id="mo" x="54" y="452" font-size="28" font-weight="700" fill="#15181a" font-family="sans-serif">11/</text>
+  <rect id="dp" x="552" y="522" width="11" height="11" fill="#15181a"/>
+  <text x="618" y="452" font-size="16" font-weight="700" fill="#15181a" font-family="sans-serif">°C</text>
+  <text x="776" y="548" font-size="24" font-weight="700" fill="#15181a" font-family="sans-serif">%</text>
+  <text id="wd" x="365" y="514" font-size="84" font-weight="700" text-anchor="middle" fill="#15181a">木</text>
+  <text id="roku" x="365" y="550" font-size="18" font-weight="700" text-anchor="middle" fill="#15181a"></text>
+</svg>
+<div class="ctl">
+  <button id="sync">電波を受信する</button>
+  <button id="fmt">12時間 / 24時間</button>
+</div>
+<p class="note">時刻は外部の時刻API（日本時間）、六曜は外部の暦APIから取得します。取得できない場合は端末時刻・簡易計算に切り替わります。温度・湿度は演出用の疑似値です。</p><p class="note" id="src" style="line-height:2"></p>
+<script>
+const NS="http://www.w3.org/2000/svg";
+const P={a:"10,6 14,2 46,2 50,6 46,10 14,10",d:"10,94 14,90 46,90 50,94 46,98 14,98",g:"10,50 14,46 46,46 50,50 46,54 14,54",
+f:"6,8 10,12 10,44 6,48 2,44 2,12",b:"54,8 58,12 58,44 54,48 50,44 50,12",e:"6,52 10,56 10,88 6,92 2,88 2,56",c:"54,52 58,56 58,88 54,92 50,88 50,56"};
+const M={0:"abcdef",1:"bc",2:"abdeg",3:"abcdg",4:"bcfg",5:"acdfg",6:"acdefg",7:"abc",8:"abcdefg",9:"abcdfg"," ":""};
+const slots={};
+function mk(name,x,y,w,h){const g=document.createElementNS(NS,"g");
+ g.setAttribute("transform",`translate(${x},${y}) scale(${w/60},${h/100}) skewX(-5)`);
+ const ps={};for(const k in P){const p=document.createElementNS(NS,"polygon");p.setAttribute("points",P[k]);p.setAttribute("fill","#15181a");g.appendChild(p);ps[k]=p}
+ document.getElementById("digits").appendChild(g);slots[name]=ps}
+function put(name,ch){const ps=slots[name];const on=M[ch]||"";for(const k in ps)ps[k].setAttribute("opacity",on.includes(k)?1:.07)}
+mk("h1",100,100,120,200);mk("h2",240,100,120,200);mk("m1",410,100,120,200);mk("m2",550,100,120,200);
+mk("s1",692,220,48,80);mk("s2",748,220,48,80);
+mk("d1",120,444,54,90);mk("d2",184,444,54,90);
+mk("t1",452,444,44,90);mk("t2",502,444,44,90);mk("t3",572,444,44,90);
+mk("u1",652,444,50,90);mk("u2",712,444,50,90);
+const $=id=>document.getElementById(id);
+let h24=false,temp=23.6,hum=54,syncing=0,off=0;
+let src="端末";const rkCache={};
+const st={time:["wait","受信待ち"],roku:["wait","受信待ち"]};
+function render(){const c={wait:"#888",ing:"#d9a400",ok:"#2e9e4f",ng:"#d34a3a"};
+ const row=(n,v)=>`<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${c[v[0]]};margin-right:6px"></span>${n}：${v[1]}`;
+ $("src").innerHTML=row("時刻",st.time)+"<br>"+row("六曜",st.roku)}
+const hms=()=>new Date(Date.now()+off+9*36e5).toISOString().slice(11,19);
+async function getJSON(u){const c=new AbortController();const t=setTimeout(()=>c.abort(),6000);try{const r=await fetch(u,{cache:"no-store",signal:c.signal});if(!r.ok)throw 0;return await r.json()}finally{clearTimeout(t)}}
+async function syncTime(){
+ st.time=["ing","受信中…"];render();
+ try{const j=await getJSON("https://timeapi.io/api/time/current/zone?timeZone=Asia%2FTokyo");
+  const t=Date.parse(j.dateTime.slice(0,19)+"+09:00");if(isNaN(t))throw 0;off=t-Date.now();src="timeapi.io";st.time=["ok","受信成功（timeapi.io "+hms()+"）"];render();return true}catch(e){}
+ try{const j=await getJSON("https://worldtimeapi.org/api/timezone/Asia/Tokyo");
+  off=j.unixtime*1000-Date.now();src="worldtimeapi.org";st.time=["ok","受信成功（worldtimeapi.org "+hms()+"）"];render();return true}catch(e){}
+ src="端末";off=0;st.time=["ng","受信失敗（端末の時刻を使用）"];render();return false}
+async function fetchRokuyo(key){if(rkCache[key]!==undefined)return;rkCache[key]=null;st.roku=["ing","受信中…"];render();
+ try{const j=await getJSON("https://shirabe.dev/api/v1/calendar/"+key);const n=j&&j.rokuyo&&j.rokuyo.name;if(n){rkCache[key]=n;st.roku=["ok","受信成功（shirabe.dev "+key+"）"];render();tick()}else throw 0}catch(e){st.roku=["ng","受信失敗（簡易計算を使用）"];render()}}
+const WD="日月火水木金土",RK=["大安","赤口","先勝","友引","先負","仏滅"];
+function rokuyo(d){const ref=Date.UTC(2000,0,6,18,14),syn=29.530588853*864e5;
+ const n=Math.floor((d-ref)/syn),nm=new Date(ref+n*syn),day=Math.floor((d-nm)/864e5)+1;
+ const mon=new Date(nm.getTime()-20*864e5).getMonth()+1;return RK[(mon+day)%6]}
+function two(n,id1,id2,pad){const s=String(n).padStart(2,pad);put(id1,s[0]);put(id2,s[1])}
+function tick(){const d=new Date(Date.now()+off+9*36e5);let h=d.getUTCHours();
+ $("am").setAttribute("opacity",h<12?1:.1);$("pm").setAttribute("opacity",h>=12?1:.1);
+ if(!h24){h=h%12;if(h===0)h=12}
+ two(h,"h1","h2",h24?"0":" ");two(d.getUTCMinutes(),"m1","m2","0");two(d.getUTCSeconds(),"s1","s2","0");
+ $("mo").textContent=(d.getUTCMonth()+1)+"/";two(d.getUTCDate(),"d1","d2"," ");
+ $("wd").textContent=WD[d.getUTCDay()];$("wd").setAttribute("fill",d.getUTCDay()===0?"#7a1d1d":"#15181a");
+ const key=d.toISOString().slice(0,10);fetchRokuyo(key);$("roku").textContent=rkCache[key]||rokuyo(d);
+ const t=Math.round(temp*10);put("t1",String(Math.floor(t/100)));put("t2",String(Math.floor(t/10)%10));put("t3",String(t%10));
+ two(Math.round(hum),"u1","u2"," ")}
+function weather(){temp=Math.min(27,Math.max(19,temp+(Math.random()-.5)*.3));hum=Math.min(70,Math.max(35,hum+(Math.random()-.5)*1.5));tick()}
+function setSig(n,ok){[...$("sig").children].forEach((b,i)=>b.setAttribute("opacity",i<n?1:.1));$("ok").setAttribute("opacity",ok?1:.1)}
+$("sync").onclick=()=>{if(syncing)return;syncing=1;for(const k in rkCache)delete rkCache[k];setSig(0,false);let n=0;
+ const iv=setInterval(()=>{n++;setSig(Math.min(n,4),false);if(n>=6){clearInterval(iv);clearInterval(iv);syncTime().then(ok=>{setSig(ok?4:0,ok);syncing=0})}},500)};
+$("fmt").onclick=()=>{h24=!h24;tick()};
+setSig(0,false);render();tick();syncTime().then(ok=>setSig(ok?4:0,ok));setInterval(tick,250);setInterval(weather,5000);
+</script>
 </body>
 </html>
