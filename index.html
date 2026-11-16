@@ -58,23 +58,24 @@
   #wm { position: fixed; inset: 0; z-index: 15; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.8); text-shadow: none; }
   #wm[hidden] { display: none; }
   #wbox { background: #1b1d22; color: #f2f2f2; border: 1px solid rgba(255,255,255,.14); border-radius: 16px; padding: 2.4vh 2.4vw;
-    width: min(92vw, 1100px); max-height: 94vh; overflow: auto; display: flex; flex-direction: column; gap: 1.8vh; }
+    width: min(90vw, 820px); max-width: 100%; max-height: 90vh; max-height: 90dvh; overflow: auto; display: flex; flex-direction: column; gap: 1.8vh; }
   #wtitle { font-size: min(2.8vw, 5vh); font-weight: 500; }
   #wtitle small { font-size: .55em; color: #b5bac1; margin-left: .8em; font-weight: 400; }
-  #wsum { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2vh 1.6vw; }
-  #wsum div { font-size: min(2vw, 3.8vh); } #wsum span { display: block; font-size: .6em; color: #b5bac1; }
-  #wtbl { width: 100%; border-collapse: collapse; font-size: min(1.9vw, 3.4vh); font-variant-numeric: tabular-nums; }
+  #wsum { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.2vh 1.6vw; }
+  #wsum div { font-size: min(2.2vw, 4vh); white-space: nowrap; } #wsum span { display: block; font-size: .6em; color: #b5bac1; }
+  #wtbl { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: min(2.2vw, 4vh); font-variant-numeric: tabular-nums; }
   #wtbl th { font-weight: 400; font-size: .7em; color: #b5bac1; text-align: left; padding: .4vh .6vw; }
-  #wtbl td { padding: .7vh .6vw; border-top: 1px solid rgba(255,255,255,.12); white-space: nowrap; }
+  #wtbl td { padding: .7vh .6vw; border-top: 1px solid rgba(255,255,255,.12); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #wtbl th:nth-child(1) { width: 18%; } #wtbl th:nth-child(2) { width: 38%; } #wtbl th:nth-child(3) { width: 18%; } #wtbl th:nth-child(4) { width: 26%; }
   #wtbl i { margin-right: .3em; }
   @media (orientation: portrait) {
     #wsum { grid-template-columns: repeat(2, 1fr); } #wsum div { font-size: 4vw; } #wtitle { font-size: 5vw; }
-    #wtbl { font-size: 3.2vw; }
+    #wtbl { font-size: 4vw; } #wsum div { white-space: normal; } #wbox { padding: 2vh 4vw; }
   }
   /* ニュースのQRコード表示 */
   #qr { position: fixed; inset: 0; z-index: 15; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.8); text-shadow: none; }
   #qr[hidden] { display: none; }
-  #qrbox { background: #1b1d22; color: #f2f2f2; border: 1px solid rgba(255,255,255,.14); border-radius: 16px; padding: 2.6vh 2.4vw; display: flex; align-items: center; gap: 3vw; max-width: 94vw; max-height: 94vh; }
+  #qrbox { background: #1b1d22; color: #f2f2f2; border: 1px solid rgba(255,255,255,.14); border-radius: 16px; padding: 2.6vh 2.4vw; display: flex; align-items: center; gap: 3vw; max-width: 94vw; max-height: 94vh; overflow: auto; }
   #qrcv { width: min(68vh, 36vw); height: min(68vh, 36vw); image-rendering: pixelated; flex: none; }
   #qrcv[hidden] { display: none; }
   #qrside { max-width: 36vw; display: flex; flex-direction: column; gap: 1.6vh; }
@@ -472,26 +473,21 @@
     if (!wJ) return;
     const H = wJ.hourly, D = wJ.daily, c = wJ.current, R = v => Math.round(v);
     const day = kind === "hourly" ? 0 : 1, idx = [];
-    if (day === 0) { const i0 = H.time.findIndex(t => t > c.time); if (i0 < 0) return; for (let k = 0; k < 8; k++) if (i0 + k * 3 < H.time.length) idx.push(i0 + k * 3); }
-    else for (let h = 0; h < 24; h += 3) idx.push(24 + h);
+    if (day === 0) { const i0 = H.time.findIndex(t => t > c.time); if (i0 < 0) return; for (let k = 0; k < 6; k++) if (i0 + k * 3 < H.time.length) idx.push(i0 + k * 3); }
+    else for (let h = 6; h < 24; h += 3) idx.push(24 + h);
     const [ic, lb, co] = WMAP(D.weather_code[day], true);
-    const rain = D.precipitation_sum[day] + "mm" + (D.snowfall_sum[day] > 0 ? `(降雪 ${D.snowfall_sum[day]}cm)` : "");
     const sum = [
       ["天気", `<i class="fa-solid ${ic}" style="color:${co}"></i> ${lb}`],
       ["最高 / 最低", `${R(D.temperature_2m_max[day])}° / ${R(D.temperature_2m_min[day])}°`],
-      ["体感 最高 / 最低", `${R(D.apparent_temperature_max[day])}° / ${R(D.apparent_temperature_min[day])}°`],
       ["降水確率", `${D.precipitation_probability_max[day]}%`],
-      ["降水量", rain],
-      ["最大風速", `${D.wind_speed_10m_max[day]}m/s`],
-      ["紫外線指数", D.uv_index_max[day] != null ? D.uv_index_max[day] : "-"],
-      ["日の出 / 日の入", `${D.sunrise[day].slice(11, 16)} / ${D.sunset[day].slice(11, 16)}`]
+      ["最大風速", `${Math.round(D.wind_speed_10m_max[day])}m/s`]
     ];
     $("wtitle").innerHTML = (day === 0 ? "これからの天気<small>今日のまとめと3時間ごとの予報</small>" : "明日の天気<small>3時間ごとの予報</small>");
     $("wsum").innerHTML = sum.map(([k, v]) => `<div><span>${k}</span>${v}</div>`).join("");
-    $("wtbl").innerHTML = "<tr><th>時刻</th><th>天気</th><th>気温</th><th>体感</th><th>降水確率</th><th>降水量</th><th>風速</th></tr>" +
+    $("wtbl").innerHTML = "<tr><th>時刻</th><th>天気</th><th>気温</th><th>降水確率</th></tr>" +
       idx.map(i => {
         const hr = parseInt(H.time[i].slice(11, 13), 10), [ic2, lb2, co2] = WMAP(H.weather_code[i], hr >= 6 && hr < 18);
-        return `<tr><td>${hr}時</td><td><i class="fa-solid ${ic2}" style="color:${co2}"></i>${lb2}</td><td>${R(H.temperature_2m[i])}°</td><td>${R(H.apparent_temperature[i])}°</td><td>${H.precipitation_probability[i]}%</td><td>${H.precipitation[i]}mm</td><td>${Math.round(H.wind_speed_10m[i] * 10) / 10}m/s</td></tr>`;
+        return `<tr><td>${hr}時</td><td><i class="fa-solid ${ic2}" style="color:${co2}"></i>${lb2}</td><td>${R(H.temperature_2m[i])}°</td><td>${H.precipitation_probability[i]}%</td></tr>`;
       }).join("");
     $("wm").hidden = false;
     clearTimeout(wmT); wmT = setTimeout(hideW, 30000);
