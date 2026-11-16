@@ -2,104 +2,180 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>電波時計</title>
+<title>時計</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
 <style>
-:root{--bg:#d9dde2;--ink:#2a2f36;--sub:#59616b;--btn:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1e22;--ink:#e6e8eb;--sub:#9aa2ab;--btn:#2a2f36}}
-*{box-sizing:border-box}
-html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:16px}
-svg#clk{width:min(100%,860px);height:auto;display:block;filter:drop-shadow(0 14px 26px rgba(0,0,0,.3))}
-.ctl{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-button{font:inherit;color:var(--ink);background:var(--btn);border:1px solid rgba(128,128,128,.4);border-radius:8px;padding:10px 16px;cursor:pointer}
-button:focus-visible{outline:3px solid #3b7ddd;outline-offset:2px}
-.note{font-size:13px;color:var(--sub);text-align:center;max-width:620px;margin:0;line-height:1.6}
+  :root { --bg:#000; --fg:#f2f2f2; --sub:#9aa0a6; --acc:#4fd1c5; --warn:#f6ad55; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--fg); overflow: hidden;
+    font-family: -apple-system, "Hiragino Sans", "Noto Sans JP", "Segoe UI", sans-serif;
+    -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+  main { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+  #time { font-size: min(24vw, 46vh); font-weight: 200; line-height: 1; letter-spacing: .02em;
+    font-variant-numeric: tabular-nums; white-space: nowrap; }
+  #sec { font-size: .45em; color: var(--acc); margin-left: .08em; }
+  #date { margin-top: 2vh; font-size: min(6vw, 11vh); font-weight: 300; }
+  #wday { margin-left: .5em; color: var(--acc); }
+  #weather { margin-top: 2.5vh; font-size: min(4.6vw, 8.5vh); font-weight: 300; color: var(--fg); white-space: nowrap; }
+  #weather .city { color: var(--sub); font-size: .6em; margin-right: .6em; }
+  #weather .wi { margin-right: .35em; color: var(--acc); }
+  #weather.stale { opacity: .5; }
+  #status { position: fixed; bottom: calc(8px + env(safe-area-inset-bottom)); left: 0; right: 0; text-align: center;
+    font-size: 12px; color: var(--sub); }
+  #status.warn { color: var(--warn); }
+  #hint { position: fixed; top: calc(8px + env(safe-area-inset-top)); right: 12px; font-size: 11px; color: var(--sub); opacity: .6; }
+  @media (orientation: portrait) {
+    main::before { content: "横向きにしてください"; position: fixed; top: 12px; font-size: 13px; color: var(--sub); }
+    #time { font-size: 17vw; }
+    #date { font-size: 5vw; }
+    #weather { font-size: 5vw; }
+  }
 </style>
 </head>
 <body>
-<svg id="clk" viewBox="0 0 860 624" role="img" aria-label="電波時計">
-  <defs><linearGradient id="fg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7f8f9"/><stop offset="1" stop-color="#e2e5e8"/></linearGradient></defs>
-  <rect width="860" height="624" rx="14" fill="url(#fg)" stroke="#fff" stroke-width="3"/>
-  <text x="44" y="42" font-family="Georgia,serif" font-size="15" letter-spacing="3" fill="#333">RADIO CLOCK</text>
-  <rect x="44" y="62" width="772" height="320" rx="4" fill="#c4cfc6" stroke="#e9ecea" stroke-width="4"/>
-  <rect x="44" y="418" width="772" height="150" rx="4" fill="#c4cfc6" stroke="#e9ecea" stroke-width="4"/>
-  <g stroke="#15181a" stroke-opacity=".55" stroke-width="2"><line x1="290" y1="428" x2="290" y2="558"/><line x1="440" y1="428" x2="440" y2="558"/><line x1="640" y1="428" x2="640" y2="558"/></g>
-  <g font-size="14" fill="#222" text-anchor="middle"><text x="100" y="408">月</text><text x="190" y="408">日</text><text x="365" y="408">曜日</text><text x="540" y="408">温度</text><text x="728" y="408">湿度</text></g>
-  <text x="816" y="596" font-size="9" letter-spacing="1.5" fill="#444" text-anchor="end" font-family="sans-serif">RADIO CONTROLLED</text>
-  <g font-family="sans-serif" font-weight="700" fill="#15181a">
-    <text id="am" x="62" y="104" font-size="24">AM</text><text id="pm" x="62" y="134" font-size="24">PM</text>
-  </g>
-  <g id="sig" fill="#15181a"><rect x="740" y="98" width="10" height="10"/><rect x="756" y="88" width="10" height="20"/><rect x="772" y="78" width="10" height="30"/><rect x="788" y="68" width="10" height="40"/></g>
-  <g id="ok"><rect x="752" y="120" width="44" height="24" rx="4" fill="none" stroke="#15181a" stroke-width="2.5"/><text x="774" y="138" font-size="15" font-weight="700" text-anchor="middle" fill="#15181a" font-family="sans-serif">OK</text></g>
-  <rect x="381" y="150" width="14" height="14" fill="#15181a"/><rect x="381" y="236" width="14" height="14" fill="#15181a"/>
-  <g id="digits"></g>
-  <text id="mo" x="54" y="452" font-size="28" font-weight="700" fill="#15181a" font-family="sans-serif">11/</text>
-  <rect id="dp" x="552" y="522" width="11" height="11" fill="#15181a"/>
-  <text x="618" y="452" font-size="16" font-weight="700" fill="#15181a" font-family="sans-serif">°C</text>
-  <text x="776" y="548" font-size="24" font-weight="700" fill="#15181a" font-family="sans-serif">%</text>
-  <text id="wd" x="365" y="514" font-size="84" font-weight="700" text-anchor="middle" fill="#15181a">木</text>
-  <text id="roku" x="365" y="550" font-size="18" font-weight="700" text-anchor="middle" fill="#15181a"></text>
-</svg>
-<div class="ctl">
-  <button id="sync">電波を受信する</button>
-  <button id="fmt">12時間 / 24時間</button>
-</div>
-<p class="note">時刻は外部の時刻API（日本時間）、六曜は外部の暦APIから取得します。取得できない場合は端末時刻・簡易計算に切り替わります。温度・湿度は演出用の疑似値です。</p><p class="note" id="src" style="line-height:2"></p>
+<main>
+  <div id="time">--:--<span id="sec">--</span></div>
+  <div id="date">----年--月--日<span id="wday">-曜日</span></div>
+  <div id="weather"><span class="city">札幌</span>天気を取得中…</div>
+</main>
+<div id="hint">タップで全画面</div>
+<div id="status">時刻を同期中…</div>
+
 <script>
-const NS="http://www.w3.org/2000/svg";
-const P={a:"10,6 14,2 46,2 50,6 46,10 14,10",d:"10,94 14,90 46,90 50,94 46,98 14,98",g:"10,50 14,46 46,46 50,50 46,54 14,54",
-f:"6,8 10,12 10,44 6,48 2,44 2,12",b:"54,8 58,12 58,44 54,48 50,44 50,12",e:"6,52 10,56 10,88 6,92 2,88 2,56",c:"54,52 58,56 58,88 54,92 50,88 50,56"};
-const M={0:"abcdef",1:"bc",2:"abdeg",3:"abcdg",4:"bcfg",5:"acdfg",6:"acdefg",7:"abc",8:"abcdefg",9:"abcdfg"," ":""};
-const slots={};
-function mk(name,x,y,w,h){const g=document.createElementNS(NS,"g");
- g.setAttribute("transform",`translate(${x},${y}) scale(${w/60},${h/100}) skewX(-5)`);
- const ps={};for(const k in P){const p=document.createElementNS(NS,"polygon");p.setAttribute("points",P[k]);p.setAttribute("fill","#15181a");g.appendChild(p);ps[k]=p}
- document.getElementById("digits").appendChild(g);slots[name]=ps}
-function put(name,ch){const ps=slots[name];const on=M[ch]||"";for(const k in ps)ps[k].setAttribute("opacity",on.includes(k)?1:.07)}
-mk("h1",100,100,120,200);mk("h2",240,100,120,200);mk("m1",410,100,120,200);mk("m2",550,100,120,200);
-mk("s1",692,220,48,80);mk("s2",748,220,48,80);
-mk("d1",120,444,54,90);mk("d2",184,444,54,90);
-mk("t1",452,444,44,90);mk("t2",502,444,44,90);mk("t3",572,444,44,90);
-mk("u1",652,444,50,90);mk("u2",712,444,50,90);
-const $=id=>document.getElementById(id);
-let h24=false,temp=23.6,hum=54,syncing=0,off=0;
-let src="端末";const rkCache={};
-const st={time:["wait","受信待ち"],roku:["wait","受信待ち"]};
-function render(){const c={wait:"#888",ing:"#d9a400",ok:"#2e9e4f",ng:"#d34a3a"};
- const row=(n,v)=>`<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${c[v[0]]};margin-right:6px"></span>${n}：${v[1]}`;
- $("src").innerHTML=row("時刻",st.time)+"<br>"+row("六曜",st.roku)}
-const hms=()=>new Date(Date.now()+off+9*36e5).toISOString().slice(11,19);
-async function getJSON(u){const c=new AbortController();const t=setTimeout(()=>c.abort(),6000);try{const r=await fetch(u,{cache:"no-store",signal:c.signal});if(!r.ok)throw 0;return await r.json()}finally{clearTimeout(t)}}
-async function syncTime(){
- st.time=["ing","受信中…"];render();
- try{const j=await getJSON("https://timeapi.io/api/time/current/zone?timeZone=Asia%2FTokyo");
-  const t=Date.parse(j.dateTime.slice(0,19)+"+09:00");if(isNaN(t))throw 0;off=t-Date.now();src="timeapi.io";st.time=["ok","受信成功（timeapi.io "+hms()+"）"];render();return true}catch(e){}
- try{const j=await getJSON("https://worldtimeapi.org/api/timezone/Asia/Tokyo");
-  off=j.unixtime*1000-Date.now();src="worldtimeapi.org";st.time=["ok","受信成功（worldtimeapi.org "+hms()+"）"];render();return true}catch(e){}
- src="端末";off=0;st.time=["ng","受信失敗（端末の時刻を使用）"];render();return false}
-async function fetchRokuyo(key){if(rkCache[key]!==undefined)return;rkCache[key]=null;st.roku=["ing","受信中…"];render();
- try{const j=await getJSON("https://shirabe.dev/api/v1/calendar/"+key);const n=j&&j.rokuyo&&j.rokuyo.name;if(n){rkCache[key]=n;st.roku=["ok","受信成功（shirabe.dev "+key+"）"];render();tick()}else throw 0}catch(e){st.roku=["ng","受信失敗（簡易計算を使用）"];render()}}
-const WD="日月火水木金土",RK=["大安","赤口","先勝","友引","先負","仏滅"];
-function rokuyo(d){const ref=Date.UTC(2000,0,6,18,14),syn=29.530588853*864e5;
- const n=Math.floor((d-ref)/syn),nm=new Date(ref+n*syn),day=Math.floor((d-nm)/864e5)+1;
- const mon=new Date(nm.getTime()-20*864e5).getMonth()+1;return RK[(mon+day)%6]}
-function two(n,id1,id2,pad){const s=String(n).padStart(2,pad);put(id1,s[0]);put(id2,s[1])}
-function tick(){const d=new Date(Date.now()+off+9*36e5);let h=d.getUTCHours();
- $("am").setAttribute("opacity",h<12?1:.1);$("pm").setAttribute("opacity",h>=12?1:.1);
- if(!h24){h=h%12;if(h===0)h=12}
- two(h,"h1","h2",h24?"0":" ");two(d.getUTCMinutes(),"m1","m2","0");two(d.getUTCSeconds(),"s1","s2","0");
- $("mo").textContent=(d.getUTCMonth()+1)+"/";two(d.getUTCDate(),"d1","d2"," ");
- $("wd").textContent=WD[d.getUTCDay()];$("wd").setAttribute("fill",d.getUTCDay()===0?"#7a1d1d":"#15181a");
- const key=d.toISOString().slice(0,10);fetchRokuyo(key);$("roku").textContent=rkCache[key]||rokuyo(d);
- const t=Math.round(temp*10);put("t1",String(Math.floor(t/100)));put("t2",String(Math.floor(t/10)%10));put("t3",String(t%10));
- two(Math.round(hum),"u1","u2"," ")}
-function weather(){temp=Math.min(27,Math.max(19,temp+(Math.random()-.5)*.3));hum=Math.min(70,Math.max(35,hum+(Math.random()-.5)*1.5));tick()}
-function setSig(n,ok){[...$("sig").children].forEach((b,i)=>b.setAttribute("opacity",i<n?1:.1));$("ok").setAttribute("opacity",ok?1:.1)}
-$("sync").onclick=()=>{if(syncing)return;syncing=1;for(const k in rkCache)delete rkCache[k];setSig(0,false);let n=0;
- const iv=setInterval(()=>{n++;setSig(Math.min(n,4),false);if(n>=6){clearInterval(iv);clearInterval(iv);syncTime().then(ok=>{setSig(ok?4:0,ok);syncing=0})}},500)};
-$("fmt").onclick=()=>{h24=!h24;tick()};
-setSig(0,false);render();tick();syncTime().then(ok=>setSig(ok?4:0,ok));setInterval(tick,250);setInterval(weather,5000);
+(() => {
+  const SYNC_INTERVAL = 5 * 60 * 1000;   // 5分ごとに同期
+  const SAMPLES = 3;                      // 往復遅延が最小のサンプルを採用
+  const TZ = "UTC";
+
+  // 時刻ソース(順番に試行)。CORS対応のAPIのみ。
+  const SOURCES = [
+    { url: "https://worldtimeapi.org/api/timezone/Etc/UTC",
+      parse: async r => Date.parse((await r.json()).utc_datetime) },
+    { url: "https://timeapi.io/api/time/current/zone?timeZone=UTC",
+      parse: async r => Date.parse((await r.json()).dateTime + "Z") }
+  ];
+
+  let offset = 0, lastSync = null, lastErr = false, accuracy = null;
+  const $ = id => document.getElementById(id);
+  const now = () => Date.now() + offset;
+
+  async function sample(src) {
+    const t0 = performance.now();
+    const r = await fetch(src.url, { cache: "no-store" });
+    if (!r.ok) throw new Error(r.status);
+    const ms = await src.parse(r);
+    if (!isFinite(ms)) throw new Error("parse");
+    const rtt = performance.now() - t0;
+    return { rtt, offset: ms + rtt / 2 - Date.now() };
+  }
+
+  async function sync() {
+    for (const src of SOURCES) {
+      try {
+        const results = [];
+        for (let i = 0; i < SAMPLES; i++) results.push(await sample(src));
+        const best = results.reduce((a, b) => a.rtt < b.rtt ? a : b);
+        offset = best.offset;
+        accuracy = best.rtt / 2;
+        lastSync = Date.now();
+        lastErr = false;
+        return renderStatus();
+      } catch (e) { /* 次のソースへ */ }
+    }
+    lastErr = true;
+    renderStatus();
+  }
+
+  const p2 = n => String(n).padStart(2, "0");
+  const WD = ["日","月","火","水","木","金","土"];
+
+  function render() {
+    const d = new Date(now());
+    $("time").firstChild.nodeValue = p2(d.getHours()) + ":" + p2(d.getMinutes());
+    $("sec").textContent = p2(d.getSeconds());
+    $("date").firstChild.nodeValue = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+    $("wday").textContent = WD[d.getDay()] + "曜日";
+    setTimeout(render, 1000 - (now() % 1000) + 5); // 秒の境界に合わせて更新
+  }
+
+  function renderStatus() {
+    const el = $("status");
+    if (lastSync) {
+      const t = new Date(lastSync);
+      const sign = offset >= 0 ? "+" : "−";
+      el.textContent = `サーバー同期済 ${p2(t.getHours())}:${p2(t.getMinutes())} ・ 端末とのズレ ${sign}${Math.abs(Math.round(offset))}ms ・ 精度 ±${Math.round(accuracy)}ms`;
+      el.className = lastErr ? "warn" : "";
+    } else {
+      el.textContent = "同期失敗:端末の時刻を表示中";
+      el.className = "warn";
+    }
+    if (lastSync && lastErr) { el.textContent += "(再同期失敗)"; el.className = "warn"; }
+  }
+
+
+  // ---- 札幌の天気(Open-Meteo / APIキー不要) ----
+  const WEATHER_INTERVAL = 10 * 60 * 1000; // 10分ごと
+  const WURL = "https://api.open-meteo.com/v1/forecast?latitude=43.0621&longitude=141.3544&current=temperature_2m,apparent_temperature,weather_code,is_day&timezone=Asia%2FTokyo";
+  // Font Awesome(Free Solid)アイコン。夜間は月アイコンに切替
+  const WMAP = (c, day) => c === 0 ? [day ? "fa-sun" : "fa-moon", "快晴", day ? "#f6c945" : "#cbd5e0"]
+    : c <= 2 ? [day ? "fa-cloud-sun" : "fa-cloud-moon", "晴れ", day ? "#f6c945" : "#cbd5e0"]
+    : c === 3 ? ["fa-cloud", "曇り", "#a0aec0"]
+    : c <= 48 ? ["fa-smog", "霧", "#a0aec0"]
+    : c <= 57 ? ["fa-cloud-rain", "霧雨", "#63b3ed"]
+    : c <= 67 ? ["fa-cloud-showers-heavy", "雨", "#4299e1"]
+    : c <= 77 ? ["fa-snowflake", "雪", "#bee3f8"]
+    : c <= 82 ? ["fa-cloud-sun-rain", "にわか雨", "#63b3ed"]
+    : c <= 86 ? ["fa-snowflake", "にわか雪", "#bee3f8"]
+    : ["fa-cloud-bolt", "雷雨", "#ecc94b"];
+  let wLast = 0;
+  async function weather() {
+    const el = $("weather");
+    try {
+      const r = await fetch(WURL, { cache: "no-store" });
+      if (!r.ok) throw new Error(r.status);
+      const c = (await r.json()).current;
+      const [icon, label, color] = WMAP(c.weather_code, c.is_day === 1);
+      el.innerHTML = `<span class="city">札幌</span><i class="fa-solid ${icon} wi" style="color:${color}"></i>${label} ${Math.round(c.temperature_2m)}°C` +
+        `<span class="city" style="margin-left:.6em">体感 ${Math.round(c.apparent_temperature)}°C</span>`;
+      el.className = "";
+      wLast = Date.now();
+    } catch (e) {
+      if (wLast) el.className = "stale"; // 取得失敗時は前回値を薄く表示
+      else el.innerHTML = '<span class="city">札幌</span>天気を取得できません';
+    }
+  }
+
+  // 全画面切替
+  document.body.addEventListener("click", () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen?.().then(() => screen.orientation?.lock?.("landscape").catch(() => {})).catch(() => {});
+  });
+
+  // 画面スリープ防止
+  let wl = null;
+  async function keepAwake() { try { wl = await navigator.wakeLock?.request("screen"); } catch (e) {} }
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") { keepAwake(); sync(); render(); weather(); }
+  });
+  window.addEventListener("online", () => { sync(); weather(); });
+
+  keepAwake();
+  render();
+  sync();
+  setInterval(sync, SYNC_INTERVAL);
+  weather();
+  setInterval(weather, WEATHER_INTERVAL);
+
+})();
 </script>
 </body>
 </html>
