@@ -114,6 +114,10 @@
   body[data-p="morning"] #bg-morning, body[data-p="day"] #bg-day,
   body[data-p="evening"] #bg-evening, body[data-p="night"] #bg-night { opacity: 1; }
   main { position: relative; z-index: 1; text-shadow: 0 1px 3px rgba(0,0,0,.75), 0 2px 14px rgba(0,0,0,.55); }
+  /* 夜間モード: 黒背景に時刻のみ */
+  body.nm .bg { opacity: 0 !important; }
+  body.nm #right, body.nm #date, body.nm #weather, body.nm #today, body.nm #status { display: none !important; }
+  body.nm main { text-shadow: none; }
   #dim { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity 3s; z-index: 10; }
   #status { z-index: 2; text-shadow: 0 1px 6px rgba(0,0,0,.4); position: fixed; bottom: calc(8px + env(safe-area-inset-bottom)); left: 0; right: 0; text-align: center;
     font-size: 12px; color: var(--sub); }
@@ -166,8 +170,8 @@
   const SYNC_INTERVAL = 5 * 60 * 1000;   // 5分ごとに同期
   const SAMPLES = 3;                      // 往復遅延が最小のサンプルを採用
   // 夜間の自動減光(端末のローカル時刻)
-  const NIGHT_START = 22;  // 22:00から
-  const NIGHT_END = 6;     // 6:00まで
+  const NIGHT_START = 0;   // 0:00から
+  const NIGHT_END = 5;     // 5:00まで
   const DIM_LEVEL = 0.75;  // 暗さ(0〜1、大きいほど暗い)
 
   // 時刻ソース(順番に試行、失敗したら次へ)
@@ -241,6 +245,7 @@
     const h = d.getHours();
     document.body.dataset.p = h >= 5 && h < 9 ? "morning" : h >= 9 && h < 16 ? "day" : h >= 16 && h < 19 ? "evening" : "night";
     const night = NIGHT_START > NIGHT_END ? (h >= NIGHT_START || h < NIGHT_END) : (h >= NIGHT_START && h < NIGHT_END);
+    document.body.classList.toggle("nm", night);
     $("dim").style.opacity = (night && !alertOn) ? DIM_LEVEL : 0;
     setTimeout(render, 1000 - (now() % 1000) + 5); // 秒の境界に合わせて更新
   }
