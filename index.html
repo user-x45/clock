@@ -27,7 +27,7 @@
   #right { overflow: hidden; flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 1.5vh; }
   .card { overflow: hidden; background: rgba(0,0,0,.28); border-radius: 12px; padding: 1.2vh 1.1vw; text-shadow: none; }
   .card h3 { font-size: min(1.4vw, 2.6vh); font-weight: 400; color: var(--sub); letter-spacing: .1em; margin-bottom: .6vh; }
-  #hourly { display: grid; grid-template-columns: repeat(6, auto); justify-content: space-between; text-align: center; font-size: min(1.9vw, 3.6vh); line-height: 1.25; }
+  #hourly { display: grid; grid-template-columns: repeat(4, auto); justify-content: space-between; text-align: center; font-size: min(1.9vw, 3.6vh); line-height: 1.25; }
   #hourly { font-family: "Montserrat", "Zen Kaku Gothic New", sans-serif; font-weight: 300; }
   #hourly .h, #hourly .p { color: var(--sub); font-size: .75em; }
   #hourly i { display: block; color: var(--acc); margin: .15em 0; }
@@ -224,10 +224,10 @@
       el.innerHTML = `<span class="city">札幌</span><i class="fa-solid ${icon} wi"></i>${label} ${Math.round(c.temperature_2m)}°C` +
         `<span class="city" style="margin-left:.6em">体感 ${Math.round(c.apparent_temperature)}°C</span>`;
       el.className = "";
-      // 時間ごと(次の時刻から2時間おきに6件)
+      // 時間ごと(次の時刻から2時間おきに4件)
       const H = j.hourly, i0 = H.time.findIndex(t => t > c.time);
       let hh = "";
-      for (let k = 0; k < 6; k++) {
+      for (let k = 0; k < 4; k++) {
         const i = i0 + k * 2; if (i0 < 0 || i >= H.time.length) break;
         const hr = parseInt(H.time[i].slice(11, 13), 10);
         const ic = WMAP(H.weather_code[i], hr >= 6 && hr < 18)[0];
@@ -311,10 +311,10 @@
     if (getComputedStyle(R).display === "none") return;
     const RH = R.clientHeight, cards = R.querySelectorAll(".card");
     R.querySelectorAll("h3").forEach(h => h.style.fontSize = Math.max(10, RH * 0.04) + "px");
-    cards[0].style.flex = `0 0 ${RH * 0.28}px`;
+    cards[0].style.flex = `0 0 ${RH * 0.32}px`;
     cards[1].style.flex = `0 0 ${RH * 0.17}px`;
     cards[2].style.flex = "1 1 0"; cards[2].style.minHeight = "0";
-    [[cards[0], $("hourly"), 70], [cards[1], $("tomorrow"), 90], [cards[2], $("newslist"), 90]].forEach(([card, c, hi]) =>
+    [[cards[0], $("hourly"), 120], [cards[1], $("tomorrow"), 90], [cards[2], $("newslist"), 90]].forEach(([card, c, hi]) =>
       fit(c, () => card.scrollHeight <= card.clientHeight + 1 && c.scrollWidth <= c.clientWidth + 1, 8, hi));
   }
   let lq = 0;
