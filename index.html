@@ -75,6 +75,17 @@
   #status { z-index: 2; text-shadow: 0 1px 6px rgba(0,0,0,.4); position: fixed; bottom: calc(8px + env(safe-area-inset-bottom)); left: 0; right: 0; text-align: center;
     font-size: 12px; color: var(--sub); }
   #status.warn { color: var(--warn); }
+  /* 地震通知 */
+  #alert { position: fixed; top: 0; left: 0; right: 0; z-index: 20; pointer-events: none; text-align: center; color: #fff;
+    display: flex; flex-direction: column; gap: .6vh; padding: calc(2.5vh + env(safe-area-inset-top)) 4vw 2.5vh;
+    border-radius: 0 0 18px 18px; box-shadow: 0 10px 30px rgba(0,0,0,.45); text-shadow: none;
+    transform: translateY(-110%); transition: transform .5s cubic-bezier(.2,.8,.2,1); }
+  #alert.show { transform: translateY(0); }
+  #alert.eew { background: rgba(190,20,20,.97); }
+  #alert.quake { background: rgba(200,95,10,.97); }
+  #atitle { font-size: min(2.2vw, 4vh); font-weight: 500; letter-spacing: .15em; }
+  #amain { font-size: min(5.5vw, 11vh); font-weight: 500; line-height: 1.15; }
+  #asub { font-size: min(2.4vw, 4.4vh); font-weight: 400; line-height: 1.35; white-space: pre-line; }
   @media (orientation: portrait) {
     main::before { content: "横向きにしてください"; position: fixed; top: 12px; font-size: 13px; color: var(--sub); }
     #time { font-size: 17vw; }
@@ -100,6 +111,7 @@
     <div class="card"><h3 id="newsh">ニュース</h3><ul id="newslist"><li>取得中…</li></ul></div>
   </div>
 </main>
+<div id="alert"><div id="atitle"></div><div id="amain"></div><div id="asub"></div></div>
 <div id="dim"></div>
 <div id="status">時刻を同期中…</div>
 
@@ -123,6 +135,7 @@
   ];
 
   let nLast = 0, nErr = false, lastDay = null;
+  let qState = 0, alertOn = false; // qState: 0=接続中 1=接続済 2=切断
   let offset = 0, lastSync = null, lastErr = false, accuracy = null;
   const $ = id => document.getElementById(id);
   const now = () => Date.now() + offset;
@@ -170,7 +183,7 @@
     const h = d.getHours();
     document.body.dataset.p = h >= 5 && h < 9 ? "morning" : h >= 9 && h < 16 ? "day" : h >= 16 && h < 19 ? "evening" : "night";
     const night = NIGHT_START > NIGHT_END ? (h >= NIGHT_START || h < NIGHT_END) : (h >= NIGHT_START && h < NIGHT_END);
-    $("dim").style.opacity = night ? DIM_LEVEL : 0;
+    $("dim").style.opacity = (night && !alertOn) ? DIM_LEVEL : 0;
     setTimeout(render, 1000 - (now() % 1000) + 5); // 秒の境界に合わせて更新
   }
 
@@ -180,8 +193,9 @@
     const c = nLast ? `ニュース取得 ${f(nLast)}` + (nErr ? "(再取得失敗)" : "") : (nErr ? "ニュース取得 失敗" : "ニュース取得中…");
     const a = lastSync ? `時刻取得 ${f(lastSync)}` + (lastErr ? "(再取得失敗)" : "") : "時刻取得 失敗(端末時刻を表示中)";
     const b = wLast ? `天気取得 ${f(wLast)}` + (wErr ? "(再取得失敗)" : "") : (wErr ? "天気取得 失敗" : "天気取得中…");
-    el.textContent = a + "  ・  " + b + "  ・  " + c;
-    el.className = (lastErr || wErr || nErr || !lastSync) ? "warn" : "";
+    const q = ["地震情報 接続中…", "地震情報 受信待機中", "地震情報 切断(再接続中)"][qState];
+    el.textContent = a + "  ・  " + b + "  ・  " + c + "  ・  " + q;
+    el.className = (lastErr || wErr || nErr || !lastSync || qState === 2) ? "warn" : "";
   }
 
 
@@ -244,7 +258,7 @@
         const j = await r.json();
         if (j.status !== "ok" || !j.items || !j.items.length) throw new Error("feed");
         const ul = $("newslist"); ul.textContent = "";
-        j.items.slice(0, 4).forEach(it => { const li = document.createElement("li"); li.textContent = it.title; ul.appendChild(li); });
+        j.items.slice(0, 3).forEach(it => { const li = document.createElement("li"); li.textContent = it.title; ul.appendChild(li); });
         $("newsh").textContent = "今日のニュース(" + f.name + ")";
         nLast = Date.now(); nErr = false; renderStatus(); relayout(); return;
       } catch (e) { /* 次のフィードへ */ }
@@ -300,7 +314,7 @@
     cards[0].style.flex = `0 0 ${RH * 0.28}px`;
     cards[1].style.flex = `0 0 ${RH * 0.17}px`;
     cards[2].style.flex = "1 1 0"; cards[2].style.minHeight = "0";
-    [[cards[0], $("hourly"), 70], [cards[1], $("tomorrow"), 90], [cards[2], $("newslist"), 40]].forEach(([card, c, hi]) =>
+    [[cards[0], $("hourly"), 70], [cards[1], $("tomorrow"), 90], [cards[2], $("newslist"), 90]].forEach(([card, c, hi]) =>
       fit(c, () => card.scrollHeight <= card.clientHeight + 1 && c.scrollWidth <= c.clientWidth + 1, 8, hi));
   }
   let lq = 0;
@@ -308,6 +322,86 @@
   window.addEventListener("resize", relayout);
   window.addEventListener("orientationchange", relayout);
   document.fonts && document.fonts.ready.then(relayout);
+
+  // ---- 地震通知(P2P地震情報 WebSocket / キー不要) ----
+  // 通知は画面上部からスライドして表示し、数秒後に自動で消える(操作不要)
+  // ・緊急地震速報(警報): 石狩地方中部(札幌市北区を含む予報区)で震度3以上の予想
+  // ・震度情報: 札幌市北区の観測点で震度3以上を観測
+  const EQ_WS = "wss://api.p2pquake.net/v2/ws";
+  const EQ_MIN = 30;                 // 震度3
+  const EEW_AREA = /石狩地方中部/;
+  const QUAKE_ADDR = /札幌(市)?北区/;
+  const SCALE = { 10: "1", 20: "2", 30: "3", 40: "4", 45: "5弱", 50: "5強", 55: "6弱", 60: "6強", 70: "7" };
+  let alertTimer = 0, lastEew = "", lastQuake = "", lastQuakeScale = 0, curEew = "";
+
+  const pt = s => { const t = Date.parse(String(s || "").replace(/\//g, "-").replace(" ", "T").slice(0, 19) + "+09:00"); return isFinite(t) ? t : null; };
+  const stale = s => { const t = pt(s); return t !== null && Math.abs(now() - t) > 10 * 60 * 1000; };
+  const hhmm = s => { const m = String(s || "").match(/(\d\d):(\d\d)/); return m ? `${+m[1]}:${m[2]}` : ""; };
+  const mag = m => (m !== undefined && m !== null && m >= 0) ? ` M${Number(m).toFixed(1)}` : "";
+
+  function showAlert(kind, title, main, sub, ms) {
+    const el = $("alert");
+    el.className = kind;
+    $("atitle").textContent = title; $("amain").textContent = main; $("asub").textContent = sub;
+    void el.offsetWidth; el.classList.add("show"); alertOn = true;
+    $("dim").style.opacity = 0; // 夜間の減光を一時解除
+    clearTimeout(alertTimer); alertTimer = setTimeout(hideAlert, ms);
+  }
+  function hideAlert() { clearTimeout(alertTimer); $("alert").classList.remove("show"); alertOn = false; curEew = ""; }
+
+  function rangeText(from, to) {
+    const a = SCALE[from] || "", b = SCALE[to] || "";
+    if (to === 99) return (a || "3") + "以上";
+    if (a && b && a !== b) return a + "〜" + b;
+    return (b || a) + "程度";
+  }
+
+  function onEew(d) {
+    if (d.test) return;
+    const id = d.issue && d.issue.eventId;
+    if (d.cancelled) { if (id && id === curEew) hideAlert(); return; }
+    if (stale(d.time)) return;
+    const a = (d.areas || []).find(x => EEW_AREA.test(x.name || "") && (x.scaleTo === 99 || x.scaleTo >= EQ_MIN));
+    if (!a) return;
+    const key = id + "-" + (d.issue && d.issue.serial);
+    if (key === lastEew) return;
+    lastEew = key; curEew = id || "";
+    const h = (d.earthquake && d.earthquake.hypocenter) || {};
+    showAlert("eew", "緊急地震速報(警報)", "震度" + rangeText(a.scaleFrom, a.scaleTo) + "の予想",
+      `札幌市北区を含む石狩地方中部` + (h.name ? `\n震源 ${h.name}${mag(h.magnitude)}` : ""), 10000);
+  }
+
+  function onQuake(d) {
+    if (stale(d.time)) return;
+    const pts = (d.points || []).filter(p => !p.isArea && QUAKE_ADDR.test(p.addr || "") && p.scale >= EQ_MIN);
+    if (!pts.length) return;
+    const sc = Math.max(...pts.map(p => p.scale));
+    const eq = d.earthquake || {}, key = eq.time || d.time;
+    if (key === lastQuake && sc <= lastQuakeScale) return;
+    lastQuake = key; lastQuakeScale = sc;
+    const h = eq.hypocenter || {};
+    showAlert("quake", "地震情報", `札幌市北区 震度${SCALE[sc] || "?"}`,
+      `${hhmm(eq.time)}ごろ 震源 ${h.name || "調査中"}${mag(h.magnitude)}`, 8000);
+  }
+
+  function eqHandle(d) { if (d.code === 556) onEew(d); else if (d.code === 551) onQuake(d); }
+
+  let ws = null, wsTimer = 0;
+  function eqConnect() {
+    clearTimeout(wsTimer);
+    if (ws && ws.readyState <= 1) return;
+    qState = 0; renderStatus();
+    try { ws = new WebSocket(EQ_WS); } catch (e) { qState = 2; renderStatus(); wsTimer = setTimeout(eqConnect, 10000); return; }
+    ws.onopen = () => { qState = 1; renderStatus(); };
+    ws.onmessage = ev => { try { eqHandle(JSON.parse(ev.data)); } catch (e) {} };
+    ws.onerror = () => { try { ws.close(); } catch (e) {} };
+    ws.onclose = () => { qState = 2; renderStatus(); wsTimer = setTimeout(eqConnect, 10000); };
+  }
+  // 動作確認用: index.html?eqtest=eew または ?eqtest=quake
+  const qt = new URLSearchParams(location.search).get("eqtest");
+  if (qt) setTimeout(() => eqHandle(qt === "eew"
+    ? { code: 556, time: "", issue: { eventId: "test", serial: "1" }, earthquake: { hypocenter: { name: "石狩地方中部", magnitude: 6.1 } }, areas: [{ name: "石狩地方中部", scaleFrom: 45, scaleTo: 99 }] }
+    : { code: 551, time: "", earthquake: { time: "test", hypocenter: { name: "石狩地方中部", magnitude: 4.8 } }, points: [{ addr: "札幌北区新琴似", isArea: false, scale: 40 }] }), 2000);
 
   // 全画面切替
   document.body.addEventListener("click", () => {
@@ -319,9 +413,9 @@
   let wl = null;
   async function keepAwake() { try { wl = await navigator.wakeLock?.request("screen"); } catch (e) {} }
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") { keepAwake(); sync(); render(); weather(); news(); today(); }
+    if (document.visibilityState === "visible") { keepAwake(); sync(); render(); weather(); news(); today(); eqConnect(); }
   });
-  window.addEventListener("online", () => { sync(); weather(); news(); today(); });
+  window.addEventListener("online", () => { sync(); weather(); news(); today(); eqConnect(); });
 
   keepAwake();
   render();
@@ -333,6 +427,7 @@
   news();
   setInterval(news, NEWS_INTERVAL);
   today();
+  eqConnect();
 
 })();
 </script>
