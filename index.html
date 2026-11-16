@@ -109,16 +109,11 @@
 
   function renderStatus() {
     const el = $("status");
-    if (lastSync) {
-      const t = new Date(lastSync);
-      const sign = offset >= 0 ? "+" : "−";
-      el.textContent = `サーバー同期済 ${p2(t.getHours())}:${p2(t.getMinutes())} ・ 端末とのズレ ${sign}${Math.abs(Math.round(offset))}ms ・ 精度 ±${Math.round(accuracy)}ms`;
-      el.className = lastErr ? "warn" : "";
-    } else {
-      el.textContent = "同期失敗:端末の時刻を表示中";
-      el.className = "warn";
-    }
-    if (lastSync && lastErr) { el.textContent += "(再同期失敗)"; el.className = "warn"; }
+    const f = t => { const d = new Date(t); return p2(d.getHours()) + ":" + p2(d.getMinutes()) + ":" + p2(d.getSeconds()); };
+    const a = lastSync ? `時刻取得 ${f(lastSync)}` + (lastErr ? "(再取得失敗)" : "") : "時刻取得 失敗(端末時刻を表示中)";
+    const b = wLast ? `天気取得 ${f(wLast)}` + (wErr ? "(再取得失敗)" : "") : (wErr ? "天気取得 失敗" : "天気取得中…");
+    el.textContent = a + "  ・  " + b;
+    el.className = (lastErr || wErr || !lastSync) ? "warn" : "";
   }
 
 
@@ -136,7 +131,7 @@
     : c <= 82 ? ["fa-cloud-sun-rain", "にわか雨", "#63b3ed"]
     : c <= 86 ? ["fa-snowflake", "にわか雪", "#bee3f8"]
     : ["fa-cloud-bolt", "雷雨", "#ecc94b"];
-  let wLast = 0;
+  let wLast = 0, wErr = false;
   async function weather() {
     const el = $("weather");
     try {
@@ -147,8 +142,9 @@
       el.innerHTML = `<span class="city">札幌</span><i class="fa-solid ${icon} wi" style="color:${color}"></i>${label} ${Math.round(c.temperature_2m)}°C` +
         `<span class="city" style="margin-left:.6em">体感 ${Math.round(c.apparent_temperature)}°C</span>`;
       el.className = "";
-      wLast = Date.now();
+      wLast = Date.now(); wErr = false; renderStatus();
     } catch (e) {
+      wErr = true; renderStatus();
       if (wLast) el.className = "stale"; // 取得失敗時は前回値を薄く表示
       else el.innerHTML = '<span class="city">札幌</span>天気を取得できません';
     }
