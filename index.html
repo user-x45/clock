@@ -54,22 +54,11 @@
   body[data-p="morning"] { --fg:#fffaf0; --sub:rgba(255,255,255,.8); --acc:#fff0c2; }
   body[data-p="day"]     { --fg:#ffffff; --sub:rgba(255,255,255,.85); --acc:#ffe58a; }
   body[data-p="evening"] { --fg:#fff7ee; --sub:rgba(255,255,255,.8); --acc:#ffd89b; }
-  .bg { position: fixed; inset: 0; opacity: 0; transition: opacity 4s; z-index: 0; pointer-events: none; }
-  #bg-morning { background: linear-gradient(180deg, #1f2f52 0%, #7a4560 55%, #a8694a 100%); }
-  #bg-day     { background: linear-gradient(180deg, #0f3560 0%, #1f5a8f 55%, #3a7fb0 100%); }
-  #bg-evening { background: linear-gradient(180deg, #1c1438 0%, #6e2a3c 55%, #a8602c 100%); }
-  #bg-night   { background: linear-gradient(180deg, #000106 0%, #040b18 60%, #08142b 100%); }
-  #bg-night::after { content: ""; position: absolute; inset: 0; opacity: .8;
-    background-image:
-      radial-gradient(1.2px 1.2px at 20px 30px, #fff, transparent),
-      radial-gradient(1px 1px at 80px 120px, #cfe3ff, transparent),
-      radial-gradient(1.5px 1.5px at 140px 60px, #fff, transparent),
-      radial-gradient(1px 1px at 190px 170px, #fff, transparent),
-      radial-gradient(1.2px 1.2px at 40px 180px, #dfe9ff, transparent),
-      radial-gradient(1px 1px at 120px 200px, #fff, transparent);
-    background-size: 220px 220px; }
-  body[data-p="morning"] #bg-morning, body[data-p="day"] #bg-day,
-  body[data-p="evening"] #bg-evening, body[data-p="night"] #bg-night { opacity: 1; }
+  /* 背景スライドショー(background/1.jpeg〜10.jpeg を10秒ごとにクロスフェード) */
+  #bgs { position: fixed; inset: 0; z-index: 0; pointer-events: none; background: linear-gradient(180deg, #000106, #08142b); }
+  #bgs .layer { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 2.5s ease-in-out; }
+  #bgs .layer.on { opacity: 1; }
+  #bgs::after { content: ""; position: absolute; inset: 0; background: rgba(0,0,0,.35); } /* 文字を読みやすくする暗幕 */
   main { position: relative; z-index: 1; text-shadow: 0 2px 12px rgba(0,0,0,.35); }
   #dim { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity 3s; z-index: 10; }
   #status { z-index: 2; text-shadow: 0 1px 6px rgba(0,0,0,.4); position: fixed; bottom: calc(8px + env(safe-area-inset-bottom)); left: 0; right: 0; text-align: center;
@@ -97,7 +86,7 @@
 </style>
 </head>
 <body data-p="night">
-<div class="bg" id="bg-morning"></div><div class="bg" id="bg-day"></div><div class="bg" id="bg-evening"></div><div class="bg" id="bg-night"></div>
+<div id="bgs"><div class="layer" id="bgA"></div><div class="layer" id="bgB"></div></div>
 <main>
   <div id="left">
     <div id="time">--:--<span id="sec">--</span></div>
@@ -140,6 +129,18 @@
   const $ = id => document.getElementById(id);
   const now = () => Date.now() + offset;
 
+  // 取得失敗時の再試行(10秒後 → 30秒後 → 1分後。それでも失敗なら次の定期取得を待つ)
+  const RETRY_DELAYS = [10000, 30000, 60000];
+  const retryN = {}, retryT = {};
+  function retryLater(name, fn) {
+    const n = retryN[name] || 0;
+    clearTimeout(retryT[name]);
+    if (n >= RETRY_DELAYS.length) { retryN[name] = 0; return; }
+    retryN[name] = n + 1;
+    retryT[name] = setTimeout(fn, RETRY_DELAYS[n]);
+  }
+  function retryOk(name) { retryN[name] = 0; clearTimeout(retryT[name]); }
+
   async function sample(src) {
     const t0 = performance.now();
     const r = await fetch(src.url, { cache: "no-store" });
@@ -159,11 +160,11 @@
         offset = best.offset;
         accuracy = best.rtt / 2;
         lastSync = Date.now();
-        lastErr = false;
+        lastErr = false; retryOk("sync");
         return renderStatus();
       } catch (e) { /* 次のソースへ */ }
     }
-    lastErr = true;
+    lastErr = true; retryLater("sync", sync);
     renderStatus();
   }
 
@@ -237,9 +238,9 @@
       // 明日
       const D = j.daily, [dic, dlabel] = WMAP(D.weather_code[1], true);
       $("tomorrow").innerHTML = `<i class="fa-solid ${dic}"></i><span>${dlabel}</span><span>${Math.round(D.temperature_2m_max[1])}° / ${Math.round(D.temperature_2m_min[1])}°</span><span class="p">降水確率 ${D.precipitation_probability_max[1]}%</span>`;
-      wLast = Date.now(); wErr = false; renderStatus(); relayout();
+      wLast = Date.now(); wErr = false; retryOk("weather"); renderStatus(); relayout();
     } catch (e) {
-      wErr = true; renderStatus();
+      wErr = true; retryLater("weather", weather); renderStatus();
       if (wLast) el.className = "stale"; // 取得失敗時は前回値を薄く表示
       else el.innerHTML = '<span class="city">札幌</span>天気を取得できません';
     }
@@ -260,10 +261,10 @@
         const ul = $("newslist"); ul.textContent = "";
         j.items.slice(0, 3).forEach(it => { const li = document.createElement("li"); li.textContent = it.title; ul.appendChild(li); });
         $("newsh").textContent = "今日のニュース(" + f.name + ")";
-        nLast = Date.now(); nErr = false; renderStatus(); relayout(); return;
+        nLast = Date.now(); nErr = false; retryOk("news"); renderStatus(); relayout(); return;
       } catch (e) { /* 次のフィードへ */ }
     }
-    nErr = true; renderStatus();
+    nErr = true; retryLater("news", news); renderStatus();
     if (!nLast) { $("newslist").innerHTML = "<li>ニュースを取得できません</li>"; relayout(); }
   }
 
@@ -285,8 +286,8 @@
       if (!r.ok) throw new Error(r.status);
       const j = await r.json();
       anniv = (j.anniversaries || []).map(a => a.name).filter(Boolean);
-      aKey = key; aIdx = 0; showAnniv();
-    } catch (e) { /* 前回の表示を維持 */ }
+      aKey = key; aIdx = 0; retryOk("today"); showAnniv();
+    } catch (e) { retryLater("today", today); /* 前回の表示を維持 */ }
   }
   setInterval(() => { if (anniv.length > 1) { aIdx++; showAnniv(); } }, 15000); // 15秒ごとに切替
   setInterval(() => { if (mmdd() !== aKey && Date.now() - aTry > 60000) today(); }, 30000); // 日付が変わったら再取得
@@ -402,6 +403,29 @@
   if (qt) setTimeout(() => eqHandle(qt === "eew"
     ? { code: 556, time: "", issue: { eventId: "test", serial: "1" }, earthquake: { hypocenter: { name: "石狩地方中部", magnitude: 6.1 } }, areas: [{ name: "石狩地方中部", scaleFrom: 45, scaleTo: 99 }] }
     : { code: 551, time: "", earthquake: { time: "test", hypocenter: { name: "石狩地方中部", magnitude: 4.8 } }, points: [{ addr: "札幌北区新琴似", isArea: false, scale: 40 }] }), 2000);
+
+  // ---- 背景スライドショー ----
+  const BG_COUNT = 10, BG_INTERVAL = 10 * 1000; // background/1.jpeg 〜 10.jpeg
+  const bgEls = [$("bgA"), $("bgB")], bgOk = [];
+  let bgCur = 0, bgLast = 0, bgStarted = false;
+  function bgShow() {
+    if (!bgOk.length) return;
+    const next = bgOk.find(n => n > bgLast) ?? bgOk[0];
+    if (next === bgLast && bgOk.length === 1) return;
+    bgLast = next;
+    const nl = bgEls[bgCur ^ 1], ol = bgEls[bgCur];
+    nl.style.backgroundImage = `url("background/${next}.jpeg")`;
+    nl.classList.add("on"); ol.classList.remove("on");
+    bgCur ^= 1;
+  }
+  for (let i = 1; i <= BG_COUNT; i++) {
+    const im = new Image();
+    im.onload = () => {
+      bgOk.push(i); bgOk.sort((a, b) => a - b);
+      if (!bgStarted) { bgStarted = true; bgShow(); setInterval(bgShow, BG_INTERVAL); }
+    };
+    im.src = `background/${i}.jpeg`; // 読み込めない画像は自動的にスキップ
+  }
 
   // 全画面切替
   document.body.addEventListener("click", () => {
