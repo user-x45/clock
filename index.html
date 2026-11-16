@@ -18,14 +18,27 @@
   html, body { height: 100%; background: var(--bg); color: var(--fg); overflow: hidden;
     font-family: -apple-system, "Hiragino Sans", "Noto Sans JP", "Segoe UI", sans-serif;
     -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
-  main { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
-  #time { font-size: min(24vw, 46vh); font-weight: 200; line-height: 1; letter-spacing: .02em;
+  main { height: 100%; display: flex; flex-direction: row; align-items: stretch; gap: 2vw;
+    padding: calc(2.5vh + env(safe-area-inset-top)) calc(3vw + env(safe-area-inset-right)) calc(4.5vh + env(safe-area-inset-bottom)) calc(3vw + env(safe-area-inset-left)); }
+  #left { flex: 1.45; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  #right { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 1.5vh; }
+  .card { background: rgba(0,0,0,.28); border-radius: 12px; padding: 1.2vh 1.1vw; text-shadow: none; }
+  .card h3 { font-size: min(1.4vw, 2.6vh); font-weight: 400; color: var(--sub); letter-spacing: .1em; margin-bottom: .6vh; }
+  #hourly { display: grid; grid-template-columns: repeat(6, 1fr); text-align: center; font-size: min(1.9vw, 3.6vh); line-height: 1.25; }
+  #hourly .h, #hourly .p { color: var(--sub); font-size: .75em; }
+  #hourly i { display: block; color: var(--acc); margin: .15em 0; }
+  #tomorrow { display: flex; align-items: center; flex-wrap: wrap; gap: .2em .7em; font-size: min(2.3vw, 4.2vh); }
+  #tomorrow i { color: var(--acc); } #tomorrow .p { color: var(--sub); font-size: .7em; }
+  #newslist { list-style: none; padding: 0; }
+  #newslist li { font-size: min(1.8vw, 3.4vh); line-height: 1.35; padding: .5vh 0; border-bottom: 1px solid rgba(255,255,255,.12);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  #newslist li:last-child { border-bottom: 0; }
+  #time { font-size: min(14vw, 34vh); font-weight: 200; line-height: 1; letter-spacing: .02em;
     font-variant-numeric: tabular-nums; white-space: nowrap; }
   #sec { font-size: .45em; color: var(--acc); margin-left: .08em; }
-  #date { margin-top: 2vh; font-size: min(6vw, 11vh); font-weight: 300; }
+  #date { margin-top: 1.5vh; font-size: min(3.4vw, 7vh); font-weight: 300; }
   #wday { margin-left: .5em; color: var(--acc); }
-  #weather { margin-top: 2.5vh; font-size: min(4.6vw, 8.5vh); font-weight: 300; color: var(--fg); white-space: nowrap; }
+  #weather { margin-top: 2vh; font-size: min(3vw, 6vh); font-weight: 300; color: var(--fg); white-space: nowrap; }
   #weather .city { color: var(--sub); font-size: .6em; margin-right: .6em; }
   #weather .wi { margin-right: .35em; color: var(--acc); }
   #weather.stale { opacity: .5; }
@@ -34,10 +47,10 @@
   body[data-p="day"]     { --fg:#ffffff; --sub:rgba(255,255,255,.85); --acc:#ffe58a; }
   body[data-p="evening"] { --fg:#fff7ee; --sub:rgba(255,255,255,.8); --acc:#ffd89b; }
   .bg { position: fixed; inset: 0; opacity: 0; transition: opacity 4s; z-index: 0; pointer-events: none; }
-  #bg-morning { background: linear-gradient(180deg, #3a5a8c 0%, #c8758f 55%, #f2a477 100%); }
-  #bg-day     { background: linear-gradient(180deg, #1c63ad 0%, #4a9fe0 55%, #8fd0f5 100%); }
-  #bg-evening { background: linear-gradient(180deg, #2f2257 0%, #b8435a 55%, #f59a4a 100%); }
-  #bg-night   { background: linear-gradient(180deg, #01030a 0%, #07142b 60%, #0d2347 100%); }
+  #bg-morning { background: linear-gradient(180deg, #1f2f52 0%, #7a4560 55%, #a8694a 100%); }
+  #bg-day     { background: linear-gradient(180deg, #0f3560 0%, #1f5a8f 55%, #3a7fb0 100%); }
+  #bg-evening { background: linear-gradient(180deg, #1c1438 0%, #6e2a3c 55%, #a8602c 100%); }
+  #bg-night   { background: linear-gradient(180deg, #000106 0%, #040b18 60%, #08142b 100%); }
   #bg-night::after { content: ""; position: absolute; inset: 0; opacity: .8;
     background-image:
       radial-gradient(1.2px 1.2px at 20px 30px, #fff, transparent),
@@ -59,15 +72,24 @@
     #time { font-size: 17vw; }
     #date { font-size: 5vw; }
     #weather { font-size: 5vw; }
+    #right { display: none; }
+    main { flex-direction: column; }
   }
 </style>
 </head>
 <body data-p="night">
 <div class="bg" id="bg-morning"></div><div class="bg" id="bg-day"></div><div class="bg" id="bg-evening"></div><div class="bg" id="bg-night"></div>
 <main>
-  <div id="time">--:--<span id="sec">--</span></div>
-  <div id="date">----年--月--日<span id="wday">-曜日</span></div>
-  <div id="weather"><span class="city">札幌</span>天気を取得中…</div>
+  <div id="left">
+    <div id="time">--:--<span id="sec">--</span></div>
+    <div id="date">----年--月--日<span id="wday">-曜日</span></div>
+    <div id="weather"><span class="city">札幌</span>天気を取得中…</div>
+  </div>
+  <div id="right">
+    <div class="card"><h3>これからの天気(2時間ごと)</h3><div id="hourly"></div></div>
+    <div class="card"><h3>明日の天気</h3><div id="tomorrow">取得中…</div></div>
+    <div class="card"><h3 id="newsh">ニュース</h3><ul id="newslist"><li>取得中…</li></ul></div>
+  </div>
 </main>
 <div id="dim"></div>
 <div id="status">時刻を同期中…</div>
@@ -91,6 +113,7 @@
       parse: async r => { const j = await r.json(); return iso(j.utc_datetime || j.datetime, true); } }
   ];
 
+  let nLast = 0, nErr = false;
   let offset = 0, lastSync = null, lastErr = false, accuracy = null;
   const $ = id => document.getElementById(id);
   const now = () => Date.now() + offset;
@@ -141,16 +164,17 @@
   function renderStatus() {
     const el = $("status");
     const f = t => { const d = new Date(t); return p2(d.getHours()) + ":" + p2(d.getMinutes()) + ":" + p2(d.getSeconds()); };
+    const c = nLast ? `ニュース取得 ${f(nLast)}` + (nErr ? "(再取得失敗)" : "") : (nErr ? "ニュース取得 失敗" : "ニュース取得中…");
     const a = lastSync ? `時刻取得 ${f(lastSync)}` + (lastErr ? "(再取得失敗)" : "") : "時刻取得 失敗(端末時刻を表示中)";
     const b = wLast ? `天気取得 ${f(wLast)}` + (wErr ? "(再取得失敗)" : "") : (wErr ? "天気取得 失敗" : "天気取得中…");
-    el.textContent = a + "  ・  " + b;
-    el.className = (lastErr || wErr || !lastSync) ? "warn" : "";
+    el.textContent = a + "  ・  " + b + "  ・  " + c;
+    el.className = (lastErr || wErr || nErr || !lastSync) ? "warn" : "";
   }
 
 
   // ---- 札幌の天気(Open-Meteo / APIキー不要) ----
   const WEATHER_INTERVAL = 10 * 60 * 1000; // 10分ごと
-  const WURL = "https://api.open-meteo.com/v1/forecast?latitude=43.0621&longitude=141.3544&current=temperature_2m,apparent_temperature,weather_code,is_day&timezone=Asia%2FTokyo";
+  const WURL = "https://api.open-meteo.com/v1/forecast?latitude=43.0621&longitude=141.3544&current=temperature_2m,apparent_temperature,weather_code,is_day&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=2&timezone=Asia%2FTokyo";
   // Font Awesome(Free Solid)アイコン。夜間は月アイコンに切替
   const WMAP = (c, day) => c === 0 ? [day ? "fa-sun" : "fa-moon", "快晴", day ? "#f6c945" : "#cbd5e0"]
     : c <= 2 ? [day ? "fa-cloud-sun" : "fa-cloud-moon", "晴れ", day ? "#f6c945" : "#cbd5e0"]
@@ -168,17 +192,52 @@
     try {
       const r = await fetch(WURL, { cache: "no-store" });
       if (!r.ok) throw new Error(r.status);
-      const c = (await r.json()).current;
+      const j = await r.json(), c = j.current;
       const [icon, label, color] = WMAP(c.weather_code, c.is_day === 1);
       el.innerHTML = `<span class="city">札幌</span><i class="fa-solid ${icon} wi"></i>${label} ${Math.round(c.temperature_2m)}°C` +
         `<span class="city" style="margin-left:.6em">体感 ${Math.round(c.apparent_temperature)}°C</span>`;
       el.className = "";
+      // 時間ごと(次の時刻から2時間おきに6件)
+      const H = j.hourly, i0 = H.time.findIndex(t => t > c.time);
+      let hh = "";
+      for (let k = 0; k < 6; k++) {
+        const i = i0 + k * 2; if (i0 < 0 || i >= H.time.length) break;
+        const hr = parseInt(H.time[i].slice(11, 13), 10);
+        const ic = WMAP(H.weather_code[i], hr >= 6 && hr < 18)[0];
+        hh += `<div><div class="h">${hr}時</div><i class="fa-solid ${ic}"></i><div>${Math.round(H.temperature_2m[i])}°</div><div class="p">${H.precipitation_probability[i]}%</div></div>`;
+      }
+      $("hourly").innerHTML = hh;
+      // 明日
+      const D = j.daily, [dic, dlabel] = WMAP(D.weather_code[1], true);
+      $("tomorrow").innerHTML = `<i class="fa-solid ${dic}"></i><span>${dlabel}</span><span>${Math.round(D.temperature_2m_max[1])}° / ${Math.round(D.temperature_2m_min[1])}°</span><span class="p">降水確率 ${D.precipitation_probability_max[1]}%</span>`;
       wLast = Date.now(); wErr = false; renderStatus();
     } catch (e) {
       wErr = true; renderStatus();
       if (wLast) el.className = "stale"; // 取得失敗時は前回値を薄く表示
       else el.innerHTML = '<span class="city">札幌</span>天気を取得できません';
     }
+  }
+
+  // ---- ニュース(RSS → rss2json経由。APIキー不要) ----
+  const NEWS_INTERVAL = 30 * 60 * 1000; // 30分ごと
+  const FEEDS = [
+    { name: "NHK", url: "https://www.nhk.or.jp/rss/news/cat0.xml" },
+    { name: "Yahoo!ニュース", url: "https://news.yahoo.co.jp/rss/topics/top-picks.xml" }
+  ];
+  async function news() {
+    for (const f of FEEDS) {
+      try {
+        const r = await fetch("https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(f.url), { cache: "no-store" });
+        const j = await r.json();
+        if (j.status !== "ok" || !j.items || !j.items.length) throw new Error("feed");
+        const ul = $("newslist"); ul.textContent = "";
+        j.items.slice(0, 4).forEach(it => { const li = document.createElement("li"); li.textContent = it.title; ul.appendChild(li); });
+        $("newsh").textContent = "今日のニュース(" + f.name + ")";
+        nLast = Date.now(); nErr = false; return renderStatus();
+      } catch (e) { /* 次のフィードへ */ }
+    }
+    nErr = true; renderStatus();
+    if (!nLast) $("newslist").innerHTML = "<li>ニュースを取得できません</li>";
   }
 
   // 全画面切替
@@ -191,9 +250,9 @@
   let wl = null;
   async function keepAwake() { try { wl = await navigator.wakeLock?.request("screen"); } catch (e) {} }
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") { keepAwake(); sync(); render(); weather(); }
+    if (document.visibilityState === "visible") { keepAwake(); sync(); render(); weather(); news(); }
   });
-  window.addEventListener("online", () => { sync(); weather(); });
+  window.addEventListener("online", () => { sync(); weather(); news(); });
 
   keepAwake();
   render();
@@ -201,6 +260,8 @@
   setInterval(sync, SYNC_INTERVAL);
   weather();
   setInterval(weather, WEATHER_INTERVAL);
+  news();
+  setInterval(news, NEWS_INTERVAL);
 
 })();
 </script>
