@@ -20,7 +20,7 @@
   * { box-sizing: border-box; margin: 0; }
   html, body { height: 100%; background: var(--bg); color: var(--fg); overflow: hidden;
     font-family: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", -apple-system, "Segoe UI", sans-serif;
-    -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+    -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
   main { height: 100%; display: flex; flex-direction: row; align-items: stretch; gap: 2vw;
     padding: calc(2.5vh + env(safe-area-inset-top)) calc(3vw + env(safe-area-inset-right)) calc(4.5vh + env(safe-area-inset-bottom)) calc(3vw + env(safe-area-inset-left)); }
   #left { gap: 1.6vh; flex: 1.45; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -472,10 +472,11 @@
   $("qr").addEventListener("click", e => { e.stopPropagation(); hideQR(); });
 
   // 全画面切替
+  // タップで全画面に入る(一度入ったらタップ・長押しでは解除しない。解除された場合は次のタップで再び全画面に戻る)
   document.body.addEventListener("click", () => {
-    if (document.fullscreenElement) document.exitFullscreen();
-    else document.documentElement.requestFullscreen?.().then(() => screen.orientation?.lock?.("landscape").catch(() => {})).catch(() => {});
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().then(() => screen.orientation?.lock?.("landscape").catch(() => {})).catch(() => {});
   });
+  document.addEventListener("contextmenu", e => e.preventDefault()); // 長押しメニューを無効化
 
   // 画面スリープ防止
   let wl = null;
