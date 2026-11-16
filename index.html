@@ -51,15 +51,14 @@
   #today .lbl { font-size: .72em; font-weight: 500; color: var(--sub); white-space: nowrap; letter-spacing: .1em; }
   #todayname { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: opacity .5s; }
   #weather.stale { opacity: .5; }
-  #dayinfo, #weather2, #sunrow { white-space: nowrap; line-height: 1.2; letter-spacing: .04em; }
+  #dayinfo, #weather2 { white-space: nowrap; line-height: 1.2; letter-spacing: .04em; }
   #dayinfo { display: flex; gap: .6em; justify-content: center; font-size: min(2vw, 4vh); }
-  #dayinfo:empty, #weather2:empty, #sunrow:empty { display: none; }
+  #dayinfo:empty, #weather2:empty { display: none; }
   #dayinfo .rk, #dayinfo .hol { padding: .1em .8em; border-radius: 999px; border: 1px solid rgba(255,255,255,.35); background: rgba(0,0,0,.22); }
   #dayinfo .rk { color: var(--fg); } #dayinfo .hol { color: #ffb3b3; border-color: rgba(255,155,155,.6); margin-left: 0; }
-  /* 天気カード(現在・最高最低・日の出入りを1枚にまとめる) */
+  /* 天気カード(現在・最高最低を1枚にまとめる) */
   #wx { display: flex; flex-direction: column; align-items: center; gap: .9vh; background: rgba(0,0,0,.28); border-radius: 14px; padding: 1.4vh 1.6vw; text-shadow: none; }
-  #weather2 { font-size: min(2.2vw, 4.4vh); color: var(--fg); } #weather2 .hi { color: #ff9b8a; } #weather2 .lo { color: #8ec8ff; } #weather2 .k { color: var(--sub); font-size: .7em; margin: 0 .3em 0 .9em; } #weather2 i, #sunrow i { color: var(--acc); margin-right: .3em; }
-  #sunrow { font-size: min(1.8vw, 3.6vh); opacity: .9; padding-top: .9vh; border-top: 1px solid rgba(255,255,255,.15); } #sunrow .k { color: var(--sub); font-size: .8em; margin: 0 .3em 0 .2em; } #sunrow .sp { display: inline-block; width: 1.6em; }
+  #weather2 { font-size: min(2.2vw, 4.4vh); color: var(--fg); } #weather2 .hi { color: #ff9b8a; } #weather2 .lo { color: #8ec8ff; } #weather2 .k { color: var(--sub); font-size: .7em; margin: 0 .3em 0 .9em; } #weather2 i { color: var(--acc); margin-right: .3em; }
   #garbage { display: flex; flex-direction: column; align-items: center; gap: .25em; background: rgba(0,0,0,.28); border-radius: 12px; padding: .3em .9em; font-size: min(3vw, 6vh); text-shadow: none; }
   #garbage[hidden] { display: none; }
   #garbage .g1, #garbage .g2 { white-space: nowrap; line-height: 1.25; }
@@ -133,7 +132,7 @@
   main { position: relative; z-index: 1; text-shadow: 0 1px 3px rgba(0,0,0,.75), 0 2px 14px rgba(0,0,0,.55); }
   /* 夜間モード: 黒背景に時刻のみ */
   body.nm .bg { opacity: 0 !important; }
-  body.nm #right, body.nm #date, body.nm #dayinfo, body.nm #wx, body.nm #weather, body.nm #weather2, body.nm #sunrow, body.nm #garbage, body.nm #today, body.nm #status { display: none !important; }
+  body.nm #right, body.nm #date, body.nm #dayinfo, body.nm #wx, body.nm #weather, body.nm #weather2, body.nm #garbage, body.nm #today, body.nm #status { display: none !important; }
   body.nm main { text-shadow: none; }
   #greet { position: fixed; inset: 0; z-index: 12; display: flex; align-items: center; justify-content: center; text-align: center;
     background: rgba(0,0,0,.6); color: #fff; text-shadow: 0 2px 16px rgba(0,0,0,.6); font-size: min(8vw, 14vh); font-weight: 300; letter-spacing: .12em;
@@ -174,7 +173,6 @@
     <div id="wx">
       <div id="weather"><span class="city">札幌</span>天気を取得中…</div>
       <div id="weather2"></div>
-      <div id="sunrow"></div>
     </div>
     <div id="garbage" hidden><div class="g1"></div><div class="g2"></div></div>
     <div id="today" hidden><span class="lbl">今日は何の日</span><span id="todayname"></span></div>
@@ -304,7 +302,7 @@
 
   // ---- 札幌の天気(Open-Meteo / APIキー不要) ----
   const WEATHER_INTERVAL = 10 * 60 * 1000; // 10分ごと
-  const WURL = "https://api.open-meteo.com/v1/forecast?latitude=43.0621&longitude=141.3544&current=temperature_2m,apparent_temperature,weather_code,is_day&hourly=temperature_2m,apparent_temperature,weather_code,precipitation_probability,precipitation,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,precipitation_probability_max,precipitation_sum,snowfall_sum,wind_speed_10m_max,uv_index_max,sunrise,sunset&forecast_days=2&wind_speed_unit=ms&timezone=Asia%2FTokyo";
+  const WURL = "https://api.open-meteo.com/v1/forecast?latitude=43.0621&longitude=141.3544&current=temperature_2m,apparent_temperature,weather_code,is_day&hourly=temperature_2m,apparent_temperature,weather_code,precipitation_probability,precipitation,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,precipitation_probability_max,precipitation_sum,snowfall_sum,wind_speed_10m_max,uv_index_max&forecast_days=2&wind_speed_unit=ms&timezone=Asia%2FTokyo";
   // Font Awesome(Free Solid)アイコン。夜間は月アイコンに切替
   const WMAP = (c, day) => c === 0 ? [day ? "fa-sun" : "fa-moon", "快晴", day ? "#f6c945" : "#cbd5e0"]
     : c <= 2 ? [day ? "fa-cloud-sun" : "fa-cloud-moon", "晴れ", day ? "#f6c945" : "#cbd5e0"]
@@ -411,10 +409,9 @@
   }
   function renderWx2() {
     if (!wJ) return;
-    const D = wJ.daily, R = Math.round, hm = s => String(s).slice(11, 16).replace(/^0/, "");
+    const D = wJ.daily, R = Math.round;
     $("weather2").innerHTML = `<span class="hi">最高 ${R(D.temperature_2m_max[0])}°</span> / <span class="lo">最低 ${R(D.temperature_2m_min[0])}°</span>` +
       `<span class="k">降水確率</span>${D.precipitation_probability_max[0]}%`;
-    $("sunrow").innerHTML = `<i class="fa-solid fa-sun"></i><span class="k">日の出</span>${hm(D.sunrise[0])}<span class="sp"></span><i class="fa-solid fa-moon"></i><span class="k">日の入</span>${hm(D.sunset[0])}`;
   }
 
   // ---- ニュース(RSS → rss2json経由。APIキー不要) ----
@@ -475,16 +472,15 @@
   function layout() {
     const L = $("left"), W = L.clientWidth * 0.97, H = L.clientHeight;
     const one = (el, hMax, lo = 8) => fit(el, () => el.offsetWidth <= W && el.offsetHeight <= H * hMax, lo, 600);
-    one($("time"), 0.22);
-    one($("date"), 0.11);
+    one($("time"), 0.24);
+    one($("date"), 0.12);
     // 補助情報は主役(時刻・日付)より小さく抑える
     const sub = (el, hMax, wMax) => fit(el, () => el.offsetWidth <= W * wMax && el.offsetHeight <= H * hMax, 8, 600);
-    sub($("dayinfo"), 0.075, 0.8);
-    sub($("weather"), 0.10, 0.92);
-    sub($("weather2"), 0.085, 0.92);
-    sub($("sunrow"), 0.07, 0.85);
-    if (!$("garbage").hidden) sub($("garbage"), 0.17, 0.92);
-    if (!$("today").hidden) sub($("today"), 0.07, 0.95);
+    sub($("dayinfo"), 0.085, 0.85);
+    sub($("weather"), 0.11, 0.95);
+    sub($("weather2"), 0.10, 0.95);
+    if (!$("garbage").hidden) sub($("garbage"), 0.18, 0.95);
+    if (!$("today").hidden) sub($("today"), 0.08, 0.97);
     const R = $("right");
     if (getComputedStyle(R).display === "none") return;
     const RH = R.clientHeight, cards = R.querySelectorAll(".card");
