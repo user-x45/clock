@@ -50,6 +50,21 @@
   #today .lbl { font-size: .72em; font-weight: 500; color: var(--sub); white-space: nowrap; letter-spacing: .1em; }
   #todayname { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: opacity .5s; }
   #weather.stale { opacity: .5; }
+  #newslist li[data-link] { cursor: pointer; }
+  /* ニュースのQRコード表示 */
+  #qr { position: fixed; inset: 0; z-index: 15; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.8); text-shadow: none; }
+  #qr[hidden] { display: none; }
+  #qrbox { background: #fff; color: #111; border-radius: 16px; padding: 2.6vh 2.4vw; display: flex; align-items: center; gap: 3vw; max-width: 94vw; max-height: 94vh; }
+  #qrcv { width: min(68vh, 36vw); height: min(68vh, 36vw); image-rendering: pixelated; flex: none; }
+  #qrcv[hidden] { display: none; }
+  #qrside { max-width: 36vw; display: flex; flex-direction: column; gap: 1.6vh; }
+  #qrtitle { font-size: min(2.4vw, 4.6vh); font-weight: 500; line-height: 1.4; }
+  #qrnote { font-size: min(1.5vw, 2.8vh); color: #555; }
+  #qrurl { font-size: min(1.1vw, 2vh); color: #777; word-break: break-all; }
+  @media (orientation: portrait) {
+    #qrbox { flex-direction: column; } #qrcv { width: min(70vw, 46vh); height: min(70vw, 46vh); }
+    #qrside { max-width: 80vw; } #qrtitle { font-size: 4vw; } #qrnote { font-size: 3vw; } #qrurl { font-size: 2.2vw; }
+  }
   /* 時間帯ごとの背景(早朝5-9 / 昼9-16 / 夕方16-19 / 夜19-5) */
   body[data-p="morning"] { --fg:#fffaf0; --sub:rgba(255,255,255,.95); --acc:#fff0c2; }
   body[data-p="day"]     { --fg:#ffffff; --sub:rgba(255,255,255,.95); --acc:#ffe58a; }
@@ -100,10 +115,12 @@
     <div class="card"><h3 id="newsh">ニュース</h3><ul id="newslist"><li>取得中…</li></ul></div>
   </div>
 </main>
+<div id="qr" hidden><div id="qrbox"><canvas id="qrcv"></canvas><div id="qrside"><div id="qrtitle"></div><div id="qrnote">スマートフォンのカメラで読み取ってください(タップで閉じる)</div><div id="qrurl"></div></div></div></div>
 <div id="alert"><div id="atitle"></div><div id="amain"></div><div id="asub"></div></div>
 <div id="dim"></div>
 <div id="status">時刻を同期中…</div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
 (() => {
   const SYNC_INTERVAL = 5 * 60 * 1000;   // 5分ごとに同期
@@ -259,7 +276,7 @@
         const j = await r.json();
         if (j.status !== "ok" || !j.items || !j.items.length) throw new Error("feed");
         const ul = $("newslist"); ul.textContent = "";
-        j.items.slice(0, 3).forEach(it => { const li = document.createElement("li"); li.textContent = it.title; ul.appendChild(li); });
+        j.items.slice(0, 3).forEach(it => { const li = document.createElement("li"); li.textContent = it.title; if (it.link) li.dataset.link = it.link; ul.appendChild(li); });
         $("newsh").textContent = "今日のニュース(" + f.name + ")";
         nLast = Date.now(); nErr = false; retryOk("news"); renderStatus(); relayout(); return;
       } catch (e) { /* 次のフィードへ */ }
@@ -426,6 +443,33 @@
     };
     im.src = `background/${i}.jpeg`; // 読み込めない画像は自動的にスキップ
   }
+
+  // ---- ニュースのQRコード(タイトルをタップで表示、30秒または再タップで閉じる) ----
+  let qrT = 0;
+  function hideQR() { clearTimeout(qrT); $("qr").hidden = true; }
+  function showQR(title, url) {
+    const cv = $("qrcv");
+    $("qrtitle").textContent = title; $("qrurl").textContent = url;
+    cv.hidden = true;
+    try {
+      const qr = qrcode(0, "M"); qr.addData(url); qr.make();
+      const n = qr.getModuleCount(), q = 4, sc = Math.max(4, Math.floor(640 / (n + 2 * q))), size = (n + 2 * q) * sc;
+      cv.width = cv.height = size;
+      const g = cv.getContext("2d");
+      g.fillStyle = "#fff"; g.fillRect(0, 0, size, size); g.fillStyle = "#000";
+      for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (qr.isDark(r, c)) g.fillRect((c + q) * sc, (r + q) * sc, sc, sc);
+      cv.hidden = false;
+    } catch (e) { /* QRライブラリ未読込時はURLの文字のみ表示 */ }
+    $("qr").hidden = false;
+    clearTimeout(qrT); qrT = setTimeout(hideQR, 30000);
+  }
+  $("newslist").addEventListener("click", e => {
+    const li = e.target.closest("li[data-link]");
+    if (!li) return;
+    e.stopPropagation(); // 全画面切替と区別
+    showQR(li.textContent, li.dataset.link);
+  });
+  $("qr").addEventListener("click", e => { e.stopPropagation(); hideQR(); });
 
   // 全画面切替
   document.body.addEventListener("click", () => {
