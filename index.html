@@ -56,6 +56,14 @@
   #dayinfo:empty, #weather2:empty, #sunrow:empty { display: none; }
   #dayinfo .rk, #dayinfo .hol { padding: .1em .8em; border-radius: 999px; border: 1px solid rgba(255,255,255,.35); background: rgba(0,0,0,.22); }
   #dayinfo .rk { color: var(--fg); } #dayinfo .hol { color: #ffb3b3; border-color: rgba(255,155,155,.6); margin-left: 0; }
+  /* 気象警報・注意報バッジ */
+  #wwarn { display: flex; flex-wrap: wrap; gap: .5em; justify-content: center; font-size: min(2vw, 4vh); line-height: 1.2; text-shadow: none; }
+  #wwarn:empty { display: none; }
+  #wwarn span { padding: .15em .8em; border-radius: 999px; font-weight: 500; white-space: nowrap; }
+  #wwarn .w1 { color: #ffe58a; border: 1px solid rgba(255,229,138,.7); background: rgba(0,0,0,.3); }
+  #wwarn .w2 { color: #fff; background: #d9730d; }
+  #wwarn .w3 { color: #fff; background: #c01818; }
+  body.nm #wwarn:not(.strong) { display: none; }
   /* 天気カード(現在・最高最低・日の出入りを1枚にまとめる) */
   #wx { display: flex; flex-direction: column; align-items: center; gap: .9vh; background: rgba(0,0,0,.28); border-radius: 14px; padding: 1.4vh 1.6vw; text-shadow: none; }
   #weather2 { font-size: min(2.2vw, 4.4vh); color: var(--fg); } #weather2 .hi { color: #ff9b8a; } #weather2 .lo { color: #8ec8ff; } #weather2 .k { color: var(--sub); font-size: .7em; margin: 0 .3em 0 .9em; } #weather2 i, #sunrow i { color: var(--acc); margin-right: .3em; }
@@ -167,6 +175,7 @@
     <div id="time">--:--<span id="sec">--</span></div>
     <div id="date">----年--月--日<span id="wday">-曜日</span></div>
     <div id="dayinfo"></div>
+    <div id="wwarn"></div>
     <div id="wx">
       <div id="weather"><span class="city">札幌</span>天気を取得中…</div>
       <div id="weather2"></div>
@@ -280,8 +289,9 @@
     const a = lastSync ? `時刻取得 ${f(lastSync)}` + (lastErr ? "(再取得失敗)" : "") : "時刻取得 失敗(端末時刻を表示中)";
     const b = wLast ? `天気取得 ${f(wLast)}` + (wErr ? "(再取得失敗)" : "") : (wErr ? "天気取得 失敗" : "天気取得中…");
     const q = ["地震情報 接続中…", "地震情報 受信待機中", "地震情報 切断(再接続中)"][qState];
-    el.textContent = a + "  ・  " + b + "  ・  " + c + "  ・  " + q;
-    el.className = (lastErr || wErr || nErr || !lastSync || qState === 2) ? "warn" : "";
+    const w = jLast ? `警報取得 ${f(jLast)}` + (jErr ? "(再取得失敗)" : "") : (jErr ? "警報取得 失敗" : "警報取得中…");
+    el.textContent = a + "  ・  " + b + "  ・  " + c + "  ・  " + w + "  ・  " + q;
+    el.className = (lastErr || wErr || nErr || jErr || !lastSync || qState === 2) ? "warn" : "";
   }
 
 
@@ -422,6 +432,56 @@
     if (!nLast) { $("newslist").innerHTML = "<li>ニュースを取得できません</li>"; relayout(); }
   }
 
+  // ---- 気象警報・注意報(気象庁の公開JSONを直接取得) ----
+  // 特別警報・警報は画面上部に通知+バッジ、注意報はバッジのみ(JMA_NOTIFY_ADVに入れたものは通知も出す)
+  const JMA_INTERVAL = 5 * 60 * 1000;
+  const JMA_OFFICE = "016000";      // 石狩・空知・後志
+  const JMA_CITY = "札幌市";
+  const JMA_NOTIFY_ADV = [];        // 通知したい注意報コード 例: ["12", "13"](大雪・風雪)
+  const JW = { "32": ["暴風雪", 3], "33": ["大雨", 3], "35": ["暴風", 3], "36": ["大雪", 3], "37": ["波浪", 3], "38": ["高潮", 3],
+    "02": ["暴風雪", 2], "03": ["大雨", 2], "04": ["洪水", 2], "05": ["暴風", 2], "06": ["大雪", 2], "07": ["波浪", 2], "08": ["高潮", 2],
+    "10": ["大雨", 1], "12": ["大雪", 1], "13": ["風雪", 1], "14": ["雷", 1], "15": ["強風", 1], "16": ["波浪", 1], "17": ["融雪", 1], "18": ["洪水", 1],
+    "19": ["高潮", 1], "20": ["濃霧", 1], "21": ["乾燥", 1], "22": ["なだれ", 1], "23": ["低温", 1], "24": ["霜", 1], "25": ["着氷", 1], "26": ["着雪", 1], "27": ["その他", 1] };
+  const wlab = w => w.name + ["", "注意報", "警報", "特別警報"][w.lv];
+  const wt = new URLSearchParams(location.search).get("wtest"); // 動作確認用: ?wtest=special|warning|adv
+  let jCode = null, jPrev = null, jLast = 0, jErr = false;
+
+  function notifyWarn(list) {
+    if (alertOn) return setTimeout(() => notifyWarn(list), 11000); // 他の通知中は待つ
+    const top = Math.max(...list.map(w => w.lv));
+    showAlert(top === 3 ? "eew" : "quake", top === 3 ? "気象特別警報" : "気象警報", list.map(wlab).join("・"), "札幌市", top === 3 ? 20000 : 12000);
+  }
+  function applyWarn(raw) {
+    const act = raw.filter(w => JW[w.code] && w.status !== "解除" && w.status !== "発表警報・注意報はなし")
+      .map(w => ({ code: w.code, name: JW[w.code][0], lv: JW[w.code][1] })).sort((a, b) => b.lv - a.lv);
+    $("wwarn").innerHTML = act.map(w => `<span class="w${w.lv}">${wlab(w)}</span>`).join("");
+    $("wwarn").classList.toggle("strong", act.some(w => w.lv >= 2));
+    const notify = w => w.lv === 3 || (w.lv === 2 && w.code !== "07") || (w.lv === 1 && JMA_NOTIFY_ADV.includes(w.code));
+    // 初回取得は通知しない(バッジのみ)。以降は新しく出たものだけ1回通知
+    if (jPrev) { const fresh = act.filter(w => notify(w) && !jPrev.has(w.code)); if (fresh.length) notifyWarn(fresh); }
+    jPrev = new Set(act.map(w => w.code));
+  }
+  async function jmaWarn() {
+    if (wt) return;
+    try {
+      if (!jCode) {
+        const r0 = await fetch("https://www.jma.go.jp/bosai/common/const/area.json");
+        if (!r0.ok) throw new Error(r0.status);
+        const a = (await r0.json()).class20s;
+        jCode = Object.keys(a).find(k => a[k].name === JMA_CITY);
+        if (!jCode) throw new Error("area");
+      }
+      const r = await fetch(`https://www.jma.go.jp/bosai/warning/data/warning/${JMA_OFFICE}.json`, { cache: "no-store" });
+      if (!r.ok) throw new Error(r.status);
+      const j = await r.json();
+      let list = null;
+      for (const t of j.areaTypes || []) { const a = (t.areas || []).find(x => x.code === jCode); if (a) { list = a.warnings || []; break; } }
+      if (!list) throw new Error("city");
+      applyWarn(list); jLast = Date.now(); jErr = false; retryOk("jma"); renderStatus(); relayout();
+    } catch (e) { jErr = true; retryLater("jma", jmaWarn); renderStatus(); }
+  }
+  if (wt) setTimeout(() => { jPrev = new Set(); applyWarn(wt === "special" ? [{ code: "36", status: "発表" }] : wt === "adv" ? [{ code: "12", status: "発表" }, { code: "15", status: "発表" }] : [{ code: "02", status: "発表" }, { code: "15", status: "発表" }]); relayout(); }, 2500);
+
   // ---- 今日は何の日(ultimatecrazy.jp 公開API / キー不要) ----
   let anniv = [], aIdx = 0, aKey = "", aTry = 0;
   const mmdd = () => { const d = new Date(now()); return p2(d.getMonth() + 1) + "-" + p2(d.getDate()); };
@@ -463,6 +523,7 @@
     // 補助情報は主役(時刻・日付)より小さく抑える
     const sub = (el, hMax, wMax) => fit(el, () => el.offsetWidth <= W * wMax && el.offsetHeight <= H * hMax, 8, 600);
     sub($("dayinfo"), 0.075, 0.8);
+    if ($("wwarn").innerHTML) sub($("wwarn"), 0.075, 0.92);
     sub($("weather"), 0.10, 0.92);
     sub($("weather2"), 0.085, 0.92);
     sub($("sunrow"), 0.07, 0.85);
@@ -635,9 +696,9 @@
   let wl = null;
   async function keepAwake() { try { wl = await navigator.wakeLock?.request("screen"); } catch (e) {} }
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") { keepAwake(); sync(); render(); weather(); news(); today(); renderDay(); holidays(); rokuyoFetch(); eqConnect(); }
+    if (document.visibilityState === "visible") { keepAwake(); sync(); render(); weather(); news(); today(); renderDay(); holidays(); rokuyoFetch(); jmaWarn(); eqConnect(); }
   });
-  window.addEventListener("online", () => { sync(); weather(); news(); today(); garbageLoad(); holidays(); rokuyoFetch(); eqConnect(); });
+  window.addEventListener("online", () => { sync(); weather(); jmaWarn(); news(); today(); garbageLoad(); holidays(); rokuyoFetch(); eqConnect(); });
 
   keepAwake();
   render();
@@ -653,6 +714,8 @@
   holidays();
   rokuyoFetch();
   renderDay();
+  jmaWarn();
+  setInterval(jmaWarn, JMA_INTERVAL);
   eqConnect();
 
 })();
