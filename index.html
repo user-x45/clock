@@ -61,12 +61,14 @@
   const NIGHT_END = 6;     // 6:00まで
   const DIM_LEVEL = 0.75;  // 暗さ(0〜1、大きいほど暗い)
 
-  // 時刻ソース(順番に試行)。CORS対応のAPIのみ。
+  // 時刻ソース(順番に試行、失敗したら次へ)
+  // 小数秒を3桁に揃えてからパース
+  const iso = (t, utc) => Date.parse(String(t).replace(/(\.\d{3})\d+/, "$1") + (utc && !/[zZ]|[+-]\d\d:?\d\d$/.test(t) ? "Z" : ""));
   const SOURCES = [
-    { url: "https://worldtimeapi.org/api/timezone/Etc/UTC",
-      parse: async r => Date.parse((await r.json()).utc_datetime) },
     { url: "https://timeapi.io/api/time/current/zone?timeZone=UTC",
-      parse: async r => Date.parse((await r.json()).dateTime + "Z") }
+      parse: async r => { const j = await r.json(); return iso(j.dateTime || j.currentLocalTime, true); } },
+    { url: "https://time.now/developer/api/timezone/Etc/UTC",
+      parse: async r => { const j = await r.json(); return iso(j.utc_datetime || j.datetime, true); } }
   ];
 
   let offset = 0, lastSync = null, lastErr = false, accuracy = null;
