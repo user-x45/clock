@@ -1,0 +1,1110 @@
+{
+ "meta": {
+  "title": "札幌市家庭ごみ収集日カレンダー",
+  "area": "北区-5 (麻生町○丁目/北32条西13丁目/北33条西9~12丁目/北34~40条の西○丁目/太平○条○丁目/篠路町太平○番地/百合が原○丁目)",
+  "period": "2026-09-01/2027-09-30",
+  "setout": "収集日当日の朝8時30分まで",
+  "note": "「別袋無料」は透明または半透明の別袋に入れ、同日に収集される他のごみと分けて出す。",
+  "bulky": "大型ごみは毎週水曜に戸別収集(有料)。収集希望日の2日前16:30までに申込。大型ごみ収集センター TEL 281-8153 (9:00-16:30、日曜・年末年始除く)",
+  "office": "北清掃事務所 011-772-5353",
+  "weekdayRule": {
+   "月": [
+    "bottle",
+    "battery"
+   ],
+   "火": [
+    "burnable",
+    "spray"
+   ],
+   "水": "雑がみ/燃やせない+加熱式たばこ・ライター/枝葉草(日付で異なる)",
+   "木": [
+    "plastic"
+   ],
+   "金": [
+    "burnable",
+    "spray"
+   ]
+  }
+ },
+ "categories": {
+  "burnable": {
+   "name": "燃やせるごみ",
+   "bag": "有料(指定袋)",
+   "separate": false,
+   "color": "#f5d90a"
+  },
+  "nonburnable": {
+   "name": "燃やせないごみ",
+   "bag": "有料(指定袋)",
+   "separate": false,
+   "color": "#f5d90a"
+  },
+  "spray": {
+   "short": "スプレー缶類",
+   "name": "スプレー缶・カセットボンベ",
+   "bag": "無料(透明・半透明袋)",
+   "separate": true,
+   "color": "#9aa5b1"
+  },
+  "battery": {
+   "short": "乾電池",
+   "name": "筒型乾電池",
+   "bag": "無料(透明・半透明袋)",
+   "separate": true,
+   "color": "#f59e0b"
+  },
+  "bottle": {
+   "short": "びん・缶・ペット",
+   "name": "びん・缶・ペットボトル",
+   "bag": "無料(透明・半透明袋)",
+   "separate": true,
+   "color": "#3b82f6"
+  },
+  "paper": {
+   "name": "雑がみ",
+   "bag": "無料(透明・半透明袋)",
+   "separate": false,
+   "color": "#a78bfa"
+  },
+  "plastic": {
+   "short": "容器プラ",
+   "name": "容器包装プラスチック",
+   "bag": "無料(透明・半透明袋)",
+   "separate": false,
+   "color": "#ef4444"
+  },
+  "branch": {
+   "short": "枝・葉・草",
+   "name": "枝・葉・草",
+   "bag": "無料(透明・半透明袋)",
+   "separate": false,
+   "color": "#22c55e"
+  },
+  "heated": {
+   "short": "加熱式たばこ・ライター",
+   "name": "加熱式(電子)たばこ・ライター",
+   "bag": "無料(透明・半透明袋)",
+   "separate": true,
+   "color": "#38bdf8"
+  }
+ },
+ "noCollection": [
+  "2026-12-16",
+  "2026-12-30",
+  "2026-12-31",
+  "2027-01-01",
+  "2027-01-20",
+  "2027-02-17",
+  "2027-03-17",
+  "2027-04-14"
+ ],
+ "days": {
+  "2026-09-01": [
+   "burnable",
+   "spray"
+  ],
+  "2026-09-02": [
+   "paper"
+  ],
+  "2026-09-03": [
+   "plastic"
+  ],
+  "2026-09-04": [
+   "burnable",
+   "spray"
+  ],
+  "2026-09-07": [
+   "bottle",
+   "battery"
+  ],
+  "2026-09-08": [
+   "burnable",
+   "spray"
+  ],
+  "2026-09-09": [
+   "nonburnable",
+   "heated"
+  ],
+  "2026-09-10": [
+   "plastic"
+  ],
+  "2026-09-11": [
+   "burnable",
+   "spray"
+  ],
+  "2026-09-14": [
+   "bottle",
+   "battery"
+  ],
+  "2026-09-15": [
+   "burnable",
+   "spray"
+  ],
+  "2026-09-16": [
+   "paper"
+  ],
+  "2026-09-17": [
+   "plastic"
+  ],
+  "2026-09-18": [
+   "burnable",
+   "spray"
+  ],
+  "2026-09-21": [
+   "bottle",
+   "battery"
+  ],
+  "2026-09-22": [
+   "burnable",
+   "spray"
+  ],
+  "2026-09-23": [
+   "branch"
+  ],
+  "2026-09-24": [
+   "plastic"
+  ],
+  "2026-09-25": [
+   "burnable",
+   "spray"
+  ],
+  "2026-09-28": [
+   "bottle",
+   "battery"
+  ],
+  "2026-09-29": [
+   "burnable",
+   "spray"
+  ],
+  "2026-09-30": [
+   "paper"
+  ],
+  "2026-10-01": [
+   "plastic"
+  ],
+  "2026-10-02": [
+   "burnable",
+   "spray"
+  ],
+  "2026-10-05": [
+   "bottle",
+   "battery"
+  ],
+  "2026-10-06": [
+   "burnable",
+   "spray"
+  ],
+  "2026-10-07": [
+   "nonburnable",
+   "heated"
+  ],
+  "2026-10-08": [
+   "plastic"
+  ],
+  "2026-10-09": [
+   "burnable",
+   "spray"
+  ],
+  "2026-10-12": [
+   "bottle",
+   "battery"
+  ],
+  "2026-10-13": [
+   "burnable",
+   "spray"
+  ],
+  "2026-10-14": [
+   "paper"
+  ],
+  "2026-10-15": [
+   "plastic"
+  ],
+  "2026-10-16": [
+   "burnable",
+   "spray"
+  ],
+  "2026-10-19": [
+   "bottle",
+   "battery"
+  ],
+  "2026-10-20": [
+   "burnable",
+   "spray"
+  ],
+  "2026-10-21": [
+   "branch"
+  ],
+  "2026-10-22": [
+   "plastic"
+  ],
+  "2026-10-23": [
+   "burnable",
+   "spray"
+  ],
+  "2026-10-26": [
+   "bottle",
+   "battery"
+  ],
+  "2026-10-27": [
+   "burnable",
+   "spray"
+  ],
+  "2026-10-28": [
+   "paper"
+  ],
+  "2026-10-29": [
+   "plastic"
+  ],
+  "2026-10-30": [
+   "burnable",
+   "spray"
+  ],
+  "2026-11-02": [
+   "bottle",
+   "battery"
+  ],
+  "2026-11-03": [
+   "burnable",
+   "spray"
+  ],
+  "2026-11-04": [
+   "nonburnable",
+   "heated"
+  ],
+  "2026-11-05": [
+   "plastic"
+  ],
+  "2026-11-06": [
+   "burnable",
+   "spray"
+  ],
+  "2026-11-09": [
+   "bottle",
+   "battery"
+  ],
+  "2026-11-10": [
+   "burnable",
+   "spray"
+  ],
+  "2026-11-11": [
+   "paper"
+  ],
+  "2026-11-12": [
+   "plastic"
+  ],
+  "2026-11-13": [
+   "burnable",
+   "spray"
+  ],
+  "2026-11-16": [
+   "bottle",
+   "battery"
+  ],
+  "2026-11-17": [
+   "burnable",
+   "spray"
+  ],
+  "2026-11-18": [
+   "branch"
+  ],
+  "2026-11-19": [
+   "plastic"
+  ],
+  "2026-11-20": [
+   "burnable",
+   "spray"
+  ],
+  "2026-11-23": [
+   "bottle",
+   "battery"
+  ],
+  "2026-11-24": [
+   "burnable",
+   "spray"
+  ],
+  "2026-11-25": [
+   "paper"
+  ],
+  "2026-11-26": [
+   "plastic"
+  ],
+  "2026-11-27": [
+   "burnable",
+   "spray"
+  ],
+  "2026-11-30": [
+   "bottle",
+   "battery"
+  ],
+  "2026-12-01": [
+   "burnable",
+   "spray"
+  ],
+  "2026-12-02": [
+   "nonburnable",
+   "heated"
+  ],
+  "2026-12-03": [
+   "plastic"
+  ],
+  "2026-12-04": [
+   "burnable",
+   "spray"
+  ],
+  "2026-12-07": [
+   "bottle",
+   "battery"
+  ],
+  "2026-12-08": [
+   "burnable",
+   "spray"
+  ],
+  "2026-12-09": [
+   "paper"
+  ],
+  "2026-12-10": [
+   "plastic"
+  ],
+  "2026-12-11": [
+   "burnable",
+   "spray"
+  ],
+  "2026-12-14": [
+   "bottle",
+   "battery"
+  ],
+  "2026-12-15": [
+   "burnable",
+   "spray"
+  ],
+  "2026-12-17": [
+   "plastic"
+  ],
+  "2026-12-18": [
+   "burnable",
+   "spray"
+  ],
+  "2026-12-21": [
+   "bottle",
+   "battery"
+  ],
+  "2026-12-22": [
+   "burnable",
+   "spray"
+  ],
+  "2026-12-23": [
+   "paper"
+  ],
+  "2026-12-24": [
+   "plastic"
+  ],
+  "2026-12-25": [
+   "burnable",
+   "spray"
+  ],
+  "2026-12-28": [
+   "bottle",
+   "battery"
+  ],
+  "2026-12-29": [
+   "burnable",
+   "spray"
+  ],
+  "2027-01-04": [
+   "bottle",
+   "battery"
+  ],
+  "2027-01-05": [
+   "burnable",
+   "spray"
+  ],
+  "2027-01-06": [
+   "nonburnable",
+   "heated"
+  ],
+  "2027-01-07": [
+   "plastic"
+  ],
+  "2027-01-08": [
+   "burnable",
+   "spray"
+  ],
+  "2027-01-11": [
+   "bottle",
+   "battery"
+  ],
+  "2027-01-12": [
+   "burnable",
+   "spray"
+  ],
+  "2027-01-13": [
+   "paper"
+  ],
+  "2027-01-14": [
+   "plastic"
+  ],
+  "2027-01-15": [
+   "burnable",
+   "spray"
+  ],
+  "2027-01-18": [
+   "bottle",
+   "battery"
+  ],
+  "2027-01-19": [
+   "burnable",
+   "spray"
+  ],
+  "2027-01-21": [
+   "plastic"
+  ],
+  "2027-01-22": [
+   "burnable",
+   "spray"
+  ],
+  "2027-01-25": [
+   "bottle",
+   "battery"
+  ],
+  "2027-01-26": [
+   "burnable",
+   "spray"
+  ],
+  "2027-01-27": [
+   "paper"
+  ],
+  "2027-01-28": [
+   "plastic"
+  ],
+  "2027-01-29": [
+   "burnable",
+   "spray"
+  ],
+  "2027-02-01": [
+   "bottle",
+   "battery"
+  ],
+  "2027-02-02": [
+   "burnable",
+   "spray"
+  ],
+  "2027-02-03": [
+   "nonburnable",
+   "heated"
+  ],
+  "2027-02-04": [
+   "plastic"
+  ],
+  "2027-02-05": [
+   "burnable",
+   "spray"
+  ],
+  "2027-02-08": [
+   "bottle",
+   "battery"
+  ],
+  "2027-02-09": [
+   "burnable",
+   "spray"
+  ],
+  "2027-02-10": [
+   "paper"
+  ],
+  "2027-02-11": [
+   "plastic"
+  ],
+  "2027-02-12": [
+   "burnable",
+   "spray"
+  ],
+  "2027-02-15": [
+   "bottle",
+   "battery"
+  ],
+  "2027-02-16": [
+   "burnable",
+   "spray"
+  ],
+  "2027-02-18": [
+   "plastic"
+  ],
+  "2027-02-19": [
+   "burnable",
+   "spray"
+  ],
+  "2027-02-22": [
+   "bottle",
+   "battery"
+  ],
+  "2027-02-23": [
+   "burnable",
+   "spray"
+  ],
+  "2027-02-24": [
+   "paper"
+  ],
+  "2027-02-25": [
+   "plastic"
+  ],
+  "2027-02-26": [
+   "burnable",
+   "spray"
+  ],
+  "2027-03-01": [
+   "bottle",
+   "battery"
+  ],
+  "2027-03-02": [
+   "burnable",
+   "spray"
+  ],
+  "2027-03-03": [
+   "nonburnable",
+   "heated"
+  ],
+  "2027-03-04": [
+   "plastic"
+  ],
+  "2027-03-05": [
+   "burnable",
+   "spray"
+  ],
+  "2027-03-08": [
+   "bottle",
+   "battery"
+  ],
+  "2027-03-09": [
+   "burnable",
+   "spray"
+  ],
+  "2027-03-10": [
+   "paper"
+  ],
+  "2027-03-11": [
+   "plastic"
+  ],
+  "2027-03-12": [
+   "burnable",
+   "spray"
+  ],
+  "2027-03-15": [
+   "bottle",
+   "battery"
+  ],
+  "2027-03-16": [
+   "burnable",
+   "spray"
+  ],
+  "2027-03-18": [
+   "plastic"
+  ],
+  "2027-03-19": [
+   "burnable",
+   "spray"
+  ],
+  "2027-03-22": [
+   "bottle",
+   "battery"
+  ],
+  "2027-03-23": [
+   "burnable",
+   "spray"
+  ],
+  "2027-03-24": [
+   "paper"
+  ],
+  "2027-03-25": [
+   "plastic"
+  ],
+  "2027-03-26": [
+   "burnable",
+   "spray"
+  ],
+  "2027-03-29": [
+   "bottle",
+   "battery"
+  ],
+  "2027-03-30": [
+   "burnable",
+   "spray"
+  ],
+  "2027-03-31": [
+   "nonburnable",
+   "heated"
+  ],
+  "2027-04-01": [
+   "plastic"
+  ],
+  "2027-04-02": [
+   "burnable",
+   "spray"
+  ],
+  "2027-04-05": [
+   "bottle",
+   "battery"
+  ],
+  "2027-04-06": [
+   "burnable",
+   "spray"
+  ],
+  "2027-04-07": [
+   "paper"
+  ],
+  "2027-04-08": [
+   "plastic"
+  ],
+  "2027-04-09": [
+   "burnable",
+   "spray"
+  ],
+  "2027-04-12": [
+   "bottle",
+   "battery"
+  ],
+  "2027-04-13": [
+   "burnable",
+   "spray"
+  ],
+  "2027-04-15": [
+   "plastic"
+  ],
+  "2027-04-16": [
+   "burnable",
+   "spray"
+  ],
+  "2027-04-19": [
+   "bottle",
+   "battery"
+  ],
+  "2027-04-20": [
+   "burnable",
+   "spray"
+  ],
+  "2027-04-21": [
+   "paper"
+  ],
+  "2027-04-22": [
+   "plastic"
+  ],
+  "2027-04-23": [
+   "burnable",
+   "spray"
+  ],
+  "2027-04-26": [
+   "bottle",
+   "battery"
+  ],
+  "2027-04-27": [
+   "burnable",
+   "spray"
+  ],
+  "2027-04-28": [
+   "nonburnable",
+   "heated"
+  ],
+  "2027-04-29": [
+   "plastic"
+  ],
+  "2027-04-30": [
+   "burnable",
+   "spray"
+  ],
+  "2027-05-03": [
+   "bottle",
+   "battery"
+  ],
+  "2027-05-04": [
+   "burnable",
+   "spray"
+  ],
+  "2027-05-05": [
+   "paper"
+  ],
+  "2027-05-06": [
+   "plastic"
+  ],
+  "2027-05-07": [
+   "burnable",
+   "spray"
+  ],
+  "2027-05-10": [
+   "bottle",
+   "battery"
+  ],
+  "2027-05-11": [
+   "burnable",
+   "spray"
+  ],
+  "2027-05-12": [
+   "branch"
+  ],
+  "2027-05-13": [
+   "plastic"
+  ],
+  "2027-05-14": [
+   "burnable",
+   "spray"
+  ],
+  "2027-05-17": [
+   "bottle",
+   "battery"
+  ],
+  "2027-05-18": [
+   "burnable",
+   "spray"
+  ],
+  "2027-05-19": [
+   "paper"
+  ],
+  "2027-05-20": [
+   "plastic"
+  ],
+  "2027-05-21": [
+   "burnable",
+   "spray"
+  ],
+  "2027-05-24": [
+   "bottle",
+   "battery"
+  ],
+  "2027-05-25": [
+   "burnable",
+   "spray"
+  ],
+  "2027-05-26": [
+   "nonburnable",
+   "heated"
+  ],
+  "2027-05-27": [
+   "plastic"
+  ],
+  "2027-05-28": [
+   "burnable",
+   "spray"
+  ],
+  "2027-05-31": [
+   "bottle",
+   "battery"
+  ],
+  "2027-06-01": [
+   "burnable",
+   "spray"
+  ],
+  "2027-06-02": [
+   "paper"
+  ],
+  "2027-06-03": [
+   "plastic"
+  ],
+  "2027-06-04": [
+   "burnable",
+   "spray"
+  ],
+  "2027-06-07": [
+   "bottle",
+   "battery"
+  ],
+  "2027-06-08": [
+   "burnable",
+   "spray"
+  ],
+  "2027-06-09": [
+   "branch"
+  ],
+  "2027-06-10": [
+   "plastic"
+  ],
+  "2027-06-11": [
+   "burnable",
+   "spray"
+  ],
+  "2027-06-14": [
+   "bottle",
+   "battery"
+  ],
+  "2027-06-15": [
+   "burnable",
+   "spray"
+  ],
+  "2027-06-16": [
+   "paper"
+  ],
+  "2027-06-17": [
+   "plastic"
+  ],
+  "2027-06-18": [
+   "burnable",
+   "spray"
+  ],
+  "2027-06-21": [
+   "bottle",
+   "battery"
+  ],
+  "2027-06-22": [
+   "burnable",
+   "spray"
+  ],
+  "2027-06-23": [
+   "nonburnable",
+   "heated"
+  ],
+  "2027-06-24": [
+   "plastic"
+  ],
+  "2027-06-25": [
+   "burnable",
+   "spray"
+  ],
+  "2027-06-28": [
+   "bottle",
+   "battery"
+  ],
+  "2027-06-29": [
+   "burnable",
+   "spray"
+  ],
+  "2027-06-30": [
+   "paper"
+  ],
+  "2027-07-01": [
+   "plastic"
+  ],
+  "2027-07-02": [
+   "burnable",
+   "spray"
+  ],
+  "2027-07-05": [
+   "bottle",
+   "battery"
+  ],
+  "2027-07-06": [
+   "burnable",
+   "spray"
+  ],
+  "2027-07-07": [
+   "branch"
+  ],
+  "2027-07-08": [
+   "plastic"
+  ],
+  "2027-07-09": [
+   "burnable",
+   "spray"
+  ],
+  "2027-07-12": [
+   "bottle",
+   "battery"
+  ],
+  "2027-07-13": [
+   "burnable",
+   "spray"
+  ],
+  "2027-07-14": [
+   "paper"
+  ],
+  "2027-07-15": [
+   "plastic"
+  ],
+  "2027-07-16": [
+   "burnable",
+   "spray"
+  ],
+  "2027-07-19": [
+   "bottle",
+   "battery"
+  ],
+  "2027-07-20": [
+   "burnable",
+   "spray"
+  ],
+  "2027-07-21": [
+   "nonburnable",
+   "heated"
+  ],
+  "2027-07-22": [
+   "plastic"
+  ],
+  "2027-07-23": [
+   "burnable",
+   "spray"
+  ],
+  "2027-07-26": [
+   "bottle",
+   "battery"
+  ],
+  "2027-07-27": [
+   "burnable",
+   "spray"
+  ],
+  "2027-07-28": [
+   "paper"
+  ],
+  "2027-07-29": [
+   "plastic"
+  ],
+  "2027-07-30": [
+   "burnable",
+   "spray"
+  ],
+  "2027-08-02": [
+   "bottle",
+   "battery"
+  ],
+  "2027-08-03": [
+   "burnable",
+   "spray"
+  ],
+  "2027-08-04": [
+   "branch"
+  ],
+  "2027-08-05": [
+   "plastic"
+  ],
+  "2027-08-06": [
+   "burnable",
+   "spray"
+  ],
+  "2027-08-09": [
+   "bottle",
+   "battery"
+  ],
+  "2027-08-10": [
+   "burnable",
+   "spray"
+  ],
+  "2027-08-11": [
+   "paper"
+  ],
+  "2027-08-12": [
+   "plastic"
+  ],
+  "2027-08-13": [
+   "burnable",
+   "spray"
+  ],
+  "2027-08-16": [
+   "bottle",
+   "battery"
+  ],
+  "2027-08-17": [
+   "burnable",
+   "spray"
+  ],
+  "2027-08-18": [
+   "nonburnable",
+   "heated"
+  ],
+  "2027-08-19": [
+   "plastic"
+  ],
+  "2027-08-20": [
+   "burnable",
+   "spray"
+  ],
+  "2027-08-23": [
+   "bottle",
+   "battery"
+  ],
+  "2027-08-24": [
+   "burnable",
+   "spray"
+  ],
+  "2027-08-25": [
+   "paper"
+  ],
+  "2027-08-26": [
+   "plastic"
+  ],
+  "2027-08-27": [
+   "burnable",
+   "spray"
+  ],
+  "2027-08-30": [
+   "bottle",
+   "battery"
+  ],
+  "2027-08-31": [
+   "burnable",
+   "spray"
+  ],
+  "2027-09-01": [
+   "branch"
+  ],
+  "2027-09-02": [
+   "plastic"
+  ],
+  "2027-09-03": [
+   "burnable",
+   "spray"
+  ],
+  "2027-09-06": [
+   "bottle",
+   "battery"
+  ],
+  "2027-09-07": [
+   "burnable",
+   "spray"
+  ],
+  "2027-09-08": [
+   "paper"
+  ],
+  "2027-09-09": [
+   "plastic"
+  ],
+  "2027-09-10": [
+   "burnable",
+   "spray"
+  ],
+  "2027-09-13": [
+   "bottle",
+   "battery"
+  ],
+  "2027-09-14": [
+   "burnable",
+   "spray"
+  ],
+  "2027-09-15": [
+   "nonburnable",
+   "heated"
+  ],
+  "2027-09-16": [
+   "plastic"
+  ],
+  "2027-09-17": [
+   "burnable",
+   "spray"
+  ],
+  "2027-09-20": [
+   "bottle",
+   "battery"
+  ],
+  "2027-09-21": [
+   "burnable",
+   "spray"
+  ],
+  "2027-09-22": [
+   "paper"
+  ],
+  "2027-09-23": [
+   "plastic"
+  ],
+  "2027-09-24": [
+   "burnable",
+   "spray"
+  ],
+  "2027-09-27": [
+   "bottle",
+   "battery"
+  ],
+  "2027-09-28": [
+   "burnable",
+   "spray"
+  ],
+  "2027-09-29": [
+   "branch"
+  ],
+  "2027-09-30": [
+   "plastic"
+  ]
+ }
+}
