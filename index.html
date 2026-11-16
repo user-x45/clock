@@ -23,29 +23,29 @@
     -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
   main { height: 100%; display: flex; flex-direction: row; align-items: stretch; gap: 2vw;
     padding: calc(2.5vh + env(safe-area-inset-top)) calc(3vw + env(safe-area-inset-right)) calc(4.5vh + env(safe-area-inset-bottom)) calc(3vw + env(safe-area-inset-left)); }
-  #left { flex: 1.45; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  #right { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 1.5vh; }
-  .card { background: rgba(0,0,0,.28); border-radius: 12px; padding: 1.2vh 1.1vw; text-shadow: none; }
+  #left { gap: 1.6vh; flex: 1.45; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  #right { overflow: hidden; flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 1.5vh; }
+  .card { overflow: hidden; background: rgba(0,0,0,.28); border-radius: 12px; padding: 1.2vh 1.1vw; text-shadow: none; }
   .card h3 { font-size: min(1.4vw, 2.6vh); font-weight: 400; color: var(--sub); letter-spacing: .1em; margin-bottom: .6vh; }
-  #hourly { display: grid; grid-template-columns: repeat(6, 1fr); text-align: center; font-size: min(1.9vw, 3.6vh); line-height: 1.25; }
+  #hourly { display: grid; grid-template-columns: repeat(6, auto); justify-content: space-between; text-align: center; font-size: min(1.9vw, 3.6vh); line-height: 1.25; }
   #hourly { font-family: "Montserrat", "Zen Kaku Gothic New", sans-serif; font-weight: 300; }
   #hourly .h, #hourly .p { color: var(--sub); font-size: .75em; }
   #hourly i { display: block; color: var(--acc); margin: .15em 0; }
   #tomorrow { display: flex; align-items: center; flex-wrap: wrap; gap: .2em .7em; font-size: min(2.3vw, 4.2vh); }
   #tomorrow i { color: var(--acc); } #tomorrow .p { color: var(--sub); font-size: .7em; }
   #newslist { list-style: none; padding: 0; }
-  #newslist li { font-size: min(1.8vw, 3.4vh); line-height: 1.35; padding: .5vh 0; border-bottom: 1px solid rgba(255,255,255,.12);
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  #newslist li { font-size: 1em; line-height: 1.35; padding: .5vh 0; border-bottom: 1px solid rgba(255,255,255,.12);
+  }
   #newslist li:last-child { border-bottom: 0; }
   #time { font-family: "Montserrat", "Zen Kaku Gothic New", sans-serif; font-size: min(12.5vw, 32vh); font-weight: 200; line-height: 1; letter-spacing: .02em;
     font-variant-numeric: tabular-nums; white-space: nowrap; }
   #sec { font-size: .45em; color: var(--acc); margin-left: .08em; }
-  #date { letter-spacing: .08em; margin-top: 1.5vh; font-size: min(3.4vw, 7vh); font-weight: 300; }
+  #date { white-space: nowrap; line-height: 1.2; letter-spacing: .08em; font-size: min(3.4vw, 7vh); font-weight: 300; }
   #wday { margin-left: .5em; color: var(--acc); }
-  #weather { margin-top: 2vh; font-size: min(3vw, 6vh); font-weight: 300; color: var(--fg); white-space: nowrap; }
+  #weather { line-height: 1.2; font-size: min(3vw, 6vh); font-weight: 300; color: var(--fg); white-space: nowrap; }
   #weather .city { color: var(--sub); font-size: .6em; margin-right: .6em; }
   #weather .wi { margin-right: .35em; color: var(--acc); }
-  #today { margin-top: 2vh; max-width: 100%; display: flex; align-items: baseline; justify-content: center; gap: .7em; font-size: min(2.4vw, 4.8vh); }
+  #today { white-space: nowrap; display: flex; align-items: baseline; justify-content: center; gap: .7em; font-size: min(2.4vw, 4.8vh); }
   #today[hidden] { display: none; }
   #today .lbl { font-size: .6em; color: var(--sub); white-space: nowrap; letter-spacing: .1em; }
   #todayname { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: opacity .5s; }
@@ -219,7 +219,7 @@
       // 明日
       const D = j.daily, [dic, dlabel] = WMAP(D.weather_code[1], true);
       $("tomorrow").innerHTML = `<i class="fa-solid ${dic}"></i><span>${dlabel}</span><span>${Math.round(D.temperature_2m_max[1])}° / ${Math.round(D.temperature_2m_min[1])}°</span><span class="p">降水確率 ${D.precipitation_probability_max[1]}%</span>`;
-      wLast = Date.now(); wErr = false; renderStatus();
+      wLast = Date.now(); wErr = false; renderStatus(); relayout();
     } catch (e) {
       wErr = true; renderStatus();
       if (wLast) el.className = "stale"; // 取得失敗時は前回値を薄く表示
@@ -242,11 +242,11 @@
         const ul = $("newslist"); ul.textContent = "";
         j.items.slice(0, 4).forEach(it => { const li = document.createElement("li"); li.textContent = it.title; ul.appendChild(li); });
         $("newsh").textContent = "今日のニュース(" + f.name + ")";
-        nLast = Date.now(); nErr = false; return renderStatus();
+        nLast = Date.now(); nErr = false; renderStatus(); relayout(); return;
       } catch (e) { /* 次のフィードへ */ }
     }
     nErr = true; renderStatus();
-    if (!nLast) $("newslist").innerHTML = "<li>ニュースを取得できません</li>";
+    if (!nLast) { $("newslist").innerHTML = "<li>ニュースを取得できません</li>"; relayout(); }
   }
 
   // ---- 今日は何の日(ultimatecrazy.jp 公開API / キー不要) ----
@@ -254,10 +254,10 @@
   const mmdd = () => { const d = new Date(now()); return p2(d.getMonth() + 1) + "-" + p2(d.getDate()); };
   function showAnniv() {
     const box = $("today"), nm = $("todayname");
-    if (!anniv.length) { box.hidden = true; return; }
+    if (!anniv.length) { box.hidden = true; relayout(); return; }
     box.hidden = false;
     nm.style.opacity = 0;
-    setTimeout(() => { nm.textContent = anniv[aIdx % anniv.length]; nm.style.opacity = 1; }, 300);
+    setTimeout(() => { nm.textContent = anniv[aIdx % anniv.length]; nm.style.opacity = 1; relayout(); }, 300);
   }
   async function today() {
     aTry = Date.now();
@@ -272,6 +272,38 @@
   }
   setInterval(() => { if (anniv.length > 1) { aIdx++; showAnniv(); } }, 15000); // 15秒ごとに切替
   setInterval(() => { if (mmdd() !== aKey && Date.now() - aTry > 60000) today(); }, 30000); // 日付が変わったら再取得
+
+  // ---- 文字サイズの自動調整(はみ出さない範囲で最大化) ----
+  function fit(el, ok, lo, hi) {
+    while (hi - lo > 0.5) {
+      const m = (lo + hi) / 2;
+      el.style.fontSize = m + "px";
+      if (ok()) lo = m; else hi = m;
+    }
+    el.style.fontSize = lo + "px";
+  }
+  function layout() {
+    const L = $("left"), W = L.clientWidth * 0.97, H = L.clientHeight;
+    const one = (el, hMax, lo = 8) => fit(el, () => el.offsetWidth <= W && el.offsetHeight <= H * hMax, lo, 600);
+    one($("time"), 0.46);
+    one($("date"), 0.12);
+    one($("weather"), 0.11);
+    if (!$("today").hidden) one($("today"), 0.11, 12);
+    const R = $("right");
+    if (getComputedStyle(R).display === "none") return;
+    const RH = R.clientHeight, cards = R.querySelectorAll(".card");
+    R.querySelectorAll("h3").forEach(h => h.style.fontSize = Math.max(10, RH * 0.04) + "px");
+    cards[0].style.flex = `0 0 ${RH * 0.28}px`;
+    cards[1].style.flex = `0 0 ${RH * 0.17}px`;
+    cards[2].style.flex = "1 1 0"; cards[2].style.minHeight = "0";
+    [[cards[0], $("hourly"), 70], [cards[1], $("tomorrow"), 90], [cards[2], $("newslist"), 40]].forEach(([card, c, hi]) =>
+      fit(c, () => card.scrollHeight <= card.clientHeight + 1 && c.scrollWidth <= c.clientWidth + 1, 8, hi));
+  }
+  let lq = 0;
+  const relayout = () => { cancelAnimationFrame(lq); lq = requestAnimationFrame(layout); };
+  window.addEventListener("resize", relayout);
+  window.addEventListener("orientationchange", relayout);
+  document.fonts && document.fonts.ready.then(relayout);
 
   // 全画面切替
   document.body.addEventListener("click", () => {
@@ -289,6 +321,7 @@
 
   keepAwake();
   render();
+  relayout();
   sync();
   setInterval(sync, SYNC_INTERVAL);
   weather();
