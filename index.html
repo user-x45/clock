@@ -257,7 +257,7 @@
     $("wday").textContent = WD[d.getDay()] + "曜日";
     // 日付が変わった瞬間に天気・ニュース・今日は何の日をまとめて再取得
     const dk = d.getDate();
-    if (lastDay !== null && dk !== lastDay) { weather(); news(); today(); renderDay(); holidays(); }
+    if (lastDay !== null && dk !== lastDay) { weather(); news(); today(); renderDay(); holidays(); rokuyoFetch(); }
     lastDay = dk;
     const h = d.getHours();
     document.body.dataset.p = h >= 5 && h < 9 ? "morning" : h >= 9 && h < 16 ? "day" : h >= 16 && h < 19 ? "evening" : "night";
@@ -334,7 +334,19 @@
     "2027-01-01": "元日", "2027-01-11": "成人の日", "2027-02-11": "建国記念の日", "2027-02-23": "天皇誕生日", "2027-03-21": "春分の日", "2027-03-22": "休日",
     "2027-04-29": "昭和の日", "2027-05-03": "憲法記念日", "2027-05-04": "みどりの日", "2027-05-05": "こどもの日", "2027-07-19": "海の日", "2027-08-11": "山の日",
     "2027-09-20": "敬老の日", "2027-09-23": "秋分の日", "2027-10-11": "スポーツの日", "2027-11-03": "文化の日", "2027-11-23": "勤労感謝の日" };
-  let hol = Object.assign({}, HOLFB), gJ = null;
+  let hol = Object.assign({}, HOLFB), gJ = null, rkExt = { key: "", name: "" };
+  // 六曜は shirabe.dev の暦API(認証不要)から1日1回取得。失敗時は上の埋め込み表で表示
+  async function rokuyoFetch() {
+    const key = ymd(new Date(now()));
+    if (rkExt.key === key) return;
+    try {
+      const r = await fetch("https://shirabe.dev/api/v1/calendar/" + key, { cache: "no-cache" });
+      if (!r.ok) throw new Error(r.status);
+      const j = await r.json(), n = j && j.rokuyo && j.rokuyo.name;
+      if (!RK.includes(n)) throw new Error("rokuyo");
+      rkExt = { key, name: n }; retryOk("rokuyo"); renderDay();
+    } catch (e) { retryLater("rokuyo", rokuyoFetch); }
+  }
   const ymd = d => `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
   function rokuyo(d) {
     const i = Math.round((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(2026, 0, 1)) / 864e5);
@@ -365,7 +377,7 @@
   const gHtml = it => it.map(c => `<span class="gi"><b style="background:${c.color}"></b>${c.short || c.name}</span>`).join('<span class="pl">+</span>');
   function renderDay() {
     const d = new Date(now()), tm = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
-    const rk = rokuyo(d), hn = hol[ymd(d)];
+    const rk = (rkExt.key === ymd(d) ? rkExt.name : "") || rokuyo(d), hn = hol[ymd(d)];
     $("dayinfo").innerHTML = (rk ? `<span class="rk">六曜 ${rk}</span>` : "") + (hn ? `<span class="hol">${hn}</span>` : "");
     const box = $("garbage"), t = gItems(d), n = gItems(tm);
     if (t === null || t === "out") { box.hidden = true; relayout(); return; }
@@ -615,9 +627,9 @@
   let wl = null;
   async function keepAwake() { try { wl = await navigator.wakeLock?.request("screen"); } catch (e) {} }
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") { keepAwake(); sync(); render(); weather(); news(); today(); renderDay(); holidays(); eqConnect(); }
+    if (document.visibilityState === "visible") { keepAwake(); sync(); render(); weather(); news(); today(); renderDay(); holidays(); rokuyoFetch(); eqConnect(); }
   });
-  window.addEventListener("online", () => { sync(); weather(); news(); today(); garbageLoad(); holidays(); eqConnect(); });
+  window.addEventListener("online", () => { sync(); weather(); news(); today(); garbageLoad(); holidays(); rokuyoFetch(); eqConnect(); });
 
   keepAwake();
   render();
@@ -631,6 +643,7 @@
   today();
   garbageLoad();
   holidays();
+  rokuyoFetch();
   renderDay();
   eqConnect();
 
