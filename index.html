@@ -29,11 +29,31 @@
   #weather .city { color: var(--sub); font-size: .6em; margin-right: .6em; }
   #weather .wi { margin-right: .35em; color: var(--acc); }
   #weather.stale { opacity: .5; }
+  /* 時間帯ごとの背景(早朝5-9 / 昼9-16 / 夕方16-19 / 夜19-5) */
+  body[data-p="morning"] { --fg:#fffaf0; --sub:rgba(255,255,255,.8); --acc:#fff0c2; }
+  body[data-p="day"]     { --fg:#ffffff; --sub:rgba(255,255,255,.85); --acc:#ffe58a; }
+  body[data-p="evening"] { --fg:#fff7ee; --sub:rgba(255,255,255,.8); --acc:#ffd89b; }
+  .bg { position: fixed; inset: 0; opacity: 0; transition: opacity 4s; z-index: 0; pointer-events: none; }
+  #bg-morning { background: linear-gradient(180deg, #3a5a8c 0%, #c8758f 55%, #f2a477 100%); }
+  #bg-day     { background: linear-gradient(180deg, #1c63ad 0%, #4a9fe0 55%, #8fd0f5 100%); }
+  #bg-evening { background: linear-gradient(180deg, #2f2257 0%, #b8435a 55%, #f59a4a 100%); }
+  #bg-night   { background: linear-gradient(180deg, #01030a 0%, #07142b 60%, #0d2347 100%); }
+  #bg-night::after { content: ""; position: absolute; inset: 0; opacity: .8;
+    background-image:
+      radial-gradient(1.2px 1.2px at 20px 30px, #fff, transparent),
+      radial-gradient(1px 1px at 80px 120px, #cfe3ff, transparent),
+      radial-gradient(1.5px 1.5px at 140px 60px, #fff, transparent),
+      radial-gradient(1px 1px at 190px 170px, #fff, transparent),
+      radial-gradient(1.2px 1.2px at 40px 180px, #dfe9ff, transparent),
+      radial-gradient(1px 1px at 120px 200px, #fff, transparent);
+    background-size: 220px 220px; }
+  body[data-p="morning"] #bg-morning, body[data-p="day"] #bg-day,
+  body[data-p="evening"] #bg-evening, body[data-p="night"] #bg-night { opacity: 1; }
+  main { position: relative; z-index: 1; text-shadow: 0 2px 12px rgba(0,0,0,.35); }
   #dim { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity 3s; z-index: 10; }
-  #status { position: fixed; bottom: calc(8px + env(safe-area-inset-bottom)); left: 0; right: 0; text-align: center;
+  #status { z-index: 2; text-shadow: 0 1px 6px rgba(0,0,0,.4); position: fixed; bottom: calc(8px + env(safe-area-inset-bottom)); left: 0; right: 0; text-align: center;
     font-size: 12px; color: var(--sub); }
   #status.warn { color: var(--warn); }
-  #hint { position: fixed; top: calc(8px + env(safe-area-inset-top)); right: 12px; font-size: 11px; color: var(--sub); opacity: .6; }
   @media (orientation: portrait) {
     main::before { content: "横向きにしてください"; position: fixed; top: 12px; font-size: 13px; color: var(--sub); }
     #time { font-size: 17vw; }
@@ -42,13 +62,13 @@
   }
 </style>
 </head>
-<body>
+<body data-p="night">
+<div class="bg" id="bg-morning"></div><div class="bg" id="bg-day"></div><div class="bg" id="bg-evening"></div><div class="bg" id="bg-night"></div>
 <main>
   <div id="time">--:--<span id="sec">--</span></div>
   <div id="date">----年--月--日<span id="wday">-曜日</span></div>
   <div id="weather"><span class="city">札幌</span>天気を取得中…</div>
 </main>
-<div id="hint">タップで全画面</div>
 <div id="dim"></div>
 <div id="status">時刻を同期中…</div>
 
@@ -112,6 +132,7 @@
     $("date").firstChild.nodeValue = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
     $("wday").textContent = WD[d.getDay()] + "曜日";
     const h = d.getHours();
+    document.body.dataset.p = h >= 5 && h < 9 ? "morning" : h >= 9 && h < 16 ? "day" : h >= 16 && h < 19 ? "evening" : "night";
     const night = NIGHT_START > NIGHT_END ? (h >= NIGHT_START || h < NIGHT_END) : (h >= NIGHT_START && h < NIGHT_END);
     $("dim").style.opacity = night ? DIM_LEVEL : 0;
     setTimeout(render, 1000 - (now() % 1000) + 5); // 秒の境界に合わせて更新
@@ -149,7 +170,7 @@
       if (!r.ok) throw new Error(r.status);
       const c = (await r.json()).current;
       const [icon, label, color] = WMAP(c.weather_code, c.is_day === 1);
-      el.innerHTML = `<span class="city">札幌</span><i class="fa-solid ${icon} wi" style="color:${color}"></i>${label} ${Math.round(c.temperature_2m)}°C` +
+      el.innerHTML = `<span class="city">札幌</span><i class="fa-solid ${icon} wi"></i>${label} ${Math.round(c.temperature_2m)}°C` +
         `<span class="city" style="margin-left:.6em">体感 ${Math.round(c.apparent_temperature)}°C</span>`;
       el.className = "";
       wLast = Date.now(); wErr = false; renderStatus();
