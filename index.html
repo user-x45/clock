@@ -77,7 +77,7 @@
   #qr[hidden] { display: none; }
   #qrbox { background: #1b1d22; color: #f2f2f2; border: 1px solid rgba(255,255,255,.14); border-radius: 16px;
     width: min(96vw, 1300px); height: 92vh; height: 92dvh; padding: 1.6vh 1.2vw; display: flex; gap: 1.6vw; overflow: hidden; }
-  #artf { flex: 1 1 0; min-width: 0; height: 100%; border: 0; border-radius: 10px; background: #fff; }
+  #artf { flex: 1 1 0; min-width: 0; height: 100%; border: 0; border-radius: 10px; background: #14161a; }
   #qrside { flex: 0 0 min(24vw, 40vh); display: flex; flex-direction: column; align-items: center; gap: 1.6vh; overflow: auto; }
   #qrcv { width: 100%; height: auto; aspect-ratio: 1; image-rendering: pixelated; border-radius: 6px; }
   #qrcv[hidden] { display: none; }
@@ -144,7 +144,7 @@
   </div>
 </main>
 <div id="wm" hidden><div id="wbox"><div id="wtitle"></div><div id="wsum"></div><table id="wtbl"></table></div></div>
-<div id="qr" hidden><div id="qrbox"><iframe id="artf" title="記事" sandbox referrerpolicy="no-referrer"></iframe><div id="qrside"><canvas id="qrcv"></canvas><div id="qrtxt"><div id="qrtitle"></div><div id="qrnote">記事の表示はプロキシ経由です。うまく表示されないときや、スマートフォンで読むときは、QRコードを読み取ってください。</div><button id="qrclose" type="button">閉じる</button></div></div></div></div>
+<div id="qr" hidden><div id="qrbox"><iframe id="artf" title="記事" sandbox referrerpolicy="no-referrer"></iframe><div id="qrside"><canvas id="qrcv"></canvas><div id="qrtxt"><div id="qrtitle"></div><div id="qrnote">本文だけを抜き出したリーダー表示です。うまく表示されないときや、スマートフォンで読むときは、QRコードを読み取ってください。</div><button id="qrclose" type="button">閉じる</button></div></div></div></div>
 <div id="alert"><div id="atitle"></div><div id="amain"></div><div id="asub"></div></div>
 <div id="dim"></div>
 <div id="status">時刻を同期中…</div>
