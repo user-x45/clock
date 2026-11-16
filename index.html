@@ -436,14 +436,14 @@
   function layout() {
     const L = $("left"), W = L.clientWidth * 0.97, H = L.clientHeight;
     const one = (el, hMax, lo = 8) => fit(el, () => el.offsetWidth <= W && el.offsetHeight <= H * hMax, lo, 600);
-    one($("time"), 0.24);
-    one($("date"), 0.12);
+    one($("time"), 0.26);
+    one($("date"), 0.125);
     // 補助情報は主役(時刻・日付)より小さく抑える
     const sub = (el, hMax, wMax) => fit(el, () => el.offsetWidth <= W * wMax && el.offsetHeight <= H * hMax, 8, 600);
-    sub($("weather"), 0.11, 0.95);
-    sub($("weather2"), 0.10, 0.95);
-    if (!$("garbage").hidden) sub($("garbage"), 0.18, 0.95);
-    if (!$("today").hidden) sub($("today"), 0.08, 0.97);
+    sub($("weather"), 0.12, 0.97);
+    sub($("weather2"), 0.11, 0.97);
+    if (!$("garbage").hidden) sub($("garbage"), 0.19, 0.97);
+    if (!$("today").hidden) sub($("today"), 0.085, 0.98);
     const R = $("right");
     if (getComputedStyle(R).display === "none") return;
     const RH = R.clientHeight, cards = R.querySelectorAll(".card");
