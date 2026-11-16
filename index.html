@@ -201,9 +201,6 @@
   // 時刻ソース(順番に試行、失敗したら次へ)
   // 小数秒を3桁に揃えてからパース
   const iso = (t, utc) => Date.parse(String(t).replace(/(\.\d{3})\d+/, "$1") + (utc && !/[zZ]|[+-]\d\d:?\d\d$/.test(t) ? "Z" : ""));
-  // 時刻合わせ以外の通信(天気・ニュース・今日は何の日・地震情報)はすべてこのWorker経由
-  const PROXY = "https://news-proxy.user-x45.workers.dev/";
-  const viaProxy = u => PROXY + "api?u=" + encodeURIComponent(u);
   const SOURCES = [
     { url: "https://timeapi.io/api/time/current/zone?timeZone=UTC",
       parse: async r => { const j = await r.json(); return iso(j.dateTime || j.currentLocalTime, true); } },
@@ -317,7 +314,7 @@
   async function weather() {
     const el = $("weather");
     try {
-      const r = await fetch(viaProxy(WURL), { cache: "no-store" });
+      const r = await fetch(WURL, { cache: "no-store" });
       if (!r.ok) throw new Error(r.status);
       const j = await r.json(), c = j.current; wJ = j;
       const [icon, label, color] = WMAP(c.weather_code, c.is_day === 1);
@@ -390,7 +387,7 @@
   async function news() {
     for (const f of FEEDS) {
       try {
-        const r = await fetch(viaProxy("https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(f.url)), { cache: "no-store" });
+        const r = await fetch("https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(f.url), { cache: "no-store" });
         const j = await r.json();
         if (j.status !== "ok" || !j.items || !j.items.length) throw new Error("feed");
         const ul = $("newslist"); ul.textContent = "";
@@ -417,7 +414,7 @@
     aTry = Date.now();
     const key = mmdd();
     try {
-      const r = await fetch(viaProxy(`https://ultimatecrazy.jp/whatstoday/api/${key}.json`), { cache: "no-store" });
+      const r = await fetch(`https://ultimatecrazy.jp/whatstoday/api/${key}.json`, { cache: "no-store" });
       if (!r.ok) throw new Error(r.status);
       const j = await r.json();
       anniv = (j.anniversaries || []).map(a => a.name).filter(Boolean);
@@ -463,11 +460,11 @@
   window.addEventListener("orientationchange", relayout);
   document.fonts && document.fonts.ready.then(relayout);
 
-  // ---- 地震通知(P2P地震情報 WebSocket をWorker経由で中継) ----
+  // ---- 地震通知(P2P地震情報 WebSocket / キー不要) ----
   // 通知は画面上部からスライドして表示し、数秒後に自動で消える(操作不要)
   // ・緊急地震速報(警報): 石狩地方中部(札幌市北区を含む予報区)で震度3以上の予想
   // ・震度情報: 札幌市北区の観測点で震度3以上を観測
-  const EQ_WS = PROXY.replace(/^http/, "ws") + "ws";
+  const EQ_WS = "wss://api.p2pquake.net/v2/ws";
   const EQ_MIN = 30;                 // 震度3
   const EEW_AREA = /石狩地方中部/;
   const QUAKE_ADDR = /札幌(市)?北区/;
@@ -575,6 +572,7 @@
 
   // ---- ニュース記事の表示(プロキシ経由)とQRコード ----
   // タイトルをタップすると記事を画面内に表示し、同時にQRコードも出す(3分または「閉じる」で閉じる)
+  const PROXY = "https://news-proxy.user-x45.workers.dev/";
   let qrT = 0;
   function hideQR() { clearTimeout(qrT); $("qr").hidden = true; $("artf").src = "about:blank"; }
   function showQR(title, url) {
