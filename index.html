@@ -22,8 +22,8 @@
   html, body { height: 100%; background: var(--bg); color: var(--fg); overflow: hidden;
     font-family: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", -apple-system, "Segoe UI", sans-serif;
     -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
-  main { height: 100%; display: flex; flex-direction: row; align-items: stretch; gap: 2vw;
-    padding: calc(2.5vh + env(safe-area-inset-top)) calc(3vw + env(safe-area-inset-right)) calc(4.5vh + env(safe-area-inset-bottom)) calc(3vw + env(safe-area-inset-left)); }
+  main { height: 100%; display: flex; flex-direction: row; align-items: stretch; gap: var(--gap, 2vw); transition: opacity .6s;
+    padding: calc(var(--pt, 2.5vh) + env(safe-area-inset-top)) calc(var(--pr, 3vw) + env(safe-area-inset-right)) calc(var(--pb, 4.5vh) + env(safe-area-inset-bottom)) calc(var(--pl, 3vw) + env(safe-area-inset-left)); }
   #left { gap: 1.6vh; flex: 1.45; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   #right { overflow: hidden; flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 1.5vh; }
   .card { overflow: hidden; background: rgba(0,0,0,.28); border-radius: 12px; padding: 1.2vh 1.1vw; text-shadow: none; }
@@ -454,10 +454,37 @@
   const BG_COUNT = 10, BG_INTERVAL = 10 * 1000; // background/1.jpeg 〜 10.jpeg
   const bgEls = [$("bgA"), $("bgB")], bgOk = [];
   let bgCur = 0, bgLast = 0, bgStarted = false;
+  // 写真ごとの文字の表示位置(顔を隠さないための余白)。単位はt/bがvh、l/rがvw、gapはvw。
+  //   t=上の余白 b=下の余白 l=左の余白 r=右の余白 gap=時計と天気カードの間の空き
+  // 未指定の写真は通常の配置。縦向きの画面では使いません。
+  const BG_ZONE = {
+    1: { t: 50 },                 // 顔は上寄り → 下半分に表示
+    2: { b: 54 },                 // 顔は中央より下 → 上半分に表示
+    3: { t: 52 },
+    4: { t: 50 },                 // 顔は上寄り
+    5: { t: 52 },                 // 顔は上寄り
+    6: { t: 52 },
+    7: { l: 24, b: 52 },          // 顔は左上と中央下 → 右上に表示
+    8: { b: 54 },                 // 顔は中央より下
+    9: { t: 66 },                 // 顔は右上と左下 → 最下部の帯
+    10: { t: 54, gap: 36 }        // 中央下の顔を避け、時計は左下・カードは右下に分けて表示
+  };
+  function bgZone(n, fade) {
+    const m = document.querySelector("main"), land = matchMedia("(orientation: landscape)").matches;
+    const apply = () => {
+      const z = land ? (BG_ZONE[n] || {}) : {};
+      const set = (k, v, u) => v === undefined ? m.style.removeProperty(k) : m.style.setProperty(k, v + u);
+      set("--pt", z.t, "vh"); set("--pb", z.b, "vh"); set("--pl", z.l, "vw"); set("--pr", z.r, "vw"); set("--gap", z.gap, "vw");
+      relayout(); m.style.opacity = 1;
+    };
+    if (fade) { m.style.opacity = 0; setTimeout(apply, 700); } else apply();
+  }
+  window.addEventListener("resize", () => bgZone(bgLast, false));
   function bgShow() {
     if (!bgOk.length) return;
     const next = bgOk.find(n => n > bgLast) ?? bgOk[0];
     if (next === bgLast && bgOk.length === 1) return;
+    bgZone(next, bgLast !== 0); // 文字は一度消えてから新しい位置に表示
     bgLast = next;
     const nl = bgEls[bgCur ^ 1], ol = bgEls[bgCur];
     nl.style.backgroundImage = `url("background/${next}.jpeg")`;
