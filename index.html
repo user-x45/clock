@@ -16,7 +16,7 @@
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <style>
-  :root { --bg:#000; --fg:#f2f2f2; --sub:#9aa0a6; --acc:#4fd1c5; --warn:#f6ad55; }
+  :root { --bg:#000; --fg:#f2f2f2; --sub:rgba(255,255,255,.95); --acc:#4fd1c5; --warn:#f6ad55; }
   * { box-sizing: border-box; margin: 0; }
   html, body { height: 100%; background: var(--bg); color: var(--fg); overflow: hidden;
     font-family: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", -apple-system, "Segoe UI", sans-serif;
@@ -25,7 +25,7 @@
     padding: calc(2.5vh + env(safe-area-inset-top)) calc(3vw + env(safe-area-inset-right)) calc(4.5vh + env(safe-area-inset-bottom)) calc(3vw + env(safe-area-inset-left)); }
   #left { gap: 1.6vh; flex: 1.45; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   #right { overflow: hidden; flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 1.5vh; }
-  .card { overflow: hidden; background: rgba(0,0,0,.28); border-radius: 12px; padding: 1.2vh 1.1vw; text-shadow: none; }
+  .card { overflow: hidden; background: rgba(0,0,0,.42); border-radius: 12px; padding: 1.2vh 1.1vw; text-shadow: none; }
   .card h3 { font-size: min(1.4vw, 2.6vh); font-weight: 400; color: var(--sub); letter-spacing: .1em; margin-bottom: .6vh; }
   #hourly { display: grid; grid-template-columns: repeat(4, auto); justify-content: space-between; text-align: center; font-size: min(1.9vw, 3.6vh); line-height: 1.25; }
   #hourly { font-family: "Montserrat", "Zen Kaku Gothic New", sans-serif; font-weight: 300; }
@@ -42,24 +42,24 @@
   #sec { font-size: .45em; color: var(--acc); margin-left: .08em; }
   #date { white-space: nowrap; line-height: 1.2; letter-spacing: .08em; font-size: min(3.4vw, 7vh); font-weight: 300; }
   #wday { margin-left: .5em; color: var(--acc); }
-  #weather { line-height: 1.2; font-size: min(3vw, 6vh); font-weight: 300; color: var(--fg); white-space: nowrap; }
-  #weather .city { color: var(--sub); font-size: .6em; margin-right: .6em; }
+  #weather { line-height: 1.2; font-size: min(3vw, 6vh); font-weight: 400; color: var(--fg); white-space: nowrap; }
+  #weather .city { color: var(--sub); font-size: .72em; font-weight: 500; margin-right: .6em; }
   #weather .wi { margin-right: .35em; color: var(--acc); }
   #today { white-space: nowrap; display: flex; align-items: baseline; justify-content: center; gap: .7em; font-size: min(2.4vw, 4.8vh); }
   #today[hidden] { display: none; }
-  #today .lbl { font-size: .6em; color: var(--sub); white-space: nowrap; letter-spacing: .1em; }
+  #today .lbl { font-size: .72em; font-weight: 500; color: var(--sub); white-space: nowrap; letter-spacing: .1em; }
   #todayname { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: opacity .5s; }
   #weather.stale { opacity: .5; }
   /* 時間帯ごとの背景(早朝5-9 / 昼9-16 / 夕方16-19 / 夜19-5) */
-  body[data-p="morning"] { --fg:#fffaf0; --sub:rgba(255,255,255,.8); --acc:#fff0c2; }
-  body[data-p="day"]     { --fg:#ffffff; --sub:rgba(255,255,255,.85); --acc:#ffe58a; }
-  body[data-p="evening"] { --fg:#fff7ee; --sub:rgba(255,255,255,.8); --acc:#ffd89b; }
+  body[data-p="morning"] { --fg:#fffaf0; --sub:rgba(255,255,255,.95); --acc:#fff0c2; }
+  body[data-p="day"]     { --fg:#ffffff; --sub:rgba(255,255,255,.95); --acc:#ffe58a; }
+  body[data-p="evening"] { --fg:#fff7ee; --sub:rgba(255,255,255,.95); --acc:#ffd89b; }
   /* 背景スライドショー(background/1.jpeg〜10.jpeg を10秒ごとにクロスフェード) */
   #bgs { position: fixed; inset: 0; z-index: 0; pointer-events: none; background: linear-gradient(180deg, #000106, #08142b); }
   #bgs .layer { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 2.5s ease-in-out; }
   #bgs .layer.on { opacity: 1; }
   #bgs::after { content: ""; position: absolute; inset: 0; background: rgba(0,0,0,.35); } /* 文字を読みやすくする暗幕 */
-  main { position: relative; z-index: 1; text-shadow: 0 2px 12px rgba(0,0,0,.35); }
+  main { position: relative; z-index: 1; text-shadow: 0 1px 3px rgba(0,0,0,.75), 0 2px 14px rgba(0,0,0,.55); }
   #dim { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity 3s; z-index: 10; }
   #status { z-index: 2; text-shadow: 0 1px 6px rgba(0,0,0,.4); position: fixed; bottom: calc(8px + env(safe-area-inset-bottom)); left: 0; right: 0; text-align: center;
     font-size: 12px; color: var(--sub); }
