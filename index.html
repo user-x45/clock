@@ -106,6 +106,48 @@
     #qrcv { width: min(30vw, 16vh); flex: none; }
     #qrtitle { font-size: 3.4vw; -webkit-line-clamp: 3; } #qrnote { font-size: 2.6vw; } #qrclose { font-size: 3.4vw; padding: .8vh 4vw; margin-top: 0; align-self: flex-start; }
   }
+  /* お知らせ: ボタン(未読バッジ)・プッシュ風バナー・一覧 */
+  #nbtn { flex: none; display: flex; align-items: center; justify-content: center; gap: .7em; font: inherit; font-size: min(1.7vw, 3.2vh); letter-spacing: .1em;
+    color: var(--sub); background: rgba(0,0,0,.28); border: 0; border-radius: 12px; padding: .5em 1em; cursor: pointer; text-shadow: none; }
+  #nbtn.has { color: var(--fg); } #nbtn.has i { color: var(--acc); } #nbtn.bad { opacity: .6; }
+  #nbtn:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+  .nic { position: relative; display: inline-block; }
+  #nbadge { position: absolute; top: -.7em; right: -1.1em; min-width: 1.5em; height: 1.5em; padding: 0 .35em; border-radius: 999px; background: #e53e3e; color: #fff;
+    font-size: .62em; font-weight: 500; line-height: 1; display: flex; align-items: center; justify-content: center; letter-spacing: 0; }
+  #nbadge[hidden] { display: none; }
+  #push { position: fixed; top: calc(1.5vh + env(safe-area-inset-top)); left: 50%; z-index: 19; width: min(80vw, 760px); display: flex; gap: 1.4vw; align-items: flex-start;
+    color: #f2f2f2; background: rgba(38,40,46,.97); border: 1px solid rgba(255,255,255,.16); border-radius: 18px; padding: 1.6vh 1.6vw;
+    box-shadow: 0 10px 30px rgba(0,0,0,.5); text-shadow: none; cursor: pointer; pointer-events: none;
+    transform: translate(-50%, -160%); transition: transform .5s cubic-bezier(.2,.8,.2,1); }
+  #push.show { transform: translate(-50%, 0); pointer-events: auto; }
+  .pi { flex: none; width: min(4.4vw, 8vh); aspect-ratio: 1; border-radius: 22%; background: #4fd1c5; color: #06201d; display: flex; align-items: center; justify-content: center; font-size: min(2.2vw, 4vh); }
+  .pt { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: .3vh; }
+  .ph { display: flex; justify-content: space-between; gap: 1em; font-size: min(1.4vw, 2.6vh); color: #9aa0a6; }
+  #ptitle { font-size: min(2.4vw, 4.4vh); font-weight: 500; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #pbody { font-size: min(1.9vw, 3.4vh); color: #c9cdd3; line-height: 1.4; white-space: pre-line; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  #pbody[hidden] { display: none; }
+  #nl { position: fixed; inset: 0; z-index: 15; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.8); text-shadow: none; }
+  #nl[hidden] { display: none; }
+  #nbox { background: #1b1d22; color: #f2f2f2; border: 1px solid rgba(255,255,255,.14); border-radius: 16px; padding: 2.4vh 2.4vw;
+    width: min(90vw, 820px); max-height: 90vh; max-height: 90dvh; display: flex; flex-direction: column; gap: 1.6vh; }
+  #nhead { display: flex; align-items: center; justify-content: space-between; gap: 1em; }
+  #ntitle { font-size: min(2.8vw, 5vh); font-weight: 500; }
+  #nacts { display: flex; gap: 1vw; align-items: center; }
+  #nclear { color: #fc8181 !important; }
+  #nclose, #nclear { font: inherit; font-size: min(1.6vw, 3vh); color: #f2f2f2; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.3); border-radius: 999px; padding: .6vh 1.6vw; cursor: pointer; }
+  #nclose:focus-visible, #nclear:focus-visible, .ni-del:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+  #nitems { list-style: none; padding: 0; overflow: auto; min-height: 0; display: flex; flex-direction: column; gap: 1vh; }
+  #nitems li { padding: 1.2vh 1.2vw; border-radius: 12px; background: rgba(255,255,255,.05); border: 1px solid transparent; }
+  #nitems li.new { border-color: rgba(79,209,197,.6); background: rgba(79,209,197,.1); }
+  #nitems li.ni-empty { background: none; text-align: center; color: #b5bac1; font-size: min(1.8vw, 3.3vh); }
+  .ni-del { font: inherit; background: none; border: 0; color: #b5bac1; padding: .35em .7em; margin: -.35em -.7em -.35em 0; cursor: pointer; }
+  .ni-h { display: flex; justify-content: space-between; align-items: center; gap: 1em; font-size: min(1.4vw, 2.6vh); color: #b5bac1; } .ni-tag { color: #4fd1c5; font-weight: 500; }
+  .ni-t { font-size: min(2.2vw, 4vh); font-weight: 500; line-height: 1.35; }
+  .ni-b { font-size: min(1.8vw, 3.3vh); color: #d5d8dd; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; margin-top: .4vh; }
+  @media (orientation: portrait) {
+    #push { width: 92vw; gap: 3vw; padding: 1.6vh 3vw; } .pi { width: 10vw; font-size: 5vw; } .ph { font-size: 3vw; } #ptitle { font-size: 4.6vw; } #pbody { font-size: 3.8vw; }
+    #nbox { padding: 2vh 4vw; } #ntitle { font-size: 5vw; } #nclose, #nclear { font-size: 3.4vw; padding: .8vh 3vw; } .ni-h { font-size: 3vw; } .ni-t { font-size: 4.4vw; } .ni-b { font-size: 3.8vw; }
+  }
   /* 時間帯ごとの背景(早朝5-9 / 昼9-16 / 夕方16-19 / 夜19-5) */
   body[data-p="morning"] { --fg:#fffaf0; --sub:rgba(255,255,255,.95); --acc:#fff0c2; }
   body[data-p="day"]     { --fg:#ffffff; --sub:rgba(255,255,255,.95); --acc:#ffe58a; }
@@ -174,6 +216,7 @@
     <div id="today" hidden><span class="lbl">今日は何の日</span><span id="todayname"></span></div>
   </div>
   <div id="right">
+    <button id="nbtn" type="button" aria-label="お知らせ"><span class="nic"><i id="nicon" class="fa-solid fa-bell"></i><b id="nbadge" hidden></b></span><span>お知らせ</span></button>
     <div class="card"><h3>これからの天気(2時間ごと)</h3><div id="hourly"></div></div>
     <div class="card"><h3>明日の天気</h3><div id="tomorrow">取得中…</div></div>
     <div class="card"><h3 id="newsh">ニュース</h3><ul id="newslist"><li>取得中…</li></ul></div>
@@ -181,6 +224,8 @@
 </main>
 <div id="wm" hidden><div id="wbox"><div id="wtitle"></div><div id="wsum"></div><table id="wtbl"></table></div></div>
 <div id="qr" hidden><div id="qrbox"><iframe id="artf" title="記事" sandbox referrerpolicy="no-referrer"></iframe><div id="qrside"><canvas id="qrcv"></canvas><div id="qrtxt"><div id="qrtitle"></div><div id="qrnote">本文だけを抜き出したリーダー表示です。うまく表示されないときや、スマートフォンで読むときは、QRコードを読み取ってください。</div><button id="qrclose" type="button">閉じる</button></div></div></div></div>
+<div id="nl" hidden><div id="nbox"><div id="nhead"><div id="ntitle">お知らせ</div><div id="nacts"><button id="nclear" type="button">すべて削除</button><button id="nclose" type="button">閉じる</button></div></div><ul id="nitems"></ul></div></div>
+<div id="push" role="status"><div class="pi"><i class="fa-solid fa-bell"></i></div><div class="pt"><div class="ph"><span>お知らせ</span><span id="pmore"></span></div><div id="ptitle"></div><div id="pbody"></div></div></div>
 <div id="alert"><div id="atitle"></div><div id="amain"></div><div id="asub"></div></div>
 <div id="greet"></div>
 <div id="dim"></div>
@@ -291,8 +336,8 @@
     const a = lastSync ? `時刻取得 ${f(lastSync)}` + (lastErr ? "(再取得失敗)" : "") : "時刻取得 失敗(端末時刻を表示中)";
     const b = wLast ? `天気取得 ${f(wLast)}` + (wErr ? "(再取得失敗)" : "") : (wErr ? "天気取得 失敗" : "天気取得中…");
     const q = ["地震情報 接続中…", "地震情報 受信待機中", "地震情報 切断(再接続中)"][qState];
-    el.textContent = a + "  ・  " + b + "  ・  " + c + "  ・  " + q;
-    el.className = (lastErr || wErr || nErr || !lastSync || qState === 2) ? "warn" : "";
+    el.textContent = a + "  ・  " + b + "  ・  " + c + "  ・  " + q + ntMsg();
+    el.className = (lastErr || wErr || nErr || !lastSync || qState === 2 || ntBad()) ? "warn" : "";
   }
 
 
@@ -601,6 +646,113 @@
   });
   $("qr").addEventListener("click", e => { e.stopPropagation(); if (e.target.id === "qr" || e.target.id === "qrclose") hideQR(); });
 
+  // ---- お知らせ(別ページ send.html から送信 → Workers経由で受信) ----
+  // 受信するとプッシュ通知のようにバナー表示し、ボタンに未読バッジを出す。
+  // 一覧を開くと既読になり、送信ページにも「既読」が反映される。
+  const NOTICE_API = "https://news-proxy.user-x45.workers.dev/api/notices";
+  const NOTICE_INTERVAL = 10 * 1000;  // 新着の確認間隔
+  const PUSH_MS = 8000;               // バナーの表示時間
+  const LIST_MS = 60 * 1000;          // 一覧を自動で閉じるまでの時間
+  const kp = new URLSearchParams(location.search);
+  let ntList = [], ntInit = false, ntErr = false, ntBusy = false, ntOpen = false, pushT = 0, listT = 0;
+  const ntSeen = new Set(), ntNew = new Set(), ntGone = new Set(); // ntGone: 削除中(サーバー反映前に復活して見えないようにする)
+  const ntBad = () => ntErr;
+  const ntMsg = () => ntErr ? "  ・  お知らせ 接続エラー" : "";
+  const mk = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; };
+  const ntTime = ms => { const d = new Date(ms); return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${p2(d.getMinutes())}`; };
+
+  async function ntFetch(path, opt = {}) {
+    const r = await fetch(NOTICE_API + path, { cache: "no-store", ...opt,
+      headers: opt.body ? { "Content-Type": "application/json" } : {} });
+    if (!r.ok) throw new Error(r.status);
+    return r.json();
+  }
+
+  async function ntPoll() {
+    if (ntBusy) return;
+    ntBusy = true;
+    try { const j = await ntFetch(""); ntErr = false; ntApply(j.notices || []); }
+    catch (e) { ntErr = true; }
+    ntBusy = false; renderNt(); renderStatus();
+  }
+
+  // 新着の判定: 初回取得分は静かに取り込み(バッジのみ)、2回目以降の未読の新着だけバナーを出す
+  function ntApply(list) {
+    list = list.filter(n => !ntGone.has(n.id));
+    const fresh = list.filter(n => !ntSeen.has(n.id)), first = !ntInit;
+    list.forEach(n => ntSeen.add(n.id)); ntInit = true; ntList = list;
+    if (ntOpen) { fresh.forEach(n => ntNew.add(n.id)); renderList(); ntMarkRead(); }
+    else if (!first) { const arr = fresh.filter(n => !n.readAt); if (arr.length) showPush(arr[0], arr.length - 1); }
+  }
+
+  function renderNt() {
+    const u = ntList.filter(n => !n.readAt).length, b = $("nbadge"), off = ntBad();
+    b.hidden = !u; b.textContent = u > 99 ? "99+" : String(u);
+    $("nbtn").classList.toggle("has", u > 0); $("nbtn").classList.toggle("bad", off);
+    $("nicon").className = "fa-solid " + (off ? "fa-bell-slash" : "fa-bell");
+    $("nbtn").setAttribute("aria-label", u ? `お知らせ 未読${u}件` : "お知らせ");
+  }
+
+  function showPush(n, more) {
+    $("ptitle").textContent = n.title || "お知らせ"; $("pbody").textContent = n.body || ""; $("pbody").hidden = !n.body;
+    $("pmore").textContent = more > 0 ? `ほか${more}件` : "たった今";
+    const el = $("push"); el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
+    clearTimeout(pushT); pushT = setTimeout(hidePush, PUSH_MS);
+  }
+  function hidePush() { clearTimeout(pushT); $("push").classList.remove("show"); }
+
+  function renderList() {
+    const ul = $("nitems"); ul.textContent = ""; $("nclear").hidden = !ntList.length;
+    if (!ntList.length) { ul.appendChild(mk("li", "ni-empty", ntErr ? "お知らせを取得できません" : ntInit ? "お知らせはありません" : "読み込み中…")); return; }
+    ntList.forEach(n => {
+      const li = mk("li", ntNew.has(n.id) ? "new" : ""), h = mk("div", "ni-h"), l = mk("span", "", ntTime(n.createdAt) + (ntNew.has(n.id) ? "  " : ""));
+      if (ntNew.has(n.id)) l.appendChild(mk("span", "ni-tag", "NEW"));
+      const d = mk("button", "ni-del"); d.type = "button"; d.dataset.id = n.id; d.setAttribute("aria-label", "削除"); d.appendChild(mk("i", "fa-solid fa-trash-can"));
+      h.appendChild(l); h.appendChild(d);
+      li.appendChild(h); li.appendChild(mk("div", "ni-t", n.title || "お知らせ"));
+      if (n.body) li.appendChild(mk("div", "ni-b", n.body));
+      ul.appendChild(li);
+    });
+  }
+
+  // 一覧を開いたら未読をすべて既読にする(失敗しても一覧を開いている間は次の確認で再送する)
+  async function ntMarkRead() {
+    const ids = ntList.filter(n => !n.readAt).map(n => n.id);
+    if (!ids.length) return;
+    const t = Date.now();
+    ntList.forEach(n => { if (ids.includes(n.id)) n.readAt = t; });
+    renderNt();
+    try { const j = await ntFetch("/read", { method: "POST", body: JSON.stringify({ ids }) }); ntApply(j.notices || []); }
+    catch (e) { ntList.forEach(n => { if (n.readAt === t) n.readAt = null; }); }
+    renderNt(); if (ntOpen) renderList();
+  }
+
+  function openList() {
+    hidePush(); ntNew.clear(); ntList.forEach(n => { if (!n.readAt) ntNew.add(n.id); }); // 今回新しく見るものにNEWを付ける
+    ntOpen = true; renderList(); $("nl").hidden = false;
+    clearTimeout(listT); listT = setTimeout(closeList, LIST_MS);
+    ntMarkRead();
+  }
+  function closeList() { clearTimeout(listT); ntOpen = false; ntNew.clear(); $("nl").hidden = true; }
+
+  // 削除(1件 / すべて)。サーバーが失敗した場合は次の確認で元に戻る
+  async function ntDelete(ids) {
+    if (!ids.length) return;
+    ids.forEach(id => ntGone.add(id));
+    ntList = ntList.filter(n => !ntGone.has(n.id)); renderNt(); renderList();
+    clearTimeout(listT); listT = setTimeout(closeList, LIST_MS);
+    try { const j = await ntFetch("/delete", { method: "POST", body: JSON.stringify({ ids }) }); ids.forEach(id => ntGone.delete(id)); ntApply(j.notices || []); }
+    catch (e) { ids.forEach(id => ntGone.delete(id)); ntErr = true; renderStatus(); }
+    renderNt(); if (ntOpen) renderList();
+  }
+  $("nitems").addEventListener("click", e => { const b = e.target.closest(".ni-del"); if (b) { e.stopPropagation(); ntDelete([b.dataset.id]); } });
+  $("nclear").addEventListener("click", e => { e.stopPropagation(); if (confirm("お知らせをすべて削除しますか?")) ntDelete(ntList.map(n => n.id)); });
+  $("nbtn").addEventListener("click", e => { e.stopPropagation(); openList(); });
+  $("push").addEventListener("click", e => { e.stopPropagation(); openList(); });
+  $("nl").addEventListener("click", e => { e.stopPropagation(); if (e.target.id === "nl" || e.target.id === "nclose") closeList(); });
+  // 動作確認用: index.html?nttest=1(バナーの見た目だけ確認)
+  if (kp.get("nttest")) setTimeout(() => showPush({ title: "テスト通知", body: "お知らせの表示確認です" }, 0), 2000);
+
   // 全画面切替
   // タップで全画面に入る(一度入ったらタップ・長押しでは解除しない。解除された場合は次のタップで再び全画面に戻る)
   document.body.addEventListener("click", () => {
@@ -612,9 +764,9 @@
   let wl = null;
   async function keepAwake() { try { wl = await navigator.wakeLock?.request("screen"); } catch (e) {} }
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") { keepAwake(); sync(); render(); weather(); news(); today(); renderDay(); eqConnect(); }
+    if (document.visibilityState === "visible") { keepAwake(); sync(); render(); weather(); news(); today(); renderDay(); eqConnect(); ntPoll(); }
   });
-  window.addEventListener("online", () => { sync(); weather(); news(); today(); garbageLoad(); eqConnect(); });
+  window.addEventListener("online", () => { sync(); weather(); news(); today(); garbageLoad(); eqConnect(); ntPoll(); });
 
   keepAwake();
   render();
@@ -629,6 +781,8 @@
   garbageLoad();
   renderDay();
   eqConnect();
+  ntPoll();
+  setInterval(ntPoll, NOTICE_INTERVAL);
 
 })();
 </script>
