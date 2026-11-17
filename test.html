@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>地震情報 接続テスト</title>
+<style>
+  :root { --bg:#f5f6f8; --card:#fff; --fg:#1a202c; --sub:#6b7280; --line:#e2e5ea; --ok:#16a34a; --ng:#dc2626; --wait:#d97706; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f1115; --card:#1a1d24; --fg:#e8eaed; --sub:#9aa3b0; --line:#2a2f39; } }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:16px; background:var(--bg); color:var(--fg); font:15px/1.5 -apple-system,"Hiragino Sans","Yu Gothic",sans-serif; }
+  main { max-width:640px; margin:0 auto; display:grid; gap:12px; }
+  h1 { font-size:18px; margin:0 0 2px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; }
+  .row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .dot { width:12px; height:12px; border-radius:50%; background:var(--sub); flex:none; }
+  .dot.ok { background:var(--ok); } .dot.ng { background:var(--ng); } .dot.wait { background:var(--wait); }
+  .st { font-weight:600; font-size:17px; }
+  .sub { color:var(--sub); font-size:13px; }
+  button { font:inherit; padding:9px 14px; border-radius:8px; border:1px solid var(--line); background:var(--card); color:var(--fg); cursor:pointer; }
+  button.pri { background:#2563eb; border-color:#2563eb; color:#fff; }
+  button:active { opacity:.7; }
+  .kv { display:grid; grid-template-columns:auto 1fr; gap:4px 12px; font-size:14px; }
+  .kv span:nth-child(odd) { color:var(--sub); }
+  #log { max-height:300px; overflow:auto; font:12.5px/1.45 ui-monospace,Menlo,Consolas,monospace; white-space:pre-wrap; word-break:break-all; }
+  #log div { padding:3px 0; border-bottom:1px solid var(--line); }
+  .t-ok { color:var(--ok); } .t-ng { color:var(--ng); } .t-eq { font-weight:700; }
+</style>
+</head>
+<body>
+<main>
+  <h1>地震情報 接続テスト</h1>
+
+  <div class="card">
+    <div class="row"><span id="dot" class="dot"></span><span id="st" class="st">未接続</span></div>
+    <div class="sub" id="detail" style="margin-top:4px">wss://api.p2pquake.net/v2/ws</div>
+    <div class="row" style="margin-top:12px">
+      <button class="pri" id="bConn">接続</button>
+      <button id="bDisc">切断</button>
+      <button id="bHttp">履歴を取得(HTTP)</button>
+      <button id="bClear">ログ消去</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="kv">
+      <span>接続時間</span><span id="kUp">-</span>
+      <span>最後の受信</span><span id="kLast">-</span>
+      <span>受信数</span><span id="kCnt">0</span>
+      <span>切断回数</span><span id="kDrop">0</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sub" style="margin-bottom:6px">ログ(地震が無いと受信は出ません。接続できていれば正常です)</div>
+    <div id="log"></div>
+  </div>
+</main>
+
+<script>
+(() => {
+  const WS_URL = "wss://api.p2pquake.net/v2/ws";
+  const HTTP_URL = "https://api.p2pquake.net/v2/history?codes=551&limit=3";
+  const $ = id => document.getElementById(id);
+  const p2 = n => String(n).padStart(2, "0");
+  const hms = d => `${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())}`;
+  const SCALE = { 10:"1", 20:"2", 30:"3", 40:"4", 45:"5弱", 50:"5強", 55:"6弱", 60:"6強", 70:"7" };
+
+  let ws = null, openedAt = 0, count = 0, drops = 0, manual = false, timer = null;
+
+  const log = (msg, cls) => {
+    const d = document.createElement("div");
+    if (cls) d.className = cls;
+    d.textContent = `[${hms(new Date())}] ${msg}`;
+    $("log").prepend(d);
+  };
+  const setState = (cls, text, detail) => {
+    $("dot").className = "dot " + cls;
+    $("st").textContent = text;
+    if (detail) $("detail").textContent = detail;
+  };
+
+  const describe = m => {
+    if (m.code === 551) {
+      const e = m.earthquake || {}, h = e.hypocenter || {};
+      return `地震情報 ${h.name || "震源不明"} M${h.magnitude ?? "?"} 最大震度${SCALE[e.maxScale] || "?"}`;
+    }
+    if (m.code === 556) return "緊急地震速報(警報)";
+    if (m.code === 552) return "津波予報";
+    return `code ${m.code}`;
+  };
+
+  function connect() {
+    if (ws) return;
+    manual = false;
+    clearTimeout(timer);
+    setState("wait", "接続中…", WS_URL);
+    log("接続を開始");
+    try { ws = new WebSocket(WS_URL); } catch (e) { fail("WebSocketを作れません: " + e.message); return; }
+    ws.onopen = () => { openedAt = Date.now(); setState("ok", "接続済み", "受信待機中"); log("接続できました", "t-ok"); };
+    ws.onmessage = ev => {
+      count++; $("kCnt").textContent = count; $("kLast").textContent = hms(new Date());
+      let m; try { m = JSON.parse(ev.data); } catch { log("JSONではないデータ: " + String(ev.data).slice(0, 80)); return; }
+      log(describe(m), (m.code === 551 || m.code === 556) ? "t-eq" : "");
+    };
+    ws.onerror = () => log("エラーが発生しました(詳細はブラウザでは取得できません)", "t-ng");
+    ws.onclose = e => {
+      ws = null; openedAt = 0;
+      if (manual) { setState("", "未接続", "手動で切断しました"); log("切断しました"); return; }
+      drops++; $("kDrop").textContent = drops;
+      fail(`切断されました (code ${e.code})`);
+    };
+  }
+  function fail(msg) {
+    setState("ng", "切断(10秒後に再接続)", msg);
+    log(msg, "t-ng");
+    clearTimeout(timer);
+    timer = setTimeout(connect, 10000);
+  }
+  function disconnect() {
+    manual = true; clearTimeout(timer);
+    if (ws) ws.close(); else setState("", "未接続", "手動で切断しました");
+  }
+
+  async function http() {
+    log("HTTPで履歴を取得中…");
+    const t0 = performance.now();
+    try {
+      const r = await fetch(HTTP_URL, { cache: "no-store" });
+      const j = await r.json();
+      log(`HTTP ${r.status} (${Math.round(performance.now() - t0)}ms) 件数 ${j.length}`, "t-ok");
+      j.forEach(m => log("  " + (m.time || "") + " " + describe(m)));
+    } catch (e) {
+      log("HTTP取得に失敗: " + e.message, "t-ng");
+    }
+  }
+
+  setInterval(() => {
+    if (!openedAt) { $("kUp").textContent = "-"; return; }
+    const s = Math.floor((Date.now() - openedAt) / 1000);
+    $("kUp").textContent = `${Math.floor(s / 60)}分${p2(s % 60)}秒`;
+  }, 1000);
+
+  $("bConn").onclick = connect;
+  $("bDisc").onclick = disconnect;
+  $("bHttp").onclick = http;
+  $("bClear").onclick = () => { $("log").textContent = ""; };
+  connect();
+})();
+</script>
+</body>
+</html>
