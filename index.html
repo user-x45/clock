@@ -346,6 +346,7 @@
   // ---- 今日のごみ・今日の気温 ----
   // ごみ収集日は garbage.json(札幌市 北区-5 / 2026年9月〜2027年9月)から読み込む
   const ymd = d => `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
+  let gJ = null;
   async function garbageLoad() {
     try {
       const r = await fetch("garbage.json", { cache: "no-cache" });
