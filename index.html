@@ -524,23 +524,17 @@
 
   function eqHandle(d) { if (d.code === 556) onEew(d); else if (d.code === 551) onQuake(d); }
 
-  let ws = null, wsTimer = 0, wsHang = 0, wsFails = 0;
+  let ws = null, wsTimer = 0;
   function eqConnect() {
     clearTimeout(wsTimer);
-    if (ws && ws.readyState === 1) return;      // 接続済みなら何もしない
-    if (ws) { const o = ws; ws = null; clearTimeout(wsHang); o.onopen = o.onmessage = o.onerror = o.onclose = null; try { o.close(); } catch (e) {} } // 接続中のまま固まった接続は捨てて張り直す
+    if (ws && ws.readyState <= 1) return;
     qState = 0; renderStatus();
-    let c;
-    const later = () => { qState = 2; renderStatus(); wsTimer = setTimeout(eqConnect, Math.min(2000 * Math.pow(2, wsFails++), 10000)); }; // 2→4→8→10秒
-    try { c = ws = new WebSocket(EQ_WS); } catch (e) { later(); return; }
-    const retry = () => { if (ws !== c) return; clearTimeout(wsHang); later(); };
-    wsHang = setTimeout(() => { if (ws === c && c.readyState === 0) { try { c.close(); } catch (e) {} retry(); } }, 5000); // 5秒つながらなければ失敗扱い
-    c.onopen = () => { if (ws !== c) return; clearTimeout(wsHang); wsFails = 0; qState = 1; renderStatus(); };
-    c.onmessage = ev => { try { eqHandle(JSON.parse(ev.data)); } catch (e) {} };
-    c.onerror = () => { try { c.close(); } catch (e) {} };
-    c.onclose = retry;
+    try { ws = new WebSocket(EQ_WS); } catch (e) { qState = 2; renderStatus(); wsTimer = setTimeout(eqConnect, 10000); return; }
+    ws.onopen = () => { qState = 1; renderStatus(); };
+    ws.onmessage = ev => { try { eqHandle(JSON.parse(ev.data)); } catch (e) {} };
+    ws.onerror = () => { try { ws.close(); } catch (e) {} };
+    ws.onclose = () => { qState = 2; renderStatus(); wsTimer = setTimeout(eqConnect, 10000); };
   }
-  window.addEventListener("pageshow", () => eqConnect());
   // 動作確認用: index.html?eqtest=eew または ?eqtest=quake
   const qt = new URLSearchParams(location.search).get("eqtest");
   if (qt) setTimeout(() => eqHandle(qt === "eew"
