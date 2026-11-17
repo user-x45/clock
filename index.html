@@ -5,7 +5,6 @@
 <title>時計</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#000000">
-<meta name="color-scheme" content="dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -17,18 +16,18 @@
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <style>
-  :root { color-scheme: dark; --bg:#000; --fg:#f2f2f2; --sub:rgba(255,255,255,.95); --acc:#4fd1c5; --warn:#f6ad55; }
+  :root { --bg:#000; --fg:#f2f2f2; --sub:#9aa0a6; --acc:#4fd1c5; --warn:#f6ad55; }
   * { box-sizing: border-box; margin: 0; }
   html, body { height: 100%; background: var(--bg); color: var(--fg); overflow: hidden;
     font-family: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", -apple-system, "Segoe UI", sans-serif;
-    -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+    -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
   main { height: 100%; display: flex; flex-direction: row; align-items: stretch; gap: 2vw;
     padding: calc(2.5vh + env(safe-area-inset-top)) calc(3vw + env(safe-area-inset-right)) calc(4.5vh + env(safe-area-inset-bottom)) calc(3vw + env(safe-area-inset-left)); }
-  #left { gap: 2vh; flex: 1.45; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  #left { gap: 1.6vh; flex: 1.45; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   #right { overflow: hidden; flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 1.5vh; }
   .card { overflow: hidden; background: rgba(0,0,0,.28); border-radius: 12px; padding: 1.2vh 1.1vw; text-shadow: none; }
   .card h3 { font-size: min(1.4vw, 2.6vh); font-weight: 400; color: var(--sub); letter-spacing: .1em; margin-bottom: .6vh; }
-  #hourly { display: grid; grid-template-columns: repeat(4, auto); justify-content: space-between; text-align: center; font-size: min(1.9vw, 3.6vh); line-height: 1.25; }
+  #hourly { display: grid; grid-template-columns: repeat(6, auto); justify-content: space-between; text-align: center; font-size: min(1.9vw, 3.6vh); line-height: 1.25; }
   #hourly { font-family: "Montserrat", "Zen Kaku Gothic New", sans-serif; font-weight: 300; }
   #hourly .h, #hourly .p { color: var(--sub); font-size: .75em; }
   #hourly i { display: block; color: var(--acc); margin: .15em 0; }
@@ -43,73 +42,18 @@
   #sec { font-size: .45em; color: var(--acc); margin-left: .08em; }
   #date { white-space: nowrap; line-height: 1.2; letter-spacing: .08em; font-size: min(3.4vw, 7vh); font-weight: 300; }
   #wday { margin-left: .5em; color: var(--acc); }
-  #weather { line-height: 1.2; font-size: min(3vw, 6vh); font-weight: 400; color: var(--fg); white-space: nowrap; }
-  #weather .city { color: var(--sub); font-size: .72em; font-weight: 500; margin-right: .6em; }
+  #weather { line-height: 1.2; font-size: min(3vw, 6vh); font-weight: 300; color: var(--fg); white-space: nowrap; }
+  #weather .city { color: var(--sub); font-size: .6em; margin-right: .6em; }
   #weather .wi { margin-right: .35em; color: var(--acc); }
-  #today { white-space: nowrap; display: flex; align-items: baseline; justify-content: center; gap: .7em; font-size: min(2vw, 4vh); max-width: 100%; }
+  #today { white-space: nowrap; display: flex; align-items: baseline; justify-content: center; gap: .7em; font-size: min(2.4vw, 4.8vh); }
   #today[hidden] { display: none; }
-  #today .lbl { font-size: .72em; font-weight: 500; color: var(--sub); white-space: nowrap; letter-spacing: .1em; }
+  #today .lbl { font-size: .6em; color: var(--sub); white-space: nowrap; letter-spacing: .1em; }
   #todayname { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: opacity .5s; }
   #weather.stale { opacity: .5; }
-  #weather2 { white-space: nowrap; line-height: 1.2; letter-spacing: .04em; }
-  #weather2:empty { display: none; }
-  /* 天気カード(現在・最高最低を1枚にまとめる) */
-  #wx { display: flex; flex-direction: column; align-items: center; gap: .9vh; background: rgba(0,0,0,.28); border-radius: 14px; padding: 1.4vh 1.6vw; text-shadow: none; }
-  #weather2 { font-size: min(2.2vw, 4.4vh); color: var(--fg); } #weather2 .hi { color: #ff9b8a; } #weather2 .lo { color: #8ec8ff; } #weather2 .k { color: var(--sub); font-size: .7em; margin: 0 .3em 0 .9em; } #weather2 i { color: var(--acc); margin-right: .3em; }
-  #garbage { display: flex; flex-direction: column; align-items: center; gap: .25em; background: rgba(0,0,0,.28); border-radius: 12px; padding: .3em .9em; font-size: min(3vw, 6vh); text-shadow: none; }
-  #garbage[hidden] { display: none; }
-  #garbage .g1, #garbage .g2 { white-space: nowrap; line-height: 1.25; }
-  #garbage .g2 { font-size: .6em; color: var(--sub); }
-  #garbage .lbl { font-size: .62em; font-weight: 500; color: var(--sub); letter-spacing: .1em; margin-right: .7em; }
-  #garbage .g2 .lbl { font-size: 1em; margin-right: .5em; }
-  #garbage .gi b { display: inline-block; width: .7em; height: .7em; border-radius: 50%; margin-right: .3em; vertical-align: -.02em; }
-  #garbage .pl { margin: 0 .35em; opacity: .7; } #garbage .none { color: var(--sub); }
-  #newslist li[data-link] { cursor: pointer; }
-  #hourly, #tomorrow { cursor: pointer; }
-  .card:has(#hourly), .card:has(#tomorrow) { cursor: pointer; }
-  /* 天気の詳細表示(常時ダーク) */
-  #wm { position: fixed; inset: 0; z-index: 15; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.8); text-shadow: none; }
-  #wm[hidden] { display: none; }
-  #wbox { background: #1b1d22; color: #f2f2f2; border: 1px solid rgba(255,255,255,.14); border-radius: 16px; padding: 2.4vh 2.4vw;
-    width: min(90vw, 820px); max-width: 100%; max-height: 90vh; max-height: 90dvh; overflow: auto; display: flex; flex-direction: column; gap: 1.8vh; }
-  #wtitle { font-size: min(2.8vw, 5vh); font-weight: 500; }
-  #wtitle small { font-size: .55em; color: #b5bac1; margin-left: .8em; font-weight: 400; }
-  #wsum { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.2vh 1.6vw; }
-  #wsum div { font-size: min(2.2vw, 4vh); white-space: nowrap; } #wsum span { display: block; font-size: .6em; color: #b5bac1; }
-  #wtbl { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: min(2.2vw, 4vh); font-variant-numeric: tabular-nums; }
-  #wtbl th { font-weight: 400; font-size: .7em; color: #b5bac1; text-align: left; padding: .4vh .6vw; }
-  #wtbl td { padding: .7vh .6vw; border-top: 1px solid rgba(255,255,255,.12); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #wtbl th:nth-child(1) { width: 18%; } #wtbl th:nth-child(2) { width: 38%; } #wtbl th:nth-child(3) { width: 18%; } #wtbl th:nth-child(4) { width: 26%; }
-  #wtbl i { margin-right: .3em; }
-  @media (orientation: portrait) {
-    #wsum { grid-template-columns: repeat(2, 1fr); } #wsum div { font-size: 4vw; } #wtitle { font-size: 5vw; }
-    #wtbl { font-size: 4vw; } #wsum div { white-space: normal; } #wbox { padding: 2vh 4vw; }
-  }
-  /* ニュース記事の表示(プロキシ経由)とQRコード */
-  #qr { position: fixed; inset: 0; z-index: 15; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.85); text-shadow: none; }
-  #qr[hidden] { display: none; }
-  #qrbox { background: #1b1d22; color: #f2f2f2; border: 1px solid rgba(255,255,255,.14); border-radius: 16px;
-    width: min(96vw, 1300px); height: 92vh; height: 92dvh; padding: 1.6vh 1.2vw; display: flex; gap: 1.6vw; overflow: hidden; }
-  #artf { flex: 1 1 0; min-width: 0; height: 100%; border: 0; border-radius: 10px; background: #14161a; }
-  #qrside { flex: 0 0 min(24vw, 40vh); display: flex; flex-direction: column; align-items: center; gap: 1.6vh; overflow: auto; }
-  #qrcv { width: 100%; height: auto; aspect-ratio: 1; image-rendering: pixelated; border-radius: 6px; }
-  #qrcv[hidden] { display: none; }
-  #qrtxt { width: 100%; flex: 1; display: flex; flex-direction: column; gap: 1.2vh; min-height: 0; }
-  #qrtitle { font-size: min(1.5vw, 2.8vh); font-weight: 500; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
-  #qrnote { font-size: min(1.15vw, 2.1vh); color: #b5bac1; line-height: 1.5; }
-  #qrclose { margin-top: auto; font: inherit; font-size: min(1.5vw, 2.8vh); color: #f2f2f2; background: rgba(255,255,255,.12);
-    border: 1px solid rgba(255,255,255,.3); border-radius: 999px; padding: .8vh 1.2vw; cursor: pointer; }
-  #qrclose:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
-  @media (orientation: portrait) {
-    #qrbox { flex-direction: column; padding: 1.4vh 3vw; gap: 1.4vh; }
-    #qrside { flex: none; flex-direction: row; width: 100%; align-items: center; gap: 3vw; }
-    #qrcv { width: min(30vw, 16vh); flex: none; }
-    #qrtitle { font-size: 3.4vw; -webkit-line-clamp: 3; } #qrnote { font-size: 2.6vw; } #qrclose { font-size: 3.4vw; padding: .8vh 4vw; margin-top: 0; align-self: flex-start; }
-  }
   /* 時間帯ごとの背景(早朝5-9 / 昼9-16 / 夕方16-19 / 夜19-5) */
-  body[data-p="morning"] { --fg:#fffaf0; --sub:rgba(255,255,255,.95); --acc:#fff0c2; }
-  body[data-p="day"]     { --fg:#ffffff; --sub:rgba(255,255,255,.95); --acc:#ffe58a; }
-  body[data-p="evening"] { --fg:#fff7ee; --sub:rgba(255,255,255,.95); --acc:#ffd89b; }
+  body[data-p="morning"] { --fg:#fffaf0; --sub:rgba(255,255,255,.8); --acc:#fff0c2; }
+  body[data-p="day"]     { --fg:#ffffff; --sub:rgba(255,255,255,.85); --acc:#ffe58a; }
+  body[data-p="evening"] { --fg:#fff7ee; --sub:rgba(255,255,255,.8); --acc:#ffd89b; }
   .bg { position: fixed; inset: 0; opacity: 0; transition: opacity 4s; z-index: 0; pointer-events: none; }
   #bg-morning { background: linear-gradient(180deg, #1f2f52 0%, #7a4560 55%, #a8694a 100%); }
   #bg-day     { background: linear-gradient(180deg, #0f3560 0%, #1f5a8f 55%, #3a7fb0 100%); }
@@ -126,15 +70,7 @@
     background-size: 220px 220px; }
   body[data-p="morning"] #bg-morning, body[data-p="day"] #bg-day,
   body[data-p="evening"] #bg-evening, body[data-p="night"] #bg-night { opacity: 1; }
-  main { position: relative; z-index: 1; text-shadow: 0 1px 3px rgba(0,0,0,.75), 0 2px 14px rgba(0,0,0,.55); }
-  /* 夜間モード: 黒背景に時刻のみ */
-  body.nm .bg { opacity: 0 !important; }
-  body.nm #right, body.nm #date, body.nm #wx, body.nm #weather, body.nm #weather2, body.nm #garbage, body.nm #today, body.nm #status { display: none !important; }
-  body.nm main { text-shadow: none; }
-  #greet { position: fixed; inset: 0; z-index: 12; display: flex; align-items: center; justify-content: center; text-align: center;
-    background: rgba(0,0,0,.6); color: #fff; text-shadow: 0 2px 16px rgba(0,0,0,.6); font-size: min(8vw, 14vh); font-weight: 300; letter-spacing: .12em;
-    opacity: 0; pointer-events: none; transition: opacity 1.5s ease-in-out; }
-  #greet.show { opacity: 1; }
+  main { position: relative; z-index: 1; text-shadow: 0 2px 12px rgba(0,0,0,.35); }
   #dim { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity 3s; z-index: 10; }
   #status { z-index: 2; text-shadow: 0 1px 6px rgba(0,0,0,.4); position: fixed; bottom: calc(8px + env(safe-area-inset-bottom)); left: 0; right: 0; text-align: center;
     font-size: 12px; color: var(--sub); }
@@ -166,11 +102,7 @@
   <div id="left">
     <div id="time">--:--<span id="sec">--</span></div>
     <div id="date">----年--月--日<span id="wday">-曜日</span></div>
-    <div id="wx">
-      <div id="weather"><span class="city">札幌</span>天気を取得中…</div>
-      <div id="weather2"></div>
-    </div>
-    <div id="garbage" hidden><div class="g1"></div><div class="g2"></div></div>
+    <div id="weather"><span class="city">札幌</span>天気を取得中…</div>
     <div id="today" hidden><span class="lbl">今日は何の日</span><span id="todayname"></span></div>
   </div>
   <div id="right">
@@ -179,24 +111,18 @@
     <div class="card"><h3 id="newsh">ニュース</h3><ul id="newslist"><li>取得中…</li></ul></div>
   </div>
 </main>
-<div id="wm" hidden><div id="wbox"><div id="wtitle"></div><div id="wsum"></div><table id="wtbl"></table></div></div>
-<div id="qr" hidden><div id="qrbox"><iframe id="artf" title="記事" sandbox referrerpolicy="no-referrer"></iframe><div id="qrside"><canvas id="qrcv"></canvas><div id="qrtxt"><div id="qrtitle"></div><div id="qrnote">本文だけを抜き出したリーダー表示です。うまく表示されないときや、スマートフォンで読むときは、QRコードを読み取ってください。</div><button id="qrclose" type="button">閉じる</button></div></div></div></div>
 <div id="alert"><div id="atitle"></div><div id="amain"></div><div id="asub"></div></div>
-<div id="greet"></div>
 <div id="dim"></div>
 <div id="status">時刻を同期中…</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
 (() => {
   const SYNC_INTERVAL = 5 * 60 * 1000;   // 5分ごとに同期
   const SAMPLES = 3;                      // 往復遅延が最小のサンプルを採用
   // 夜間の自動減光(端末のローカル時刻)
-  const NIGHT_START = 0;   // 0:00から
-  const NIGHT_END = 5;     // 5:00まで
-  const DIM_LEVEL = 0;     // 暗さ(0〜1、大きいほど暗い)。0で夜間も減光しない
-  const GREET_MS = 10 * 1000; // あいさつの表示時間
-  let prevNight = null, greetUntil = 0;
+  const NIGHT_START = 22;  // 22:00から
+  const NIGHT_END = 6;     // 6:00まで
+  const DIM_LEVEL = 0.75;  // 暗さ(0〜1、大きいほど暗い)
 
   // 時刻ソース(順番に試行、失敗したら次へ)
   // 小数秒を3桁に揃えてからパース
@@ -213,18 +139,6 @@
   let offset = 0, lastSync = null, lastErr = false, accuracy = null;
   const $ = id => document.getElementById(id);
   const now = () => Date.now() + offset;
-
-  // 取得失敗時の再試行(10秒後 → 30秒後 → 1分後。それでも失敗なら次の定期取得を待つ)
-  const RETRY_DELAYS = [10000, 30000, 60000];
-  const retryN = {}, retryT = {};
-  function retryLater(name, fn) {
-    const n = retryN[name] || 0;
-    clearTimeout(retryT[name]);
-    if (n >= RETRY_DELAYS.length) { retryN[name] = 0; return; }
-    retryN[name] = n + 1;
-    retryT[name] = setTimeout(fn, RETRY_DELAYS[n]);
-  }
-  function retryOk(name) { retryN[name] = 0; clearTimeout(retryT[name]); }
 
   async function sample(src) {
     const t0 = performance.now();
@@ -245,11 +159,11 @@
         offset = best.offset;
         accuracy = best.rtt / 2;
         lastSync = Date.now();
-        lastErr = false; retryOk("sync");
+        lastErr = false;
         return renderStatus();
       } catch (e) { /* 次のソースへ */ }
     }
-    lastErr = true; retryLater("sync", sync);
+    lastErr = true;
     renderStatus();
   }
 
@@ -264,23 +178,12 @@
     $("wday").textContent = WD[d.getDay()] + "曜日";
     // 日付が変わった瞬間に天気・ニュース・今日は何の日をまとめて再取得
     const dk = d.getDate();
-    if (lastDay !== null && dk !== lastDay) { weather(); news(); today(); renderDay(); }
+    if (lastDay !== null && dk !== lastDay) { weather(); news(); today(); }
     lastDay = dk;
     const h = d.getHours();
     document.body.dataset.p = h >= 5 && h < 9 ? "morning" : h >= 9 && h < 16 ? "day" : h >= 16 && h < 19 ? "evening" : "night";
     const night = NIGHT_START > NIGHT_END ? (h >= NIGHT_START || h < NIGHT_END) : (h >= NIGHT_START && h < NIGHT_END);
-    // 夜間モードの前後にあいさつを表示(おやすみなさい → 表示後に夜間モードへ / おはようございます)
-    if (prevNight !== null && night !== prevNight) {
-      greetUntil = now() + GREET_MS;
-      $("greet").textContent = night ? "おやすみなさい" : "おはようございます";
-      $("greet").classList.add("show");
-    }
-    prevNight = night;
-    const greeting = now() < greetUntil;
-    if (!greeting) $("greet").classList.remove("show");
-    const nmOn = night && !greeting; // おやすみなさい表示中は通常画面のまま
-    document.body.classList.toggle("nm", nmOn);
-    $("dim").style.opacity = (nmOn && !alertOn) ? DIM_LEVEL : 0;
+    $("dim").style.opacity = (night && !alertOn) ? DIM_LEVEL : 0;
     setTimeout(render, 1000 - (now() % 1000) + 5); // 秒の境界に合わせて更新
   }
 
@@ -298,7 +201,7 @@
 
   // ---- 札幌の天気(Open-Meteo / APIキー不要) ----
   const WEATHER_INTERVAL = 10 * 60 * 1000; // 10分ごと
-  const WURL = "https://api.open-meteo.com/v1/forecast?latitude=43.0621&longitude=141.3544&current=temperature_2m,apparent_temperature,weather_code,is_day&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&forecast_days=2&wind_speed_unit=ms&timezone=Asia%2FTokyo";
+  const WURL = "https://api.open-meteo.com/v1/forecast?latitude=43.0621&longitude=141.3544&current=temperature_2m,apparent_temperature,weather_code,is_day&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=2&timezone=Asia%2FTokyo";
   // Font Awesome(Free Solid)アイコン。夜間は月アイコンに切替
   const WMAP = (c, day) => c === 0 ? [day ? "fa-sun" : "fa-moon", "快晴", day ? "#f6c945" : "#cbd5e0"]
     : c <= 2 ? [day ? "fa-cloud-sun" : "fa-cloud-moon", "晴れ", day ? "#f6c945" : "#cbd5e0"]
@@ -310,21 +213,21 @@
     : c <= 82 ? ["fa-cloud-sun-rain", "にわか雨", "#63b3ed"]
     : c <= 86 ? ["fa-snowflake", "にわか雪", "#bee3f8"]
     : ["fa-cloud-bolt", "雷雨", "#ecc94b"];
-  let wLast = 0, wErr = false, wJ = null;
+  let wLast = 0, wErr = false;
   async function weather() {
     const el = $("weather");
     try {
       const r = await fetch(WURL, { cache: "no-store" });
       if (!r.ok) throw new Error(r.status);
-      const j = await r.json(), c = j.current; wJ = j;
+      const j = await r.json(), c = j.current;
       const [icon, label, color] = WMAP(c.weather_code, c.is_day === 1);
       el.innerHTML = `<span class="city">札幌</span><i class="fa-solid ${icon} wi"></i>${label} ${Math.round(c.temperature_2m)}°C` +
         `<span class="city" style="margin-left:.6em">体感 ${Math.round(c.apparent_temperature)}°C</span>`;
       el.className = "";
-      // 時間ごと(次の時刻から2時間おきに4件)
+      // 時間ごと(次の時刻から2時間おきに6件)
       const H = j.hourly, i0 = H.time.findIndex(t => t > c.time);
       let hh = "";
-      for (let k = 0; k < 4; k++) {
+      for (let k = 0; k < 6; k++) {
         const i = i0 + k * 2; if (i0 < 0 || i >= H.time.length) break;
         const hr = parseInt(H.time[i].slice(11, 13), 10);
         const ic = WMAP(H.weather_code[i], hr >= 6 && hr < 18)[0];
@@ -334,48 +237,12 @@
       // 明日
       const D = j.daily, [dic, dlabel] = WMAP(D.weather_code[1], true);
       $("tomorrow").innerHTML = `<i class="fa-solid ${dic}"></i><span>${dlabel}</span><span>${Math.round(D.temperature_2m_max[1])}° / ${Math.round(D.temperature_2m_min[1])}°</span><span class="p">降水確率 ${D.precipitation_probability_max[1]}%</span>`;
-      renderWx2(); wLast = Date.now(); wErr = false; retryOk("weather"); renderStatus(); relayout();
+      wLast = Date.now(); wErr = false; renderStatus(); relayout();
     } catch (e) {
-      wErr = true; retryLater("weather", weather); renderStatus();
+      wErr = true; renderStatus();
       if (wLast) el.className = "stale"; // 取得失敗時は前回値を薄く表示
       else el.innerHTML = '<span class="city">札幌</span>天気を取得できません';
     }
-  }
-
-
-  // ---- 今日のごみ・今日の気温 ----
-  // ごみ収集日は garbage.json(札幌市 北区-5 / 2026年9月〜2027年9月)から読み込む
-  const ymd = d => `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
-  async function garbageLoad() {
-    try {
-      const r = await fetch("garbage.json", { cache: "no-cache" });
-      if (!r.ok) throw new Error(r.status);
-      gJ = await r.json(); retryOk("garbage"); renderDay();
-    } catch (e) { retryLater("garbage", garbageLoad); }
-  }
-  function gItems(d) {
-    if (!gJ) return null;
-    const key = ymd(d), [a, b] = gJ.meta.period.split("/");
-    if (key < a || key > b) return "out";
-    const it = gJ.days[key];
-    if (!it) return [];
-    return it.map(id => gJ.categories[id]).filter(Boolean);
-  }
-  const gHtml = it => it.map(c => `<span class="gi"><b style="background:${c.color}"></b>${c.short || c.name}</span>`).join('<span class="pl">+</span>');
-  function renderDay() {
-    const d = new Date(now()), tm = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
-    const box = $("garbage"), t = gItems(d), n = gItems(tm);
-    if (t === null || t === "out") { box.hidden = true; relayout(); return; }
-    const noc = gJ.noCollection.includes(ymd(d));
-    box.querySelector(".g1").innerHTML = `<span class="lbl">今日のごみ</span>` + (t.length ? gHtml(t) : `<span class="none">${noc ? "収集なし(お休み)" : "収集なし"}</span>`);
-    box.querySelector(".g2").innerHTML = n === "out" ? "" : `<span class="lbl">明日</span>` + (n.length ? gHtml(n) : `<span class="none">収集なし</span>`);
-    box.hidden = false; relayout();
-  }
-  function renderWx2() {
-    if (!wJ) return;
-    const D = wJ.daily, R = Math.round;
-    $("weather2").innerHTML = `<span class="hi">最高 ${R(D.temperature_2m_max[0])}°</span> / <span class="lo">最低 ${R(D.temperature_2m_min[0])}°</span>` +
-      `<span class="k">降水確率</span>${D.precipitation_probability_max[0]}%`;
   }
 
   // ---- ニュース(RSS → rss2json経由。APIキー不要) ----
@@ -391,12 +258,12 @@
         const j = await r.json();
         if (j.status !== "ok" || !j.items || !j.items.length) throw new Error("feed");
         const ul = $("newslist"); ul.textContent = "";
-        j.items.slice(0, 3).forEach(it => { const li = document.createElement("li"); li.textContent = it.title; if (it.link) li.dataset.link = it.link; ul.appendChild(li); });
+        j.items.slice(0, 3).forEach(it => { const li = document.createElement("li"); li.textContent = it.title; ul.appendChild(li); });
         $("newsh").textContent = "今日のニュース(" + f.name + ")";
-        nLast = Date.now(); nErr = false; retryOk("news"); renderStatus(); relayout(); return;
+        nLast = Date.now(); nErr = false; renderStatus(); relayout(); return;
       } catch (e) { /* 次のフィードへ */ }
     }
-    nErr = true; retryLater("news", news); renderStatus();
+    nErr = true; renderStatus();
     if (!nLast) { $("newslist").innerHTML = "<li>ニュースを取得できません</li>"; relayout(); }
   }
 
@@ -418,8 +285,8 @@
       if (!r.ok) throw new Error(r.status);
       const j = await r.json();
       anniv = (j.anniversaries || []).map(a => a.name).filter(Boolean);
-      aKey = key; aIdx = 0; retryOk("today"); showAnniv();
-    } catch (e) { retryLater("today", today); /* 前回の表示を維持 */ }
+      aKey = key; aIdx = 0; showAnniv();
+    } catch (e) { /* 前回の表示を維持 */ }
   }
   setInterval(() => { if (anniv.length > 1) { aIdx++; showAnniv(); } }, 15000); // 15秒ごとに切替
   setInterval(() => { if (mmdd() !== aKey && Date.now() - aTry > 60000) today(); }, 30000); // 日付が変わったら再取得
@@ -436,22 +303,18 @@
   function layout() {
     const L = $("left"), W = L.clientWidth * 0.97, H = L.clientHeight;
     const one = (el, hMax, lo = 8) => fit(el, () => el.offsetWidth <= W && el.offsetHeight <= H * hMax, lo, 600);
-    one($("time"), 0.26);
-    one($("date"), 0.125);
-    // 補助情報は主役(時刻・日付)より小さく抑える
-    const sub = (el, hMax, wMax) => fit(el, () => el.offsetWidth <= W * wMax && el.offsetHeight <= H * hMax, 8, 600);
-    sub($("weather"), 0.12, 0.97);
-    sub($("weather2"), 0.11, 0.97);
-    if (!$("garbage").hidden) sub($("garbage"), 0.19, 0.97);
-    if (!$("today").hidden) sub($("today"), 0.085, 0.98);
+    one($("time"), 0.46);
+    one($("date"), 0.12);
+    one($("weather"), 0.11);
+    if (!$("today").hidden) one($("today"), 0.11, 12);
     const R = $("right");
     if (getComputedStyle(R).display === "none") return;
     const RH = R.clientHeight, cards = R.querySelectorAll(".card");
     R.querySelectorAll("h3").forEach(h => h.style.fontSize = Math.max(10, RH * 0.04) + "px");
-    cards[0].style.flex = `0 0 ${RH * 0.32}px`;
+    cards[0].style.flex = `0 0 ${RH * 0.28}px`;
     cards[1].style.flex = `0 0 ${RH * 0.17}px`;
     cards[2].style.flex = "1 1 0"; cards[2].style.minHeight = "0";
-    [[cards[0], $("hourly"), 120], [cards[1], $("tomorrow"), 90], [cards[2], $("newslist"), 90]].forEach(([card, c, hi]) =>
+    [[cards[0], $("hourly"), 70], [cards[1], $("tomorrow"), 90], [cards[2], $("newslist"), 90]].forEach(([card, c, hi]) =>
       fit(c, () => card.scrollHeight <= card.clientHeight + 1 && c.scrollWidth <= c.clientWidth + 1, 8, hi));
   }
   let lq = 0;
@@ -523,20 +386,16 @@
 
   function eqHandle(d) { if (d.code === 556) onEew(d); else if (d.code === 551) onQuake(d); }
 
-  let ws = null, wsTimer = 0, wsHang = 0;
+  let ws = null, wsTimer = 0;
   function eqConnect() {
     clearTimeout(wsTimer);
-    if (ws && ws.readyState === 1) return;      // 接続済みなら何もしない
-    if (ws) { const o = ws; ws = null; clearTimeout(wsHang); o.onopen = o.onmessage = o.onerror = o.onclose = null; try { o.close(); } catch (e) {} } // 接続中のまま固まった接続は捨てて張り直す
+    if (ws && ws.readyState <= 1) return;
     qState = 0; renderStatus();
-    let c;
-    try { c = ws = new WebSocket(EQ_WS); } catch (e) { qState = 2; renderStatus(); wsTimer = setTimeout(eqConnect, 10000); return; }
-    const retry = () => { if (ws !== c) return; clearTimeout(wsHang); qState = 2; renderStatus(); wsTimer = setTimeout(eqConnect, 10000); };
-    wsHang = setTimeout(() => { if (ws === c && c.readyState === 0) { try { c.close(); } catch (e) {} retry(); } }, 8000); // 8秒つながらなければ失敗扱い
-    c.onopen = () => { if (ws !== c) return; clearTimeout(wsHang); qState = 1; renderStatus(); };
-    c.onmessage = ev => { try { eqHandle(JSON.parse(ev.data)); } catch (e) {} };
-    c.onerror = () => { try { c.close(); } catch (e) {} };
-    c.onclose = retry;
+    try { ws = new WebSocket(EQ_WS); } catch (e) { qState = 2; renderStatus(); wsTimer = setTimeout(eqConnect, 10000); return; }
+    ws.onopen = () => { qState = 1; renderStatus(); };
+    ws.onmessage = ev => { try { eqHandle(JSON.parse(ev.data)); } catch (e) {} };
+    ws.onerror = () => { try { ws.close(); } catch (e) {} };
+    ws.onclose = () => { qState = 2; renderStatus(); wsTimer = setTimeout(eqConnect, 10000); };
   }
   // 動作確認用: index.html?eqtest=eew または ?eqtest=quake
   const qt = new URLSearchParams(location.search).get("eqtest");
@@ -544,80 +403,19 @@
     ? { code: 556, time: "", issue: { eventId: "test", serial: "1" }, earthquake: { hypocenter: { name: "石狩地方中部", magnitude: 6.1 } }, areas: [{ name: "石狩地方中部", scaleFrom: 45, scaleTo: 99 }] }
     : { code: 551, time: "", earthquake: { time: "test", hypocenter: { name: "石狩地方中部", magnitude: 4.8 } }, points: [{ addr: "札幌北区新琴似", isArea: false, scale: 40 }] }), 2000);
 
-  // ---- 天気の詳細(これからの天気・明日の天気をタップで表示。30秒または再タップで閉じる) ----
-  let wmT = 0;
-  function hideW() { clearTimeout(wmT); $("wm").hidden = true; }
-  function showWeather(kind) {
-    if (!wJ) return;
-    const H = wJ.hourly, D = wJ.daily, c = wJ.current, R = v => Math.round(v);
-    const day = kind === "hourly" ? 0 : 1, idx = [];
-    if (day === 0) { const i0 = H.time.findIndex(t => t > c.time); if (i0 < 0) return; for (let k = 0; k < 6; k++) if (i0 + k * 3 < H.time.length) idx.push(i0 + k * 3); }
-    else for (let h = 6; h < 24; h += 3) idx.push(24 + h);
-    const [ic, lb, co] = WMAP(D.weather_code[day], true);
-    const sum = [
-      ["天気", `<i class="fa-solid ${ic}" style="color:${co}"></i> ${lb}`],
-      ["最高 / 最低", `${R(D.temperature_2m_max[day])}° / ${R(D.temperature_2m_min[day])}°`],
-      ["降水確率", `${D.precipitation_probability_max[day]}%`],
-      ["最大風速", `${Math.round(D.wind_speed_10m_max[day])}m/s`]
-    ];
-    $("wtitle").innerHTML = (day === 0 ? "これからの天気<small>今日のまとめと3時間ごとの予報</small>" : "明日の天気<small>3時間ごとの予報</small>");
-    $("wsum").innerHTML = sum.map(([k, v]) => `<div><span>${k}</span>${v}</div>`).join("");
-    $("wtbl").innerHTML = "<tr><th>時刻</th><th>天気</th><th>気温</th><th>降水確率</th></tr>" +
-      idx.map(i => {
-        const hr = parseInt(H.time[i].slice(11, 13), 10), [ic2, lb2, co2] = WMAP(H.weather_code[i], hr >= 6 && hr < 18);
-        return `<tr><td>${hr}時</td><td><i class="fa-solid ${ic2}" style="color:${co2}"></i>${lb2}</td><td>${R(H.temperature_2m[i])}°</td><td>${H.precipitation_probability[i]}%</td></tr>`;
-      }).join("");
-    $("wm").hidden = false;
-    clearTimeout(wmT); wmT = setTimeout(hideW, 30000);
-  }
-  $("hourly").parentElement.addEventListener("click", e => { e.stopPropagation(); showWeather("hourly"); });
-  $("tomorrow").parentElement.addEventListener("click", e => { e.stopPropagation(); showWeather("tomorrow"); });
-  $("wm").addEventListener("click", e => { e.stopPropagation(); hideW(); });
-
-  // ---- ニュース記事の表示(プロキシ経由)とQRコード ----
-  const PROXY = "https://news-proxy.user-x45.workers.dev/";
-  // タイトルをタップすると記事を画面内に表示し、同時にQRコードも出す(3分または「閉じる」で閉じる)
-  let qrT = 0;
-  function hideQR() { clearTimeout(qrT); $("qr").hidden = true; $("artf").src = "about:blank"; }
-  function showQR(title, url) {
-    const cv = $("qrcv");
-    $("qrtitle").textContent = title;
-    $("artf").src = PROXY + "?url=" + encodeURIComponent(url);
-    cv.hidden = true;
-    try {
-      const qr = qrcode(0, "M"); qr.addData(url); qr.make();
-      const n = qr.getModuleCount(), q = 4, sc = Math.max(4, Math.floor(640 / (n + 2 * q))), size = (n + 2 * q) * sc;
-      cv.width = cv.height = size;
-      const g = cv.getContext("2d");
-      g.fillStyle = "#fff"; g.fillRect(0, 0, size, size); g.fillStyle = "#000";
-      for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (qr.isDark(r, c)) g.fillRect((c + q) * sc, (r + q) * sc, sc, sc);
-      cv.hidden = false;
-    } catch (e) { /* QRライブラリ未読込時は記事の表示のみ */ }
-    $("qr").hidden = false;
-    clearTimeout(qrT); qrT = setTimeout(hideQR, 3 * 60 * 1000);
-  }
-  $("newslist").addEventListener("click", e => {
-    const li = e.target.closest("li[data-link]");
-    if (!li) return;
-    e.stopPropagation(); // 全画面切替と区別
-    showQR(li.textContent, li.dataset.link);
-  });
-  $("qr").addEventListener("click", e => { e.stopPropagation(); if (e.target.id === "qr" || e.target.id === "qrclose") hideQR(); });
-
   // 全画面切替
-  // タップで全画面に入る(一度入ったらタップ・長押しでは解除しない。解除された場合は次のタップで再び全画面に戻る)
   document.body.addEventListener("click", () => {
-    if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().then(() => screen.orientation?.lock?.("landscape").catch(() => {})).catch(() => {});
+    if (document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen?.().then(() => screen.orientation?.lock?.("landscape").catch(() => {})).catch(() => {});
   });
-  document.addEventListener("contextmenu", e => e.preventDefault()); // 長押しメニューを無効化
 
   // 画面スリープ防止
   let wl = null;
   async function keepAwake() { try { wl = await navigator.wakeLock?.request("screen"); } catch (e) {} }
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") { keepAwake(); sync(); render(); weather(); news(); today(); renderDay(); eqConnect(); }
+    if (document.visibilityState === "visible") { keepAwake(); sync(); render(); weather(); news(); today(); eqConnect(); }
   });
-  window.addEventListener("online", () => { sync(); weather(); news(); today(); garbageLoad(); eqConnect(); });
+  window.addEventListener("online", () => { sync(); weather(); news(); today(); eqConnect(); });
 
   keepAwake();
   render();
@@ -629,8 +427,6 @@
   news();
   setInterval(news, NEWS_INTERVAL);
   today();
-  garbageLoad();
-  renderDay();
   eqConnect();
 
 })();
