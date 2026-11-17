@@ -35,7 +35,7 @@
   .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 12px; color: var(--sub); }
   .chip { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; color: var(--warn); }
   .chip.read { color: var(--acc); }
-  .t { font-weight: 500; overflow-wrap: anywhere; } .b { font-size: 14px; color: #d5d8dd; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .t { font-weight: 500; overflow-wrap: anywhere; white-space: pre-wrap; } .b { font-size: 14px; color: #d5d8dd; white-space: pre-wrap; overflow-wrap: anywhere; }
   .empty { color: var(--sub); font-size: 14px; text-align: center; padding: 12px 0; }
   details summary { cursor: pointer; font-size: 14px; color: var(--sub); }
   details[open] summary { margin-bottom: 12px; } details > div { display: flex; flex-direction: column; gap: 12px; }
@@ -49,8 +49,7 @@
   </div>
 
   <section>
-    <label><span>タイトル<em id="tcount" style="font-style:normal"></em></span><input id="title" maxlength="40" autocomplete="off"></label>
-    <label><span>本文(省略できます)<em id="bcount" style="font-style:normal"></em></span><textarea id="body" rows="4" maxlength="300"></textarea></label>
+    <label><span>お知らせの内容<em id="bcount" style="font-style:normal"></em></span><textarea id="body" rows="5" maxlength="300"></textarea></label>
     <button id="send" type="button">送信する</button>
     <div id="msg" role="status"></div>
   </section>
@@ -91,8 +90,8 @@
       chip.appendChild(mk("i", "fa-solid " + (n.readAt ? "fa-check-double" : "fa-check")));
       chip.appendChild(document.createTextNode(n.readAt ? `既読 ${fmt(n.readAt)}` : "未読"));
       row.appendChild(mk("span", "", fmt(n.createdAt))); row.appendChild(chip);
-      li.appendChild(row); li.appendChild(mk("div", "t", n.title));
-      if (n.body) li.appendChild(mk("div", "b", n.body));
+      li.appendChild(row); if (n.title) li.appendChild(mk("div", "t", n.title));
+      if (n.body) li.appendChild(mk("div", n.title ? "b" : "t", n.body));
       ul.appendChild(li);
     });
   }
@@ -107,24 +106,23 @@
   }
 
   async function send() {
-    const title = $("title").value.trim(), body = $("body").value.trim();
-    if (!title) { say("タイトルを入力してください", "err"); $("title").focus(); return; }
+    const body = $("body").value.trim();
+    if (!body) { say("内容を入力してください", "err"); $("body").focus(); return; }
     $("send").disabled = true; say("送信中…");
     try {
-      const j = await api("", { method: "POST", body: JSON.stringify({ title, body }) });
-      $("title").value = ""; $("body").value = ""; count();
+      const j = await api("", { method: "POST", body: JSON.stringify({ body }) });
+      $("body").value = ""; count();
       render(j.notices || []); say("送信しました。時計には10秒ほどで届きます", "ok");
     } catch (e) { say(errText(e), "err"); }
     $("send").disabled = false;
   }
 
   function count() {
-    $("tcount").textContent = `${$("title").value.length}/40`;
     $("bcount").textContent = `${$("body").value.length}/300`;
   }
 
   $("send").addEventListener("click", send);
-  $("title").addEventListener("input", count); $("body").addEventListener("input", count);
+  $("body").addEventListener("input", count);
   $("body").addEventListener("keydown", e => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") send(); });
   document.addEventListener("visibilitychange", () => { if (!document.hidden) load(true); });
   setInterval(() => { if (!document.hidden) load(true); }, POLL_MS);
