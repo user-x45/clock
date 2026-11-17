@@ -125,7 +125,8 @@
   .ph { display: flex; justify-content: space-between; gap: 1em; font-size: min(1.4vw, 2.6vh); color: #9aa0a6; }
   #ptitle { font-size: min(2.4vw, 4.4vh); font-weight: 500; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #pbody { font-size: min(1.9vw, 3.4vh); color: #c9cdd3; line-height: 1.4; white-space: pre-line; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-  #pbody[hidden] { display: none; }
+  #pbody[hidden], #ptitle[hidden] { display: none; }
+  #pbody.only { font-size: min(2.4vw, 4.4vh); color: #f2f2f2; }
   #nl { position: fixed; inset: 0; z-index: 15; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.8); text-shadow: none; }
   #nl[hidden] { display: none; }
   #nbox { background: #1b1d22; color: #f2f2f2; border: 1px solid rgba(255,255,255,.14); border-radius: 16px; padding: 2.4vh 2.4vw;
@@ -143,10 +144,11 @@
   .ni-del { font: inherit; background: none; border: 0; color: #b5bac1; padding: .35em .7em; margin: -.35em -.7em -.35em 0; cursor: pointer; }
   .ni-h { display: flex; justify-content: space-between; align-items: center; gap: 1em; font-size: min(1.4vw, 2.6vh); color: #b5bac1; } .ni-tag { color: #4fd1c5; font-weight: 500; }
   .ni-t { font-size: min(2.2vw, 4vh); font-weight: 500; line-height: 1.35; }
+  .ni-b.ni-only { font-size: min(2.2vw, 4vh); color: #f2f2f2; margin-top: 0; }
   .ni-b { font-size: min(1.8vw, 3.3vh); color: #d5d8dd; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; margin-top: .4vh; }
   @media (orientation: portrait) {
     #push { width: 92vw; gap: 3vw; padding: 1.6vh 3vw; } .pi { width: 10vw; font-size: 5vw; } .ph { font-size: 3vw; } #ptitle { font-size: 4.6vw; } #pbody { font-size: 3.8vw; }
-    #nbox { padding: 2vh 4vw; } #ntitle { font-size: 5vw; } #nclose, #nclear { font-size: 3.4vw; padding: .8vh 3vw; } .ni-h { font-size: 3vw; } .ni-t { font-size: 4.4vw; } .ni-b { font-size: 3.8vw; }
+    #nbox { padding: 2vh 4vw; } #ntitle { font-size: 5vw; } #nclose, #nclear { font-size: 3.4vw; padding: .8vh 3vw; } .ni-h { font-size: 3vw; } .ni-t { font-size: 4.4vw; } .ni-b { font-size: 3.8vw; } .ni-b.ni-only { font-size: 4.4vw; } #pbody.only { font-size: 4.6vw; }
   }
   /* 時間帯ごとの背景(早朝5-9 / 昼9-16 / 夕方16-19 / 夜19-5) */
   body[data-p="morning"] { --fg:#fffaf0; --sub:rgba(255,255,255,.95); --acc:#fff0c2; }
@@ -694,7 +696,7 @@
   }
 
   function showPush(n, more) {
-    $("ptitle").textContent = n.title || "お知らせ"; $("pbody").textContent = n.body || ""; $("pbody").hidden = !n.body;
+    $("ptitle").textContent = n.title || ""; $("ptitle").hidden = !n.title; $("pbody").textContent = n.body || ""; $("pbody").hidden = !n.body; $("pbody").classList.toggle("only", !n.title);
     $("pmore").textContent = more > 0 ? `ほか${more}件` : "たった今";
     const el = $("push"); el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
     clearTimeout(pushT); pushT = setTimeout(hidePush, PUSH_MS);
@@ -709,8 +711,8 @@
       if (ntNew.has(n.id)) l.appendChild(mk("span", "ni-tag", "NEW"));
       const d = mk("button", "ni-del"); d.type = "button"; d.dataset.id = n.id; d.setAttribute("aria-label", "削除"); d.appendChild(mk("i", "fa-solid fa-trash-can"));
       h.appendChild(l); h.appendChild(d);
-      li.appendChild(h); li.appendChild(mk("div", "ni-t", n.title || "お知らせ"));
-      if (n.body) li.appendChild(mk("div", "ni-b", n.body));
+      li.appendChild(h); if (n.title) li.appendChild(mk("div", "ni-t", n.title));
+      if (n.body) li.appendChild(mk("div", n.title ? "ni-b" : "ni-b ni-only", n.body));
       ul.appendChild(li);
     });
   }
@@ -751,7 +753,7 @@
   $("push").addEventListener("click", e => { e.stopPropagation(); openList(); });
   $("nl").addEventListener("click", e => { e.stopPropagation(); if (e.target.id === "nl" || e.target.id === "nclose") closeList(); });
   // 動作確認用: index.html?nttest=1(バナーの見た目だけ確認)
-  if (kp.get("nttest")) setTimeout(() => showPush({ title: "テスト通知", body: "お知らせの表示確認です" }, 0), 2000);
+  if (kp.get("nttest")) setTimeout(() => showPush({ body: "お知らせの表示確認です" }, 0), 2000);
 
   // 全画面切替
   // タップで全画面に入る(一度入ったらタップ・長押しでは解除しない。解除された場合は次のタップで再び全画面に戻る)
