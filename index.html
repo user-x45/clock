@@ -56,15 +56,14 @@
   /* 天気カード(現在・最高最低を1枚にまとめる) */
   #wx { display: flex; flex-direction: column; align-items: center; gap: .9vh; background: rgba(0,0,0,.28); border-radius: 14px; padding: 1.4vh 1.6vw; text-shadow: none; }
   #weather2 { font-size: min(2.2vw, 4.4vh); color: var(--fg); } #weather2 .hi { color: #ff9b8a; } #weather2 .lo { color: #8ec8ff; } #weather2 .k { color: var(--sub); font-size: .7em; margin: 0 .3em 0 .9em; } #weather2 i { color: var(--acc); margin-right: .3em; }
-  #garbage { display: flex; flex-direction: column; align-items: center; gap: .25em; background: rgba(0,0,0,.28); border-radius: 12px; padding: .3em .9em; font-size: min(3vw, 6vh); text-shadow: none; }
+  #garbage { display: flex; flex-direction: column; align-items: center; gap: .25em; background: rgba(0,0,0,.28); border-radius: 12px; padding: .3em .6em; font-size: min(3vw, 6vh); text-shadow: none; }
   #garbage[hidden] { display: none; }
   #garbage .g1, #garbage .g2 { white-space: nowrap; line-height: 1.25; }
-  #garbage .g1 { display: flex; flex-direction: column; align-items: center; gap: .1em; }
-  #garbage .g2 { font-size: .7em; color: var(--sub); }
-  #garbage .lbl { font-size: .55em; font-weight: 500; color: var(--sub); letter-spacing: .1em; }
+  #garbage .g2 { font-size: .66em; color: var(--sub); }
+  #garbage .lbl { font-size: .58em; font-weight: 500; color: var(--sub); letter-spacing: .06em; margin-right: .5em; }
   #garbage .g2 .lbl { font-size: 1em; margin-right: .5em; }
   #garbage .gi b { display: inline-block; width: .7em; height: .7em; border-radius: 50%; margin-right: .3em; vertical-align: -.02em; }
-  #garbage .pl { margin: 0 .35em; opacity: .7; } #garbage .none { color: var(--sub); }
+  #garbage .pl { margin: 0 .25em; opacity: .7; } #garbage .none { color: var(--sub); }
   #newslist li[data-link] { cursor: pointer; }
   #hourly, #tomorrow { cursor: pointer; }
   .card:has(#hourly), .card:has(#tomorrow) { cursor: pointer; }
@@ -442,10 +441,10 @@
     one($("date"), 0.125);
     // 補助情報は主役(時刻・日付)より小さく抑える
     const sub = (el, hMax, wMax) => fit(el, () => el.offsetWidth <= W * wMax && el.offsetHeight <= H * hMax, 8, 600);
-    sub($("weather"), 0.12, 0.97);
-    sub($("weather2"), 0.11, 0.97);
-    if (!$("garbage").hidden) sub($("garbage"), 0.2, 0.97);
-    if (!$("today").hidden) sub($("today"), 0.07, 0.98);
+    sub($("weather"), 0.11, 0.83);
+    sub($("weather2"), 0.10, 0.85);
+    if (!$("garbage").hidden) sub($("garbage"), 0.19, 0.97);
+    if (!$("today").hidden) sub($("today"), 0.08, 0.98);
     const R = $("right");
     if (getComputedStyle(R).display === "none") return;
     const RH = R.clientHeight, cards = R.querySelectorAll(".card");
