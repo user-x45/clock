@@ -53,7 +53,6 @@
   #weather.stale { opacity: .5; }
   #weather2 { white-space: nowrap; line-height: 1.2; letter-spacing: .04em; }
   #weather2:empty { display: none; }
-  /* 天気カード(現在・最高最低を1枚にまとめる) */
   #wx { display: flex; flex-direction: column; align-items: center; gap: .9vh; background: rgba(0,0,0,.28); border-radius: 14px; padding: 1.4vh 1.6vw; text-shadow: none; }
   #weather2 { font-size: min(2.2vw, 4.4vh); color: var(--fg); } #weather2 .hi { color: #ff9b8a; } #weather2 .lo { color: #8ec8ff; } #weather2 .k { color: var(--sub); font-size: .7em; margin: 0 .3em 0 .9em; } #weather2 i { color: var(--acc); margin-right: .3em; }
   #garbage { display: flex; flex-direction: column; align-items: center; gap: .25em; background: rgba(0,0,0,.28); border-radius: 12px; padding: .3em .6em; font-size: min(3vw, 6vh); text-shadow: none; }
@@ -67,7 +66,6 @@
   #newslist li[data-link] { cursor: pointer; }
   #hourly, #tomorrow { cursor: pointer; }
   .card:has(#hourly), .card:has(#tomorrow) { cursor: pointer; }
-  /* 天気の詳細表示(常時ダーク) */
   #wm { position: fixed; inset: 0; z-index: 15; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.8); text-shadow: none; }
   #wm[hidden] { display: none; }
   #wbox { background: #1b1d22; color: #f2f2f2; border: 1px solid rgba(255,255,255,.14); border-radius: 16px; padding: 2.4vh 2.4vw;
@@ -85,7 +83,6 @@
     #wsum { grid-template-columns: repeat(2, 1fr); } #wsum div { font-size: 4vw; } #wtitle { font-size: 5vw; }
     #wtbl { font-size: 4vw; } #wsum div { white-space: normal; } #wbox { padding: 2vh 4vw; }
   }
-  /* ニュース記事の表示(プロキシ経由)とQRコード */
   #qr { position: fixed; inset: 0; z-index: 15; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.85); text-shadow: none; }
   #qr[hidden] { display: none; }
   #qrbox { background: #1b1d22; color: #f2f2f2; border: 1px solid rgba(255,255,255,.14); border-radius: 16px;
@@ -106,8 +103,7 @@
     #qrcv { width: min(30vw, 16vh); flex: none; }
     #qrtitle { font-size: 3.4vw; -webkit-line-clamp: 3; } #qrnote { font-size: 2.6vw; } #qrclose { font-size: 3.4vw; padding: .8vh 4vw; margin-top: 0; align-self: flex-start; }
   }
-  /* お知らせ: ボタン(未読バッジ)・プッシュ風バナー・一覧 */
-  #nbtn { flex: none; display: flex; align-items: center; justify-content: center; gap: .7em; font: inherit; font-size: min(1.7vw, 3.2vh); letter-spacing: .1em;
+  #nbtn { flex: none; display: flex; align-items: center; justify-content: center; gap: .7em; font: inherit; font-size: min(2.2vw, 4vh); letter-spacing: .1em;
     color: var(--sub); background: rgba(0,0,0,.28); border: 0; border-radius: 12px; padding: .5em 1em; cursor: pointer; text-shadow: none; }
   #nbtn.has { color: var(--fg); } #nbtn.has i { color: var(--acc); } #nbtn.bad { opacity: .6; }
   #nbtn:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
@@ -115,42 +111,41 @@
   #nbadge { position: absolute; top: -.7em; right: -1.1em; min-width: 1.5em; height: 1.5em; padding: 0 .35em; border-radius: 999px; background: #e53e3e; color: #fff;
     font-size: .62em; font-weight: 500; line-height: 1; display: flex; align-items: center; justify-content: center; letter-spacing: 0; }
   #nbadge[hidden] { display: none; }
-  #push { position: fixed; top: calc(1.5vh + env(safe-area-inset-top)); left: 50%; z-index: 19; width: min(80vw, 760px); display: flex; gap: 1.4vw; align-items: flex-start;
-    color: #f2f2f2; background: rgba(38,40,46,.97); border: 1px solid rgba(255,255,255,.16); border-radius: 18px; padding: 1.6vh 1.6vw;
+  #push { position: fixed; top: calc(1.5vh + env(safe-area-inset-top)); left: 50%; z-index: 19; width: min(92vw, 1300px); display: flex; gap: 2vw; align-items: flex-start;
+    color: #f2f2f2; background: rgba(38,40,46,.97); border: 1px solid rgba(255,255,255,.16); border-radius: 18px; padding: 2.4vh 2.2vw;
     box-shadow: 0 10px 30px rgba(0,0,0,.5); text-shadow: none; cursor: pointer; pointer-events: none;
     transform: translate(-50%, -160%); transition: transform .5s cubic-bezier(.2,.8,.2,1); }
   #push.show { transform: translate(-50%, 0); pointer-events: auto; }
-  .pi { flex: none; width: min(4.4vw, 8vh); aspect-ratio: 1; border-radius: 22%; background: #4fd1c5; color: #06201d; display: flex; align-items: center; justify-content: center; font-size: min(2.2vw, 4vh); }
+  .pi { flex: none; width: min(7vw, 13vh); aspect-ratio: 1; border-radius: 22%; background: #4fd1c5; color: #06201d; display: flex; align-items: center; justify-content: center; font-size: min(3.4vw, 6.5vh); }
   .pt { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: .3vh; }
-  .ph { display: flex; justify-content: space-between; gap: 1em; font-size: min(1.4vw, 2.6vh); color: #9aa0a6; }
-  #ptitle { font-size: min(2.4vw, 4.4vh); font-weight: 500; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #pbody { font-size: min(1.9vw, 3.4vh); color: #c9cdd3; line-height: 1.4; white-space: pre-line; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .ph { display: flex; justify-content: space-between; gap: 1em; font-size: min(2.2vw, 4vh); color: #9aa0a6; }
+  #ptitle { font-size: min(4vw, 7.5vh); font-weight: 500; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #pbody { font-size: min(3.2vw, 6vh); color: #c9cdd3; line-height: 1.4; white-space: pre-line; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
   #pbody[hidden], #ptitle[hidden] { display: none; }
-  #pbody.only { font-size: min(2.4vw, 4.4vh); color: #f2f2f2; }
+  #pbody.only { font-size: min(4vw, 7.5vh); color: #f2f2f2; }
   #nl { position: fixed; inset: 0; z-index: 15; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.8); text-shadow: none; }
   #nl[hidden] { display: none; }
-  #nbox { background: #1b1d22; color: #f2f2f2; border: 1px solid rgba(255,255,255,.14); border-radius: 16px; padding: 2.4vh 2.4vw;
-    width: min(90vw, 820px); max-height: 90vh; max-height: 90dvh; display: flex; flex-direction: column; gap: 1.6vh; }
+  #nbox { background: #1b1d22; color: #f2f2f2; border: 1px solid rgba(255,255,255,.14); border-radius: 16px; padding: 3vh 2.6vw;
+    width: min(94vw, 1300px); max-height: 90vh; max-height: 90dvh; display: flex; flex-direction: column; gap: 1.6vh; }
   #nhead { display: flex; align-items: center; justify-content: space-between; gap: 1em; }
-  #ntitle { font-size: min(2.8vw, 5vh); font-weight: 500; }
+  #ntitle { font-size: min(4vw, 7vh); font-weight: 500; }
   #nacts { display: flex; gap: 1vw; align-items: center; }
   #nclear { color: #fc8181 !important; }
-  #nclose, #nclear { font: inherit; font-size: min(1.6vw, 3vh); color: #f2f2f2; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.3); border-radius: 999px; padding: .6vh 1.6vw; cursor: pointer; }
+  #nclose, #nclear { font: inherit; font-size: min(2.4vw, 4.5vh); color: #f2f2f2; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.3); border-radius: 999px; padding: .9vh 2.2vw; cursor: pointer; }
   #nclose:focus-visible, #nclear:focus-visible, .ni-del:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
   #nitems { list-style: none; padding: 0; overflow: auto; min-height: 0; display: flex; flex-direction: column; gap: 1vh; }
-  #nitems li { padding: 1.2vh 1.2vw; border-radius: 12px; background: rgba(255,255,255,.05); border: 1px solid transparent; }
+  #nitems li { padding: 2vh 2vw; border-radius: 12px; background: rgba(255,255,255,.05); border: 1px solid transparent; }
   #nitems li.new { border-color: rgba(79,209,197,.6); background: rgba(79,209,197,.1); }
-  #nitems li.ni-empty { background: none; text-align: center; color: #b5bac1; font-size: min(1.8vw, 3.3vh); }
+  #nitems li.ni-empty { background: none; text-align: center; color: #b5bac1; font-size: min(3vw, 5.5vh); }
   .ni-del { font: inherit; background: none; border: 0; color: #b5bac1; padding: .35em .7em; margin: -.35em -.7em -.35em 0; cursor: pointer; }
-  .ni-h { display: flex; justify-content: space-between; align-items: center; gap: 1em; font-size: min(1.4vw, 2.6vh); color: #b5bac1; } .ni-tag { color: #4fd1c5; font-weight: 500; }
-  .ni-t { font-size: min(2.2vw, 4vh); font-weight: 500; line-height: 1.35; }
-  .ni-b.ni-only { font-size: min(2.2vw, 4vh); color: #f2f2f2; margin-top: 0; }
-  .ni-b { font-size: min(1.8vw, 3.3vh); color: #d5d8dd; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; margin-top: .4vh; }
+  .ni-h { display: flex; justify-content: space-between; align-items: center; gap: 1em; font-size: min(2.2vw, 4vh); color: #b5bac1; } .ni-tag { color: #4fd1c5; font-weight: 500; }
+  .ni-t { font-size: min(3.8vw, 7vh); font-weight: 500; line-height: 1.35; }
+  .ni-b.ni-only { font-size: min(3.8vw, 7vh); color: #f2f2f2; margin-top: 0; }
+  .ni-b { font-size: min(3vw, 5.8vh); color: #d5d8dd; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; margin-top: .4vh; }
   @media (orientation: portrait) {
-    #push { width: 92vw; gap: 3vw; padding: 1.6vh 3vw; } .pi { width: 10vw; font-size: 5vw; } .ph { font-size: 3vw; } #ptitle { font-size: 4.6vw; } #pbody { font-size: 3.8vw; }
-    #nbox { padding: 2vh 4vw; } #ntitle { font-size: 5vw; } #nclose, #nclear { font-size: 3.4vw; padding: .8vh 3vw; } .ni-h { font-size: 3vw; } .ni-t { font-size: 4.4vw; } .ni-b { font-size: 3.8vw; } .ni-b.ni-only { font-size: 4.4vw; } #pbody.only { font-size: 4.6vw; }
+    #push { width: 92vw; gap: 3vw; padding: 2vh 3.5vw; } .pi { width: 14vw; font-size: 7vw; } .ph { font-size: 4vw; } #ptitle { font-size: 6.4vw; } #pbody { font-size: 5.4vw; }
+    #nbox { padding: 2vh 4vw; } #ntitle { font-size: 6.4vw; } #nclose, #nclear { font-size: 4.2vw; padding: 1vh 3.5vw; } .ni-h { font-size: 4vw; } .ni-t { font-size: 6vw; } .ni-b { font-size: 5.2vw; } .ni-b.ni-only { font-size: 6vw; } #pbody.only { font-size: 6.4vw; }
   }
-  /* 時間帯ごとの背景(早朝5-9 / 昼9-16 / 夕方16-19 / 夜19-5) */
   body[data-p="morning"] { --fg:#fffaf0; --sub:rgba(255,255,255,.95); --acc:#fff0c2; }
   body[data-p="day"]     { --fg:#ffffff; --sub:rgba(255,255,255,.95); --acc:#ffe58a; }
   body[data-p="evening"] { --fg:#fff7ee; --sub:rgba(255,255,255,.95); --acc:#ffd89b; }
@@ -171,7 +166,6 @@
   body[data-p="morning"] #bg-morning, body[data-p="day"] #bg-day,
   body[data-p="evening"] #bg-evening, body[data-p="night"] #bg-night { opacity: 1; }
   main { position: relative; z-index: 1; text-shadow: 0 1px 3px rgba(0,0,0,.75), 0 2px 14px rgba(0,0,0,.55); }
-  /* 夜間モード: 黒背景に時刻のみ */
   body.nm .bg { opacity: 0 !important; }
   body.nm #right, body.nm #date, body.nm #wx, body.nm #weather, body.nm #weather2, body.nm #garbage, body.nm #today, body.nm #status { display: none !important; }
   body.nm main { text-shadow: none; }
@@ -183,7 +177,6 @@
   #status { z-index: 2; text-shadow: 0 1px 6px rgba(0,0,0,.4); position: fixed; bottom: calc(8px + env(safe-area-inset-bottom)); left: 0; right: 0; text-align: center;
     font-size: 12px; color: var(--sub); }
   #status.warn { color: var(--warn); }
-  /* 地震通知 */
   #alert { position: fixed; top: 0; left: 0; right: 0; z-index: 20; pointer-events: none; text-align: center; color: #fff;
     display: flex; flex-direction: column; gap: .6vh; padding: calc(2.5vh + env(safe-area-inset-top)) 4vw 2.5vh;
     border-radius: 0 0 18px 18px; box-shadow: 0 10px 30px rgba(0,0,0,.45); text-shadow: none;
@@ -236,17 +229,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
 (() => {
-  const SYNC_INTERVAL = 5 * 60 * 1000;   // 5分ごとに同期
-  const SAMPLES = 3;                      // 往復遅延が最小のサンプルを採用
-  // 夜間の自動減光(端末のローカル時刻)
-  const NIGHT_START = 0;   // 0:00から
-  const NIGHT_END = 5;     // 5:00まで
-  const DIM_LEVEL = 0;     // 暗さ(0〜1、大きいほど暗い)。0で夜間も減光しない
-  const GREET_MS = 10 * 1000; // あいさつの表示時間
+  const SYNC_INTERVAL = 5 * 60 * 1000;
+  const SAMPLES = 3;
+  const NIGHT_START = 0;
+  const NIGHT_END = 5;
+  const FORCE_NIGHT = new URLSearchParams(location.search).get("night") === "1";
+  const DIM_LEVEL = 0;
+  const GREET_MS = 10 * 1000;
   let prevNight = null, greetUntil = 0;
 
-  // 時刻ソース(順番に試行、失敗したら次へ)
-  // 小数秒を3桁に揃えてからパース
   const iso = (t, utc) => Date.parse(String(t).replace(/(\.\d{3})\d+/, "$1") + (utc && !/[zZ]|[+-]\d\d:?\d\d$/.test(t) ? "Z" : ""));
   const SOURCES = [
     { url: "https://timeapi.io/api/time/current/zone?timeZone=UTC",
@@ -256,12 +247,11 @@
   ];
 
   let nLast = 0, nErr = false, lastDay = null;
-  let qState = 0, alertOn = false; // qState: 0=接続中 1=接続済 2=切断
+  let qState = 0, alertOn = false;
   let offset = 0, lastSync = null, lastErr = false, accuracy = null;
   const $ = id => document.getElementById(id);
   const now = () => Date.now() + offset;
 
-  // 取得失敗時の再試行(10秒後 → 30秒後 → 1分後。それでも失敗なら次の定期取得を待つ)
   const RETRY_DELAYS = [10000, 30000, 60000];
   const retryN = {}, retryT = {};
   function retryLater(name, fn) {
@@ -294,7 +284,7 @@
         lastSync = Date.now();
         lastErr = false; retryOk("sync");
         return renderStatus();
-      } catch (e) { /* 次のソースへ */ }
+      } catch (e) { }
     }
     lastErr = true; retryLater("sync", sync);
     renderStatus();
@@ -309,14 +299,12 @@
     $("sec").textContent = p2(d.getSeconds());
     $("date").firstChild.nodeValue = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
     $("wday").textContent = WD[d.getDay()] + "曜日";
-    // 日付が変わった瞬間に天気・ニュース・今日は何の日をまとめて再取得
     const dk = d.getDate();
     if (lastDay !== null && dk !== lastDay) { weather(); news(); today(); renderDay(); }
     lastDay = dk;
     const h = d.getHours();
     document.body.dataset.p = h >= 5 && h < 9 ? "morning" : h >= 9 && h < 16 ? "day" : h >= 16 && h < 19 ? "evening" : "night";
-    const night = NIGHT_START > NIGHT_END ? (h >= NIGHT_START || h < NIGHT_END) : (h >= NIGHT_START && h < NIGHT_END);
-    // 夜間モードの前後にあいさつを表示(おやすみなさい → 表示後に夜間モードへ / おはようございます)
+    const night = FORCE_NIGHT || (NIGHT_START > NIGHT_END ? (h >= NIGHT_START || h < NIGHT_END) : (h >= NIGHT_START && h < NIGHT_END));
     if (prevNight !== null && night !== prevNight) {
       greetUntil = now() + GREET_MS;
       $("greet").textContent = night ? "おやすみなさい" : "おはようございます";
@@ -325,10 +313,10 @@
     prevNight = night;
     const greeting = now() < greetUntil;
     if (!greeting) $("greet").classList.remove("show");
-    const nmOn = night && !greeting; // おやすみなさい表示中は通常画面のまま
+    const nmOn = night && !greeting;
     document.body.classList.toggle("nm", nmOn);
     $("dim").style.opacity = (nmOn && !alertOn) ? DIM_LEVEL : 0;
-    setTimeout(render, 1000 - (now() % 1000) + 5); // 秒の境界に合わせて更新
+    setTimeout(render, 1000 - (now() % 1000) + 5);
   }
 
   function renderStatus() {
@@ -342,11 +330,8 @@
     el.className = (lastErr || wErr || nErr || !lastSync || qState === 2 || ntBad()) ? "warn" : "";
   }
 
-
-  // ---- 札幌の天気(Open-Meteo / APIキー不要) ----
-  const WEATHER_INTERVAL = 10 * 60 * 1000; // 10分ごと
+  const WEATHER_INTERVAL = 10 * 60 * 1000;
   const WURL = "https://api.open-meteo.com/v1/forecast?latitude=43.0621&longitude=141.3544&current=temperature_2m,apparent_temperature,weather_code,is_day&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&forecast_days=2&wind_speed_unit=ms&timezone=Asia%2FTokyo";
-  // Font Awesome(Free Solid)アイコン。夜間は月アイコンに切替
   const WMAP = (c, day) => c === 0 ? [day ? "fa-sun" : "fa-moon", "快晴", day ? "#f6c945" : "#cbd5e0"]
     : c <= 2 ? [day ? "fa-cloud-sun" : "fa-cloud-moon", "晴れ", day ? "#f6c945" : "#cbd5e0"]
     : c === 3 ? ["fa-cloud", "曇り", "#a0aec0"]
@@ -368,7 +353,6 @@
       el.innerHTML = `<span class="city">札幌</span><i class="fa-solid ${icon} wi"></i>${label} ${Math.round(c.temperature_2m)}°C` +
         `<span class="city" style="margin-left:.6em">体感 ${Math.round(c.apparent_temperature)}°C</span>`;
       el.className = "";
-      // 時間ごと(次の時刻から2時間おきに4件)
       const H = j.hourly, i0 = H.time.findIndex(t => t > c.time);
       let hh = "";
       for (let k = 0; k < 4; k++) {
@@ -378,20 +362,16 @@
         hh += `<div><div class="h">${hr}時</div><i class="fa-solid ${ic}"></i><div>${Math.round(H.temperature_2m[i])}°</div><div class="p">${H.precipitation_probability[i]}%</div></div>`;
       }
       $("hourly").innerHTML = hh;
-      // 明日
       const D = j.daily, [dic, dlabel] = WMAP(D.weather_code[1], true);
       $("tomorrow").innerHTML = `<i class="fa-solid ${dic}"></i><span>${dlabel}</span><span>${Math.round(D.temperature_2m_max[1])}° / ${Math.round(D.temperature_2m_min[1])}°</span><span class="p">降水確率 ${D.precipitation_probability_max[1]}%</span>`;
       renderWx2(); wLast = Date.now(); wErr = false; retryOk("weather"); renderStatus(); relayout();
     } catch (e) {
       wErr = true; retryLater("weather", weather); renderStatus();
-      if (wLast) el.className = "stale"; // 取得失敗時は前回値を薄く表示
+      if (wLast) el.className = "stale";
       else el.innerHTML = '<span class="city">札幌</span>天気を取得できません';
     }
   }
 
-
-  // ---- 今日のごみ・今日の気温 ----
-  // ごみ収集日は garbage.json(札幌市 北区-5 / 2026年9月〜2027年9月)から読み込む
   const ymd = d => `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
   let gJ = null;
   async function garbageLoad() {
@@ -426,8 +406,7 @@
       `<span class="k">降水確率</span>${D.precipitation_probability_max[0]}%`;
   }
 
-  // ---- ニュース(RSS → rss2json経由。APIキー不要) ----
-  const NEWS_INTERVAL = 30 * 60 * 1000; // 30分ごと
+  const NEWS_INTERVAL = 30 * 60 * 1000;
   const FEEDS = [
     { name: "NHK", url: "https://www.nhk.or.jp/rss/news/cat0.xml" },
     { name: "Yahoo!ニュース", url: "https://news.yahoo.co.jp/rss/topics/top-picks.xml" }
@@ -442,13 +421,12 @@
         j.items.slice(0, 3).forEach(it => { const li = document.createElement("li"); li.textContent = it.title; if (it.link) li.dataset.link = it.link; ul.appendChild(li); });
         $("newsh").textContent = "今日のニュース(" + f.name + ")";
         nLast = Date.now(); nErr = false; retryOk("news"); renderStatus(); relayout(); return;
-      } catch (e) { /* 次のフィードへ */ }
+      } catch (e) { }
     }
     nErr = true; retryLater("news", news); renderStatus();
     if (!nLast) { $("newslist").innerHTML = "<li>ニュースを取得できません</li>"; relayout(); }
   }
 
-  // ---- 今日は何の日(ultimatecrazy.jp 公開API / キー不要) ----
   let anniv = [], aIdx = 0, aKey = "", aTry = 0;
   const mmdd = () => { const d = new Date(now()); return p2(d.getMonth() + 1) + "-" + p2(d.getDate()); };
   function showAnniv() {
@@ -467,12 +445,11 @@
       const j = await r.json();
       anniv = (j.anniversaries || []).map(a => a.name).filter(Boolean);
       aKey = key; aIdx = 0; retryOk("today"); showAnniv();
-    } catch (e) { retryLater("today", today); /* 前回の表示を維持 */ }
+    } catch (e) { retryLater("today", today); }
   }
-  setInterval(() => { if (anniv.length > 1) { aIdx++; showAnniv(); } }, 15000); // 15秒ごとに切替
-  setInterval(() => { if (mmdd() !== aKey && Date.now() - aTry > 60000) today(); }, 30000); // 日付が変わったら再取得
+  setInterval(() => { if (anniv.length > 1) { aIdx++; showAnniv(); } }, 15000);
+  setInterval(() => { if (mmdd() !== aKey && Date.now() - aTry > 60000) today(); }, 30000);
 
-  // ---- 文字サイズの自動調整(はみ出さない範囲で最大化) ----
   function fit(el, ok, lo, hi) {
     while (hi - lo > 0.5) {
       const m = (lo + hi) / 2;
@@ -486,7 +463,6 @@
     const one = (el, hMax, lo = 8) => fit(el, () => el.offsetWidth <= W && el.offsetHeight <= H * hMax, lo, 600);
     one($("time"), 0.26);
     one($("date"), 0.125);
-    // 補助情報は主役(時刻・日付)より小さく抑える
     const sub = (el, hMax, wMax) => fit(el, () => el.offsetWidth <= W * wMax && el.offsetHeight <= H * hMax, 8, 600);
     sub($("weather"), 0.11, 0.83);
     sub($("weather2"), 0.10, 0.85);
@@ -508,12 +484,8 @@
   window.addEventListener("orientationchange", relayout);
   document.fonts && document.fonts.ready.then(relayout);
 
-  // ---- 地震通知(P2P地震情報 WebSocket / キー不要) ----
-  // 通知は画面上部からスライドして表示し、数秒後に自動で消える(操作不要)
-  // ・緊急地震速報(警報): 石狩地方中部(札幌市北区を含む予報区)で震度3以上の予想
-  // ・震度情報: 札幌市北区の観測点で震度3以上を観測
   const EQ_WS = "wss://api.p2pquake.net/v2/ws";
-  const EQ_MIN = 30;                 // 震度3
+  const EQ_MIN = 30;
   const EEW_AREA = /石狩地方中部/;
   const QUAKE_ADDR = /札幌(市)?北区/;
   const SCALE = { 10: "1", 20: "2", 30: "3", 40: "4", 45: "5弱", 50: "5強", 55: "6弱", 60: "6強", 70: "7" };
@@ -529,7 +501,7 @@
     el.className = kind;
     $("atitle").textContent = title; $("amain").textContent = main; $("asub").textContent = sub;
     void el.offsetWidth; el.classList.add("show"); alertOn = true;
-    $("dim").style.opacity = 0; // 夜間の減光を一時解除
+    $("dim").style.opacity = 0;
     clearTimeout(alertTimer); alertTimer = setTimeout(hideAlert, ms);
   }
   function hideAlert() { clearTimeout(alertTimer); $("alert").classList.remove("show"); alertOn = false; curEew = ""; }
@@ -582,13 +554,11 @@
     ws.onerror = () => { try { ws.close(); } catch (e) {} };
     ws.onclose = () => { qState = 2; renderStatus(); wsTimer = setTimeout(eqConnect, 10000); };
   }
-  // 動作確認用: index.html?eqtest=eew または ?eqtest=quake
   const qt = new URLSearchParams(location.search).get("eqtest");
   if (qt) setTimeout(() => eqHandle(qt === "eew"
     ? { code: 556, time: "", issue: { eventId: "test", serial: "1" }, earthquake: { hypocenter: { name: "石狩地方中部", magnitude: 6.1 } }, areas: [{ name: "石狩地方中部", scaleFrom: 45, scaleTo: 99 }] }
     : { code: 551, time: "", earthquake: { time: "test", hypocenter: { name: "石狩地方中部", magnitude: 4.8 } }, points: [{ addr: "札幌北区新琴似", isArea: false, scale: 40 }] }), 2000);
 
-  // ---- 天気の詳細(これからの天気・明日の天気をタップで表示。30秒または再タップで閉じる) ----
   let wmT = 0;
   function hideW() { clearTimeout(wmT); $("wm").hidden = true; }
   function showWeather(kind) {
@@ -618,9 +588,7 @@
   $("tomorrow").parentElement.addEventListener("click", e => { e.stopPropagation(); showWeather("tomorrow"); });
   $("wm").addEventListener("click", e => { e.stopPropagation(); hideW(); });
 
-  // ---- ニュース記事の表示(プロキシ経由)とQRコード ----
   const PROXY = "https://news-proxy.user-x45.workers.dev/";
-  // タイトルをタップすると記事を画面内に表示し、同時にQRコードも出す(3分または「閉じる」で閉じる)
   let qrT = 0;
   function hideQR() { clearTimeout(qrT); $("qr").hidden = true; $("artf").src = "about:blank"; }
   function showQR(title, url) {
@@ -636,28 +604,50 @@
       g.fillStyle = "#fff"; g.fillRect(0, 0, size, size); g.fillStyle = "#000";
       for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (qr.isDark(r, c)) g.fillRect((c + q) * sc, (r + q) * sc, sc, sc);
       cv.hidden = false;
-    } catch (e) { /* QRライブラリ未読込時は記事の表示のみ */ }
+    } catch (e) { }
     $("qr").hidden = false;
     clearTimeout(qrT); qrT = setTimeout(hideQR, 3 * 60 * 1000);
   }
   $("newslist").addEventListener("click", e => {
     const li = e.target.closest("li[data-link]");
     if (!li) return;
-    e.stopPropagation(); // 全画面切替と区別
+    e.stopPropagation();
     showQR(li.textContent, li.dataset.link);
   });
   $("qr").addEventListener("click", e => { e.stopPropagation(); if (e.target.id === "qr" || e.target.id === "qrclose") hideQR(); });
 
-  // ---- お知らせ(別ページ send.html から送信 → Workers経由で受信) ----
-  // 受信するとプッシュ通知のようにバナー表示し、ボタンに未読バッジを出す。
-  // 一覧を開くと既読になり、送信ページにも「既読」が反映される。
   const NOTICE_API = "https://news-proxy.user-x45.workers.dev/api/notices";
-  const NOTICE_INTERVAL = 10 * 1000;  // 新着の確認間隔
-  const PUSH_MS = 8000;               // バナーの表示時間
-  const LIST_MS = 60 * 1000;          // 一覧を自動で閉じるまでの時間
+  const NOTICE_INTERVAL = 10 * 1000;
+  const PUSH_MS = 8000;
+  const NOTICE_SOUND = true;
+  const NOTICE_SOUND_NIGHT = false;
+  const NOTICE_VOLUME = 0.3;
+  let audioCtx = null;
+  function unlockAudio() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+    } catch (e) {}
+  }
+  ["pointerdown", "touchstart", "keydown"].forEach(t => document.addEventListener(t, unlockAudio, { capture: true, passive: true }));
+  function playChime() {
+    if (!NOTICE_SOUND || !audioCtx || audioCtx.state !== "running") return;
+    if (!NOTICE_SOUND_NIGHT && document.body.classList.contains("nm")) return;
+    const t0 = audioCtx.currentTime;
+    [[880, 0], [1320, 0.16]].forEach(([f, d]) => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = "sine"; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t0 + d);
+      g.gain.exponentialRampToValueAtTime(NOTICE_VOLUME, t0 + d + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + d + 0.6);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t0 + d); o.stop(t0 + d + 0.65);
+    });
+  }
+  const LIST_MS = 60 * 1000;
   const kp = new URLSearchParams(location.search);
   let ntList = [], ntInit = false, ntErr = false, ntBusy = false, ntOpen = false, pushT = 0, listT = 0;
-  const ntSeen = new Set(), ntNew = new Set(), ntGone = new Set(); // ntGone: 削除中(サーバー反映前に復活して見えないようにする)
+  const ntSeen = new Set(), ntNew = new Set(), ntGone = new Set();
   const ntBad = () => ntErr;
   const ntMsg = () => ntErr ? "  ・  お知らせ 接続エラー" : "";
   const mk = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; };
@@ -678,7 +668,6 @@
     ntBusy = false; renderNt(); renderStatus();
   }
 
-  // 新着の判定: 初回取得分は静かに取り込み(バッジのみ)、2回目以降の未読の新着だけバナーを出す
   function ntApply(list) {
     list = list.filter(n => !ntGone.has(n.id));
     const fresh = list.filter(n => !ntSeen.has(n.id)), first = !ntInit;
@@ -700,6 +689,7 @@
     $("pmore").textContent = more > 0 ? `ほか${more}件` : "たった今";
     const el = $("push"); el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
     clearTimeout(pushT); pushT = setTimeout(hidePush, PUSH_MS);
+    playChime();
   }
   function hidePush() { clearTimeout(pushT); $("push").classList.remove("show"); }
 
@@ -717,7 +707,6 @@
     });
   }
 
-  // 一覧を開いたら未読をすべて既読にする(失敗しても一覧を開いている間は次の確認で再送する)
   async function ntMarkRead() {
     const ids = ntList.filter(n => !n.readAt).map(n => n.id);
     if (!ids.length) return;
@@ -730,14 +719,13 @@
   }
 
   function openList() {
-    hidePush(); ntNew.clear(); ntList.forEach(n => { if (!n.readAt) ntNew.add(n.id); }); // 今回新しく見るものにNEWを付ける
+    hidePush(); ntNew.clear(); ntList.forEach(n => { if (!n.readAt) ntNew.add(n.id); });
     ntOpen = true; renderList(); $("nl").hidden = false;
     clearTimeout(listT); listT = setTimeout(closeList, LIST_MS);
     ntMarkRead();
   }
   function closeList() { clearTimeout(listT); ntOpen = false; ntNew.clear(); $("nl").hidden = true; }
 
-  // 削除(1件 / すべて)。サーバーが失敗した場合は次の確認で元に戻る
   async function ntDelete(ids) {
     if (!ids.length) return;
     ids.forEach(id => ntGone.add(id));
@@ -752,17 +740,13 @@
   $("nbtn").addEventListener("click", e => { e.stopPropagation(); openList(); });
   $("push").addEventListener("click", e => { e.stopPropagation(); openList(); });
   $("nl").addEventListener("click", e => { e.stopPropagation(); if (e.target.id === "nl" || e.target.id === "nclose") closeList(); });
-  // 動作確認用: index.html?nttest=1(バナーの見た目だけ確認)
   if (kp.get("nttest")) setTimeout(() => showPush({ body: "お知らせの表示確認です" }, 0), 2000);
 
-  // 全画面切替
-  // タップで全画面に入る(一度入ったらタップ・長押しでは解除しない。解除された場合は次のタップで再び全画面に戻る)
   document.body.addEventListener("click", () => {
     if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().then(() => screen.orientation?.lock?.("landscape").catch(() => {})).catch(() => {});
   });
-  document.addEventListener("contextmenu", e => e.preventDefault()); // 長押しメニューを無効化
+  document.addEventListener("contextmenu", e => e.preventDefault());
 
-  // 画面スリープ防止
   let wl = null;
   async function keepAwake() { try { wl = await navigator.wakeLock?.request("screen"); } catch (e) {} }
   document.addEventListener("visibilitychange", () => {
