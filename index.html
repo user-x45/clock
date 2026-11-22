@@ -191,13 +191,31 @@
   @media (orientation: portrait) {
     #kbox { padding: 2.4vh 5vw; } #ktitle { font-size: 5.4vw; } #knote, #kmsg { font-size: 3.6vw; } #kin { font-size: 4vw; } #ksave, #kskip { font-size: 4vw; padding: 1vh 5vw; }
   }
-  /* ウィジェット風(天気・ごみ・今日は何の日・お知らせボタン) */
-  #wx, #garbage, #today, #nbtn { background: linear-gradient(160deg, rgba(34,40,54,.62), rgba(0,0,0,.5)); -webkit-backdrop-filter: blur(18px) saturate(1.3); backdrop-filter: blur(18px) saturate(1.3);
-    border: 1px solid rgba(255,255,255,.22); border-radius: 26px; box-shadow: 0 8px 24px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.2); text-shadow: none; }
-  #wx { padding: 1.8vh 2.2vw; gap: 1vh; }
-  #garbage { padding: .45em .9em; gap: .3em; }
-  #today { padding: .4em .9em; }
-  #nbtn { border-radius: 999px; }
+  /* ウィジェット風タイル(2×2の正方形。サイズは layout() が --sq / --u に設定) */
+  #tiles { --sq: 20vh; --u: .2vh; --tg: 2vh; --c: 2; display: grid; grid-template-columns: repeat(var(--c), var(--sq)); grid-auto-rows: var(--sq); gap: var(--tg); justify-content: center; }
+  #wx, #garbage, #today, #nbtn { box-sizing: border-box; min-width: 0; overflow: hidden; text-align: left; text-shadow: none; padding: calc(var(--u) * 5.5); border-radius: calc(var(--u) * 10);
+    background: linear-gradient(160deg, rgba(34,40,54,.62), rgba(0,0,0,.5)); -webkit-backdrop-filter: blur(18px) saturate(1.3); backdrop-filter: blur(18px) saturate(1.3);
+    border: 1px solid rgba(255,255,255,.22); box-shadow: 0 8px 24px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.2); }
+  #wx, #garbage, #today { display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; font-size: calc(var(--u) * 10); }
+  #garbage[hidden], #today[hidden] { display: flex; visibility: hidden; }
+  #wx { justify-content: space-between; gap: 0; }
+  #weather { width: 100%; display: flex; flex-direction: column; gap: calc(var(--u) * 1); font-size: calc(var(--u) * 8); font-weight: 500; line-height: 1.1; white-space: nowrap; }
+  #weather .wc, #weather .ws { color: var(--sub); }
+  #weather .wi { margin: 0; font-size: calc(var(--u) * 20); line-height: 1; }
+  #weather .wt { font-family: "Montserrat", "Zen Kaku Gothic New", sans-serif; font-size: calc(var(--u) * 22); font-weight: 500; line-height: 1; }
+  #weather .wl { font-size: calc(var(--u) * 11); font-weight: 700; }
+  #weather2 { font-size: calc(var(--u) * 8); font-weight: 500; color: var(--sub); white-space: nowrap; }
+  #garbage .g1, #garbage .g2 { white-space: normal; line-height: 1.25; }
+  #garbage .g2 { margin-top: .5em; }
+  #garbage .lbl, #garbage .g2 .lbl { display: block; font-size: .6em; margin: 0 0 .1em; }
+  #garbage .gi, #garbage .none { display: block; white-space: nowrap; }
+  #today { gap: .3em; white-space: normal; max-width: none; }
+  #today .lbl { display: block; font-size: .6em; }
+  #todayname { white-space: normal; text-overflow: clip; line-height: 1.3; }
+  #nbtn { flex-direction: column; justify-content: center; align-items: center; gap: calc(var(--u) * 3); padding: 0; font-size: calc(var(--u) * 10); color: var(--fg); }
+  #nbtn .nic { font-size: calc(var(--u) * 30); line-height: 1; }
+  #nbtn .nic ~ span { font-size: calc(var(--u) * 10); }
+  #nbadge { font-size: .4em; }
   #status { z-index: 2; text-shadow: 0 1px 6px rgba(0,0,0,.4); position: fixed; bottom: calc(8px + env(safe-area-inset-bottom)); left: 0; right: 0; text-align: center;
     font-size: 12px; color: var(--sub); }
   #status.warn { color: var(--warn); }
@@ -215,7 +233,6 @@
     main::before { content: "横向きにしてください"; position: fixed; top: 12px; font-size: 13px; color: var(--sub); }
     #time { font-size: 17vw; }
     #date { font-size: 5vw; }
-    #weather { font-size: 5vw; }
     #right { display: none; }
     main { flex-direction: column; }
   }
@@ -227,13 +244,15 @@
   <div id="left">
     <div id="time">--:--<span id="sec">--</span></div>
     <div id="date">----年--月--日<span id="wday">-曜日</span></div>
-    <div id="wx">
-      <div id="weather"><span class="city">札幌</span>天気を取得中…</div>
-      <div id="weather2"></div>
+    <div id="tiles">
+      <div id="wx">
+        <div id="weather"><div class="wc">札幌</div><div class="wl">取得中…</div></div>
+        <div id="weather2"></div>
+      </div>
+      <div id="garbage" hidden><div class="g1"></div><div class="g2"></div></div>
+      <div id="today" hidden><span class="lbl">今日は何の日</span><span id="todayname"></span></div>
+      <button id="nbtn" type="button" aria-label="お知らせ"><span class="nic"><i id="nicon" class="fa-solid fa-bell"></i><b id="nbadge" hidden></b></span><span>お知らせ</span></button>
     </div>
-    <div id="garbage" hidden><div class="g1"></div><div class="g2"></div></div>
-    <div id="today" hidden><span class="lbl">今日は何の日</span><span id="todayname"></span></div>
-    <button id="nbtn" type="button" aria-label="お知らせ"><span class="nic"><i id="nicon" class="fa-solid fa-bell"></i><b id="nbadge" hidden></b></span><span>お知らせ</span></button>
   </div>
   <div id="right">
     <div class="card"><h3>これからの天気</h3><div id="hourly"></div></div>
@@ -478,8 +497,7 @@
     try {
       const j = await loadWeather(), c = j.current; wJ = j; setSun(j.sun);
       const [icon, label, color] = WMAP(c.weather_code, c.is_day === 1);
-      el.innerHTML = `<span class="city">札幌</span><i class="fa-solid ${icon} wi" style="color:${color}"></i>${label} ${Math.round(c.temperature_2m)}°C` +
-        `<span class="city" style="margin-left:.6em">体感 ${Math.round(c.apparent_temperature)}°C</span>`;
+      el.innerHTML = `<div class="wc">札幌</div><i class="fa-solid ${icon} wi" style="color:${color}"></i><div class="wt">${Math.round(c.temperature_2m)}°</div><div class="wl">${label}</div><div class="ws">体感 ${Math.round(c.apparent_temperature)}°</div>`;
       el.className = "";
       const H = j.hourly, i0 = H.time.findIndex(t => t > c.time && parseInt(t.slice(11, 13), 10) % 3 === 0);
       let hh = "";
@@ -496,7 +514,7 @@
     } catch (e) {
       wErr = true; retryLater("weather", weather); renderStatus();
       if (wLast) el.className = "stale";
-      else el.innerHTML = '<span class="city">札幌</span>天気を取得できません';
+      else el.innerHTML = '<div class="wc">札幌</div><div class="wl">取得できません</div>';
     }
   }
 
@@ -517,7 +535,7 @@
     if (!it) return [];
     return it.map(id => gJ.categories[id]).filter(Boolean);
   }
-  const gHtml = it => it.map(c => `<span class="gi"><b style="background:${c.color}"></b>${c.short || c.name}</span>`).join('<span class="pl">+</span>');
+  const gHtml = it => it.map(c => `<span class="gi"><b style="background:${c.color}"></b>${c.short || c.name}</span>`).join("");
   function renderDay() {
     const d = new Date(now()), tm = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
     const box = $("garbage"), t = gItems(d), n = gItems(tm);
@@ -530,7 +548,7 @@
   function renderWx2() {
     if (!wJ) return;
     const D = wJ.daily, R = Math.round;
-    $("weather2").innerHTML = `<span class="k" style="margin-left:0">降水確率</span>${D.precipitation_probability_max[0]}%`;
+    $("weather2").innerHTML = `降水確率 ${D.precipitation_probability_max[0]}%`;
   }
 
   const NEWS_INTERVAL = 30 * 60 * 1000;
@@ -588,13 +606,13 @@
   function layout() {
     const L = $("left"), W = L.clientWidth * 0.97, H = L.clientHeight;
     const one = (el, hMax, lo = 8) => fit(el, () => el.offsetWidth <= W && el.offsetHeight <= H * hMax, lo, 600);
-    one($("time"), 0.27);
-    one($("date"), 0.11);
-    const sub = (el, hMax, wMax) => fit(el, () => el.offsetWidth <= W * wMax && el.offsetHeight <= H * hMax, 8, 600);
-    sub($("weather"), 0.10, 0.82);
-    sub($("weather2"), 0.07, 0.8);
-    if (!$("garbage").hidden) sub($("garbage"), 0.15, 0.9);
-    if (!$("today").hidden) sub($("today"), 0.07, 0.9);
+    one($("time"), 0.24);
+    one($("date"), 0.10);
+    const T = $("tiles"), nm = document.body.classList.contains("nm"), cols = nm ? 1 : 2, tg = Math.round(H * 0.025);
+    const avail = H - $("time").offsetHeight - $("date").offsetHeight - (parseFloat(getComputedStyle(L).rowGap) || 0) * (nm ? 1 : 2);
+    const sq = Math.max(40, Math.floor(Math.min((L.clientWidth - tg * (cols - 1)) / cols, (avail - tg * (cols - 1)) / cols)));
+    T.style.setProperty("--sq", sq + "px"); T.style.setProperty("--c", cols); T.style.setProperty("--tg", tg + "px"); T.style.setProperty("--u", sq / 100 + "px");
+    [["garbage", 0.15], ["today", 0.13]].forEach(([id, r]) => { const el = $(id); fit(el, () => el.scrollHeight <= el.clientHeight + 1 && el.scrollWidth <= el.clientWidth + 1, 6, sq * r); });
     const R = $("right");
     if (getComputedStyle(R).display === "none") return;
     const RH = R.clientHeight, cards = R.querySelectorAll(".card");
