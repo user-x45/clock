@@ -209,6 +209,13 @@
   #garbage .g1, #garbage .g2 { flex: 1 1 0; min-width: 0; overflow: hidden; white-space: normal; line-height: 1.25; }
   #garbage .lbl, #garbage .g2 .lbl { display: block; font-size: .6em; margin: 0 0 .1em; }
   #garbage .gi, #garbage .none { display: block; white-space: nowrap; }
+  /* 横長の長方形タイル用: 内容を横並びにして面積を使い切る */
+  #tiles.wide #weather { grid-template-columns: auto auto minmax(0, 1fr); grid-template-areas: "wi wt wc" "wi wt wl" "wi wt ws"; column-gap: calc(var(--u) * 6); row-gap: calc(var(--u) * 2); }
+  #tiles.wide #weather .wl { font-size: calc(var(--u) * 11); min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  #tiles.wide #weather .wc, #tiles.wide #weather .ws { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  #tiles.wide #nbtn { flex-direction: row; gap: calc(var(--u) * 8); }
+  #tiles.wide #nbtn .nic { font-size: calc(var(--u) * 26); }
+  #tiles.wide #nbtn .nic ~ span { font-size: calc(var(--u) * 12); }
   #today { gap: .3em; white-space: normal; max-width: none; }
   #today .lbl { display: block; font-size: .6em; }
   #todayname { white-space: normal; text-overflow: clip; line-height: 1.3; }
@@ -611,8 +618,9 @@
     const T = $("tiles"), nm = document.body.classList.contains("nm"), cols = nm ? 1 : 2, tg = Math.round(H * 0.025);
     const avail = H - $("time").offsetHeight - $("date").offsetHeight - (parseFloat(getComputedStyle(L).rowGap) || 0) * (nm ? 1 : 2);
     const tw = Math.max(80, Math.floor((L.clientWidth - tg * (cols - 1)) / cols)), th = Math.max(60, Math.floor((avail - tg * (cols - 1)) / cols)), mn = Math.min(tw, th);
-    T.style.setProperty("--tw", tw + "px"); T.style.setProperty("--th", th + "px"); T.style.setProperty("--c", cols); T.style.setProperty("--tg", tg + "px"); T.style.setProperty("--u", mn / 100 + "px");
-    [["garbage", 0.17], ["today", 0.15]].forEach(([id, r]) => { const el = $(id); fit(el, () => el.scrollHeight <= el.clientHeight + 1 && el.scrollWidth <= el.clientWidth + 1 && [...el.children].every(c => c.scrollWidth <= c.clientWidth + 1), 6, mn * r); });
+    T.style.setProperty("--tw", tw + "px"); T.style.setProperty("--th", th + "px"); T.style.setProperty("--c", cols); T.style.setProperty("--tg", tg + "px"); const wide = tw / th >= 1.4, u = wide ? Math.min(th / 78, tw / 175) : mn / 100, mnE = u * 100;
+    T.classList.toggle("wide", wide); T.style.setProperty("--u", u + "px");
+    [["garbage", 0.17], ["today", 0.15]].forEach(([id, r]) => { const el = $(id); fit(el, () => el.scrollHeight <= el.clientHeight + 1 && el.scrollWidth <= el.clientWidth + 1 && [...el.children].every(c => c.scrollWidth <= c.clientWidth + 1), 6, mnE * r); });
     const R = $("right");
     if (getComputedStyle(R).display === "none") return;
     const RH = R.clientHeight, cards = R.querySelectorAll(".card");
