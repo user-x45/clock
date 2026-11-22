@@ -167,7 +167,7 @@
   body[data-p="evening"] #bg-evening, body[data-p="night"] #bg-night { opacity: 1; }
   main { position: relative; z-index: 1; text-shadow: 0 1px 2px rgba(0,0,0,.9), 0 2px 12px rgba(0,0,0,.7); }
   body.nm .bg { opacity: 0 !important; }
-  body.nm #right, body.nm #nbtn, body.nm #date, body.nm #weather2, body.nm #garbage, body.nm #today, body.nm #status { display: none !important; }
+  body.nm #right, body.nm #nbtn, body.nm #date, body.nm #garbage, body.nm #today, body.nm #status { display: none !important; }
   body.nm main { text-shadow: none; }
   body.nm #wx { background: none; border-color: transparent; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
   #greet { position: fixed; inset: 0; z-index: 12; display: flex; align-items: center; justify-content: center; text-align: center;
@@ -217,7 +217,7 @@
   #garbage .gi b { width: .65em; height: .65em; margin-right: .25em; }
   #today { gap: .3em; white-space: normal; max-width: none; }
   #today .lbl { display: block; font-size: .6em; }
-  #todayname { white-space: normal; text-overflow: clip; line-height: 1.3; }
+  #todayname { flex: none; max-width: 100%; white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.3; overflow-wrap: anywhere; }
   #nbtn { flex-direction: row; justify-content: center; align-items: center; gap: .5em; padding: 0 calc(var(--u) * 6); white-space: nowrap; font-size: calc(var(--u) * 14); color: var(--fg); }
   #nbtn .nic { font-size: 1.7em; line-height: 1; }
   #nbtn .nic ~ span { font-size: 1em; }
@@ -242,6 +242,21 @@
     #right { display: none; }
     main { flex-direction: column; }
   }
+  /* ---- 共通ガラスデザイン(タイル・右側カード) ---- */
+  :root { --glass: linear-gradient(160deg, rgba(34,40,54,.38), rgba(0,0,0,.28)); --glass-r: 22px; }
+  #wx, #garbage, #today, #nbtn, .card { background: var(--glass); border: 1px solid rgba(255,255,255,.2); border-radius: var(--glass-r);
+    -webkit-backdrop-filter: blur(16px) saturate(1.25); backdrop-filter: blur(16px) saturate(1.25); box-shadow: 0 6px 20px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.16); }
+  .card { padding: 1.6vh 1.4vw; text-shadow: none; }
+  /* ---- 夜間モード: 時計の下に横一列で小さく ---- */
+  body.nm #wx { background: none; border-color: transparent; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; padding: 0; border-radius: 0; justify-content: center; align-items: center; }
+  body.nm #weather2 { display: inline !important; }
+  body.nm #weather { gap: .6em; }
+  body.nm #weather .wl-col { flex-direction: row; gap: .3em; }
+  body.nm #weather .wr { flex-direction: row; align-items: center; gap: .7em; }
+  body.nm #weather .wi { font-size: 1.1em; }
+  body.nm #weather .wt { font-size: 1.3em; }
+  body.nm #weather .wl { font-size: 1em; }
+  body.nm #weather .wc, body.nm #weather .ws, body.nm #weather2 { font-size: .9em; }
 </style>
 </head>
 <body data-p="night">
@@ -280,7 +295,7 @@
 (() => {
   const SYNC_INTERVAL = 5 * 60 * 1000;
   const SAMPLES = 3;
-  const NIGHT_START = 0;
+  const NIGHT_START = 1;
   const NIGHT_END = 5;
   const FORCE_NIGHT = new URLSearchParams(location.search).get("night") === "1";
   const DIM_LEVEL = 0;
@@ -615,9 +630,9 @@
     one($("date"), 0.10);
     const T = $("tiles"), nm = document.body.classList.contains("nm"), cols = nm ? 1 : 2, tg = Math.round(H * 0.025);
     const avail = H - $("time").offsetHeight - $("date").offsetHeight - (parseFloat(getComputedStyle(L).rowGap) || 0) * (nm ? 1 : 2);
-    const tw = Math.max(80, Math.floor((L.clientWidth - tg * (cols - 1)) / cols)), th = Math.max(60, Math.floor((avail - tg * (cols - 1)) / cols)), mn = Math.min(tw, th);
+    const tw = Math.max(80, Math.floor((L.clientWidth - tg * (cols - 1)) / cols)), th = nm ? Math.round(H * 0.09) : Math.max(60, Math.floor((avail - tg * (cols - 1)) / cols)), mn = Math.min(tw, th);
     T.style.setProperty("--tw", tw + "px"); T.style.setProperty("--th", th + "px"); T.style.setProperty("--c", cols); T.style.setProperty("--tg", tg + "px"); T.style.setProperty("--u", mn / 100 + "px");
-    [["wx", 0.5], ["garbage", 0.45], ["today", 0.3], ["nbtn", 0.3]].forEach(([id, r]) => { const el = $(id); fit(el, () => el.scrollHeight <= el.clientHeight + 1 && el.scrollWidth <= el.clientWidth + 1 && [...el.children].every(c => c.scrollWidth <= c.clientWidth + 1), 6, mn * r); });
+    [["wx", 0.5], ["garbage", 0.45], ["today", 0.3], ["nbtn", 0.3]].forEach(([id, r]) => { const el = $(id); fit(el, () => el.scrollHeight <= el.clientHeight + 1 && el.scrollWidth <= el.clientWidth + 1 && [...el.children].every(c => c.scrollWidth <= c.clientWidth + 1 && c.scrollHeight <= c.clientHeight + 1), 6, mn * r); });
     const R = $("right");
     if (getComputedStyle(R).display === "none") return;
     const RH = R.clientHeight, cards = R.querySelectorAll(".card");
