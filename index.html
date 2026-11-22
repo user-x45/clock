@@ -192,21 +192,21 @@
     #kbox { padding: 2.4vh 5vw; } #ktitle { font-size: 5.4vw; } #knote, #kmsg { font-size: 3.6vw; } #kin { font-size: 4vw; } #ksave, #kskip { font-size: 4vw; padding: 1vh 5vw; }
   }
   /* ウィジェット風タイル(2×2の正方形。サイズは layout() が --sq / --u に設定) */
-  #tiles { --sq: 20vh; --u: .2vh; --tg: 2vh; --c: 2; display: grid; grid-template-columns: repeat(var(--c), var(--sq)); grid-auto-rows: var(--sq); gap: var(--tg); justify-content: center; }
+  #tiles { --tw: 30vw; --th: 20vh; --u: .2vh; --tg: 2vh; --c: 2; display: grid; grid-template-columns: repeat(var(--c), var(--tw)); grid-auto-rows: var(--th); gap: var(--tg); justify-content: center; }
   #wx, #garbage, #today, #nbtn { box-sizing: border-box; min-width: 0; overflow: hidden; text-align: left; text-shadow: none; padding: calc(var(--u) * 5.5); border-radius: calc(var(--u) * 10);
     background: linear-gradient(160deg, rgba(34,40,54,.62), rgba(0,0,0,.5)); -webkit-backdrop-filter: blur(18px) saturate(1.3); backdrop-filter: blur(18px) saturate(1.3);
     border: 1px solid rgba(255,255,255,.22); box-shadow: 0 8px 24px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.2); }
   #wx, #garbage, #today { display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; font-size: calc(var(--u) * 10); }
   #garbage[hidden], #today[hidden] { display: flex; visibility: hidden; }
   #wx { justify-content: space-between; gap: 0; }
-  #weather { width: 100%; display: flex; flex-direction: column; gap: calc(var(--u) * 1); font-size: calc(var(--u) * 8); font-weight: 500; line-height: 1.1; white-space: nowrap; }
-  #weather .wc, #weather .ws { color: var(--sub); }
-  #weather .wi { margin: 0; font-size: calc(var(--u) * 20); line-height: 1; }
-  #weather .wt { font-family: "Montserrat", "Zen Kaku Gothic New", sans-serif; font-size: calc(var(--u) * 22); font-weight: 500; line-height: 1; }
-  #weather .wl { font-size: calc(var(--u) * 11); font-weight: 700; }
+  #weather { width: 100%; display: grid; grid-template-columns: auto 1fr; grid-template-areas: "wc wc" "wi wt" "wl wl" "ws ws"; align-items: center; column-gap: calc(var(--u) * 5); row-gap: calc(var(--u) * 1); font-size: calc(var(--u) * 8); font-weight: 500; line-height: 1.1; white-space: nowrap; }
+  #weather .wc, #weather .ws { color: var(--sub); } #weather .wc { grid-area: wc; } #weather .ws { grid-area: ws; } #weather .wi { grid-area: wi; } #weather .wt { grid-area: wt; } #weather .wl { grid-area: wl; }
+  #weather .wi { margin: 0; font-size: calc(var(--u) * 30); line-height: 1; }
+  #weather .wt { font-family: "Montserrat", "Zen Kaku Gothic New", sans-serif; font-size: calc(var(--u) * 34); font-weight: 500; line-height: 1; }
+  #weather .wl { font-size: calc(var(--u) * 13); font-weight: 700; }
   #weather2 { font-size: calc(var(--u) * 8); font-weight: 500; color: var(--sub); white-space: nowrap; }
-  #garbage .g1, #garbage .g2 { white-space: normal; line-height: 1.25; }
-  #garbage .g2 { margin-top: .5em; }
+  #garbage { flex-direction: row; gap: .8em; }
+  #garbage .g1, #garbage .g2 { flex: 1 1 0; min-width: 0; overflow: hidden; white-space: normal; line-height: 1.25; }
   #garbage .lbl, #garbage .g2 .lbl { display: block; font-size: .6em; margin: 0 0 .1em; }
   #garbage .gi, #garbage .none { display: block; white-space: nowrap; }
   #today { gap: .3em; white-space: normal; max-width: none; }
@@ -610,9 +610,9 @@
     one($("date"), 0.10);
     const T = $("tiles"), nm = document.body.classList.contains("nm"), cols = nm ? 1 : 2, tg = Math.round(H * 0.025);
     const avail = H - $("time").offsetHeight - $("date").offsetHeight - (parseFloat(getComputedStyle(L).rowGap) || 0) * (nm ? 1 : 2);
-    const sq = Math.max(40, Math.floor(Math.min((L.clientWidth - tg * (cols - 1)) / cols, (avail - tg * (cols - 1)) / cols)));
-    T.style.setProperty("--sq", sq + "px"); T.style.setProperty("--c", cols); T.style.setProperty("--tg", tg + "px"); T.style.setProperty("--u", sq / 100 + "px");
-    [["garbage", 0.15], ["today", 0.13]].forEach(([id, r]) => { const el = $(id); fit(el, () => el.scrollHeight <= el.clientHeight + 1 && el.scrollWidth <= el.clientWidth + 1, 6, sq * r); });
+    const tw = Math.max(80, Math.floor((L.clientWidth - tg * (cols - 1)) / cols)), th = Math.max(60, Math.floor((avail - tg * (cols - 1)) / cols)), mn = Math.min(tw, th);
+    T.style.setProperty("--tw", tw + "px"); T.style.setProperty("--th", th + "px"); T.style.setProperty("--c", cols); T.style.setProperty("--tg", tg + "px"); T.style.setProperty("--u", mn / 100 + "px");
+    [["garbage", 0.17], ["today", 0.15]].forEach(([id, r]) => { const el = $(id); fit(el, () => el.scrollHeight <= el.clientHeight + 1 && el.scrollWidth <= el.clientWidth + 1 && [...el.children].every(c => c.scrollWidth <= c.clientWidth + 1), 6, mn * r); });
     const R = $("right");
     if (getComputedStyle(R).display === "none") return;
     const RH = R.clientHeight, cards = R.querySelectorAll(".card");
