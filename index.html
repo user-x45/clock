@@ -310,7 +310,7 @@
   const p2 = n => String(n).padStart(2, "0");
   const WD = ["日","月","火","水","木","金","土"];
 
-  const LAT = 43.0621, LON = 141.3544, MIN = 6e4;
+  const LAT = 43.108398, LON = 141.341071, MIN = 6e4;
   let sunCache = { key: "", rise: 0, set: 0 }, sunApi = null;
   const dayKey = ms => new Date(ms + 9 * 36e5).toISOString().slice(0, 10);
   // 天気APIで取得した日の出・日の入り(ms)を保存する
@@ -374,7 +374,7 @@
   }
 
   const WEATHER_INTERVAL = 10 * 60 * 1000;
-  const WURL = "https://api.open-meteo.com/v1/forecast?latitude=43.0621&longitude=141.3544&current=temperature_2m,apparent_temperature,weather_code,is_day&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max,sunrise,sunset&forecast_days=2&wind_speed_unit=ms&timezone=Asia%2FTokyo";
+  const WURL = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,apparent_temperature,weather_code,is_day&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max,sunrise,sunset&forecast_days=2&wind_speed_unit=ms&timezone=Asia%2FTokyo`;
   const WMAP = (c, day) => c === 0 ? [day ? "fa-sun" : "fa-moon", "快晴", day ? "#f6c945" : "#cbd5e0"]
     : c <= 2 ? [day ? "fa-cloud-sun" : "fa-cloud-moon", "晴れ", day ? "#f6c945" : "#cbd5e0"]
     : c === 3 ? ["fa-cloud", "曇り", "#a0aec0"]
@@ -444,7 +444,7 @@
       sun: cur.sys ? { rise: cur.sys.sunrise * 1000, set: cur.sys.sunset * 1000 } : null };
   }
   async function owmLoad(key) {
-    const q = `lat=43.0621&lon=141.3544&units=metric&lang=ja&appid=${encodeURIComponent(key)}`;
+    const q = `lat=${LAT}&lon=${LON}&units=metric&lang=ja&appid=${encodeURIComponent(key)}`;
     const get = async u => { const r = await fetch(u + q, { cache: "no-store" }); if (!r.ok) { const e = new Error(r.status); e.status = r.status; throw e; } return r.json(); };
     const [cur, fc] = await Promise.all([get("https://api.openweathermap.org/data/2.5/weather?"), get("https://api.openweathermap.org/data/2.5/forecast?")]);
     return owmToOM(cur, fc);
