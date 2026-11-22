@@ -310,6 +310,32 @@
   const p2 = n => String(n).padStart(2, "0");
   const WD = ["日","月","火","水","木","金","土"];
 
+  const LAT = 43.0621, LON = 141.3544, MIN = 6e4;
+  let sunCache = { key: "", rise: 0, set: 0 }, sunApi = null;
+  const dayKey = ms => new Date(ms + 9 * 36e5).toISOString().slice(0, 10);
+  // 天気APIで取得した日の出・日の入り(ms)を保存する
+  function setSun(s) { if (s && isFinite(s.rise) && isFinite(s.set)) sunApi = { key: dayKey(s.rise), rise: s.rise, set: s.set }; }
+  // 日の出・日の入り: 天気APIの値を優先し、未取得(起動直後・日付変更直後・取得失敗時)は札幌の緯度経度から計算する
+  function sunTimes(ms) {
+    const key = dayKey(ms);
+    if (sunApi && sunApi.key === key) return sunApi;
+    if (sunCache.key === key) return sunCache;
+    const d = new Date(ms + 9 * 36e5), y = d.getUTCFullYear(), mo = d.getUTCMonth(), da = d.getUTCDate();
+    const R = Math.PI / 180, jd = Date.UTC(y, mo, da, 12) / 864e5 + 2440587.5;
+    const n = Math.round(jd - 2451545.0 + 0.0008), js = n + 0.0009 - LON / 360;
+    const M = (357.5291 + 0.98560028 * js) % 360, C = 1.9148 * Math.sin(M * R) + 0.02 * Math.sin(2 * M * R) + 0.0003 * Math.sin(3 * M * R);
+    const lam = (M + C + 180 + 102.9372) % 360, jt = 2451545.0 + js + 0.0053 * Math.sin(M * R) - 0.0069 * Math.sin(2 * lam * R);
+    const sd = Math.sin(lam * R) * Math.sin(23.4397 * R), cd = Math.cos(Math.asin(sd));
+    const w = Math.acos(Math.max(-1, Math.min(1, (Math.sin(-0.833 * R) - Math.sin(LAT * R) * sd) / (Math.cos(LAT * R) * cd)))) / R;
+    const tm = j => (j - 2440587.5) * 864e5;
+    return (sunCache = { key, rise: tm(jt - w / 360), set: tm(jt + w / 360) });
+  }
+  // 日の出30分前〜2時間後=朝 / 日没1.5時間前〜30分後=夕方 / その間=昼 / それ以外=夜
+  function phase(ms) {
+    const s = sunTimes(ms);
+    return ms < s.rise - 30 * MIN ? "night" : ms < s.rise + 120 * MIN ? "morning" : ms < s.set - 90 * MIN ? "day" : ms < s.set + 30 * MIN ? "evening" : "night";
+  }
+
   function render() {
     const d = new Date(now());
     $("time").firstChild.nodeValue = p2(d.getHours()) + ":" + p2(d.getMinutes());
@@ -320,7 +346,7 @@
     if (lastDay !== null && dk !== lastDay) { weather(); news(); today(); renderDay(); }
     lastDay = dk;
     const h = d.getHours();
-    document.body.dataset.p = h >= 5 && h < 9 ? "morning" : h >= 9 && h < 16 ? "day" : h >= 16 && h < 19 ? "evening" : "night";
+    document.body.dataset.p = phase(now());
     const night = FORCE_NIGHT || (NIGHT_START > NIGHT_END ? (h >= NIGHT_START || h < NIGHT_END) : (h >= NIGHT_START && h < NIGHT_END));
     if (prevNight !== null && night !== prevNight) {
       greetUntil = now() + GREET_MS;
@@ -348,15 +374,15 @@
   }
 
   const WEATHER_INTERVAL = 10 * 60 * 1000;
-  const WURL = "https://api.open-meteo.com/v1/forecast?latitude=43.0621&longitude=141.3544&current=temperature_2m,apparent_temperature,weather_code,is_day&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&forecast_days=2&wind_speed_unit=ms&timezone=Asia%2FTokyo";
+  const WURL = "https://api.open-meteo.com/v1/forecast?latitude=43.0621&longitude=141.3544&current=temperature_2m,apparent_temperature,weather_code,is_day&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max,sunrise,sunset&forecast_days=2&wind_speed_unit=ms&timezone=Asia%2FTokyo";
   const WMAP = (c, day) => c === 0 ? [day ? "fa-sun" : "fa-moon", "快晴", day ? "#f6c945" : "#cbd5e0"]
     : c <= 2 ? [day ? "fa-cloud-sun" : "fa-cloud-moon", "晴れ", day ? "#f6c945" : "#cbd5e0"]
     : c === 3 ? ["fa-cloud", "曇り", "#a0aec0"]
     : c <= 48 ? ["fa-smog", "霧", "#a0aec0"]
-    : c <= 57 ? ["fa-cloud-rain", "霧雨", "#63b3ed"]
-    : c <= 67 ? ["fa-cloud-showers-heavy", "雨", "#4299e1"]
+    : c <= 57 ? ["fa-cloud-rain", "霧雨", "#90cdf4"]
+    : c <= 67 ? ["fa-cloud-showers-heavy", "雨", "#63b3ed"]
     : c <= 77 ? ["fa-snowflake", "雪", "#bee3f8"]
-    : c <= 82 ? ["fa-cloud-sun-rain", "にわか雨", "#63b3ed"]
+    : c <= 82 ? ["fa-cloud-sun-rain", "にわか雨", "#90cdf4"]
     : c <= 86 ? ["fa-snowflake", "にわか雪", "#bee3f8"]
     : ["fa-cloud-bolt", "雷雨", "#ecc94b"];
   let wLast = 0, wErr = false, wJ = null, wSrc = "", keyBadShown = false;
@@ -414,7 +440,8 @@
     }
     const sec = nowMs / 1000;
     return { current: { time: jstStr(nowMs), temperature_2m: cur.main.temp, apparent_temperature: cur.main.feels_like, weather_code: pts[0].code,
-      is_day: (cur.sys && sec >= cur.sys.sunrise && sec < cur.sys.sunset) ? 1 : 0 }, hourly: H, daily: D };
+      is_day: (cur.sys && sec >= cur.sys.sunrise && sec < cur.sys.sunset) ? 1 : 0 }, hourly: H, daily: D,
+      sun: cur.sys ? { rise: cur.sys.sunrise * 1000, set: cur.sys.sunset * 1000 } : null };
   }
   async function owmLoad(key) {
     const q = `lat=43.0621&lon=141.3544&units=metric&lang=ja&appid=${encodeURIComponent(key)}`;
@@ -433,14 +460,16 @@
     }
     const r = await fetch(WURL, { cache: "no-store" });
     if (!r.ok) throw new Error(r.status);
-    const j = await r.json(); wSrc = "Open-Meteo"; return j;
+    const j = await r.json(); wSrc = "Open-Meteo";
+    try { j.sun = { rise: Date.parse(j.daily.sunrise[0] + ":00+09:00"), set: Date.parse(j.daily.sunset[0] + ":00+09:00") }; } catch (e) {}
+    return j;
   }
   async function weather() {
     const el = $("weather");
     try {
-      const j = await loadWeather(), c = j.current; wJ = j;
+      const j = await loadWeather(), c = j.current; wJ = j; setSun(j.sun);
       const [icon, label, color] = WMAP(c.weather_code, c.is_day === 1);
-      el.innerHTML = `<span class="city">札幌</span><i class="fa-solid ${icon} wi"></i>${label} ${Math.round(c.temperature_2m)}°C` +
+      el.innerHTML = `<span class="city">札幌</span><i class="fa-solid ${icon} wi" style="color:${color}"></i>${label} ${Math.round(c.temperature_2m)}°C` +
         `<span class="city" style="margin-left:.6em">体感 ${Math.round(c.apparent_temperature)}°C</span>`;
       el.className = "";
       const H = j.hourly, i0 = H.time.findIndex(t => t > c.time && parseInt(t.slice(11, 13), 10) % 3 === 0);
@@ -448,12 +477,12 @@
       for (let k = 0; k < 4; k++) {
         const i = i0 + k * 3; if (i0 < 0 || i >= H.time.length) break;
         const hr = parseInt(H.time[i].slice(11, 13), 10);
-        const ic = WMAP(H.weather_code[i], hr >= 6 && hr < 18)[0];
-        hh += `<div><div class="h">${hr}時</div><i class="fa-solid ${ic}"></i><div>${Math.round(H.temperature_2m[i])}°</div><div class="p">${H.precipitation_probability[i]}%</div></div>`;
+        const [ic, , ico] = WMAP(H.weather_code[i], hr >= 6 && hr < 18);
+        hh += `<div><div class="h">${hr}時</div><i class="fa-solid ${ic}" style="color:${ico}"></i><div>${Math.round(H.temperature_2m[i])}°</div><div class="p">${H.precipitation_probability[i]}%</div></div>`;
       }
       $("hourly").innerHTML = hh;
-      const D = j.daily, [dic, dlabel] = WMAP(D.weather_code[1], true);
-      $("tomorrow").innerHTML = `<i class="fa-solid ${dic}"></i><span>${dlabel}</span><span>${Math.round(D.temperature_2m_max[1])}° / ${Math.round(D.temperature_2m_min[1])}°</span><span class="p">降水確率 ${D.precipitation_probability_max[1]}%</span>`;
+      const D = j.daily, [dic, dlabel, dco] = WMAP(D.weather_code[1], true);
+      $("tomorrow").innerHTML = `<i class="fa-solid ${dic}" style="color:${dco}"></i><span>${dlabel}</span><span>${Math.round(D.temperature_2m_max[1])}° / ${Math.round(D.temperature_2m_min[1])}°</span><span class="p">降水確率 ${D.precipitation_probability_max[1]}%</span>`;
       renderWx2(); wLast = Date.now(); wErr = false; retryOk("weather"); renderStatus(); relayout();
     } catch (e) {
       wErr = true; retryLater("weather", weather); renderStatus();
