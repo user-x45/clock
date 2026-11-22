@@ -228,7 +228,7 @@
     <button id="nbtn" type="button" aria-label="お知らせ"><span class="nic"><i id="nicon" class="fa-solid fa-bell"></i><b id="nbadge" hidden></b></span><span>お知らせ</span></button>
   </div>
   <div id="right">
-    <div class="card"><h3>これからの天気(3時間ごと)</h3><div id="hourly"></div></div>
+    <div class="card"><h3>これからの天気</h3><div id="hourly"></div></div>
     <div class="card"><h3>明日の天気</h3><div id="tomorrow">取得中…</div></div>
     <div class="card"><h3 id="newsh">ニュース</h3><ul id="newslist"><li>取得中…</li></ul></div>
   </div>
@@ -537,7 +537,7 @@
         if (j.status !== "ok" || !j.items || !j.items.length) throw new Error("feed");
         const ul = $("newslist"); ul.textContent = "";
         j.items.slice(0, 3).forEach(it => { const li = document.createElement("li"); li.textContent = it.title; if (it.link) li.dataset.link = it.link; ul.appendChild(li); });
-        $("newsh").textContent = "今日のニュース(" + f.name + ")";
+        $("newsh").textContent = "今日のニュース";
         nLast = Date.now(); nErr = false; retryOk("news"); renderStatus(); relayout(); return;
       } catch (e) { }
     }
