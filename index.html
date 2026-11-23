@@ -397,6 +397,7 @@
     const dk = d.getDate();
     if (lastDay !== null && dk !== lastDay) { weather(); news(); today(); renderDay(); }
     lastDay = dk;
+    if (gMode(d) !== lastGm) renderDay();   // 8:30 と 0:00 で今日/明日を切り替え
     const h = d.getHours();
     document.body.dataset.p = phase(now());
     const night = FORCE_NIGHT || (NIGHT_START > NIGHT_END ? (h >= NIGHT_START || h < NIGHT_END) : (h >= NIGHT_START && h < NIGHT_END));
@@ -572,13 +573,18 @@
     return it.map(id => gJ.categories[id]).filter(Boolean);
   }
   const gHtml = it => it.map(c => `<span class="gi"><b style="background:${c.color}"></b>${c.short || c.name}</span>`).join("");
+  const GARBAGE_SWITCH = 8 * 60 + 30;   // この時刻(8:30)以降は「明日のごみ」だけを表示、それまでは「今日のごみ」だけ
+  const gMode = d => (d.getHours() * 60 + d.getMinutes() >= GARBAGE_SWITCH ? 1 : 0);
+  let lastGm = null;
   function renderDay() {
-    const d = new Date(now()), tm = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
-    const box = $("garbage"), t = gItems(d), n = gItems(tm);
+    const d = new Date(now()), m = gMode(d);
+    lastGm = m;
+    const target = m ? new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1) : d;
+    const box = $("garbage"), t = gItems(target);
     if (t === null || t === "out") { box.hidden = true; relayout(); return; }
-    const noc = gJ.noCollection.includes(ymd(d));
-    box.querySelector(".g1").innerHTML = `<span class="lbl">今日のごみ</span>` + (t.length ? gHtml(t) : `<span class="none">${noc ? "収集なし(お休み)" : "収集なし"}</span>`);
-    box.querySelector(".g2").innerHTML = n === "out" ? "" : `<span class="lbl">明日</span>` + (n.length ? gHtml(n) : `<span class="none">収集なし</span>`);
+    const noc = gJ.noCollection.includes(ymd(target));
+    box.querySelector(".g1").innerHTML = `<span class="lbl">${m ? "明日のごみ" : "今日のごみ"}</span>` + (t.length ? gHtml(t) : `<span class="none">${noc ? "収集なし(お休み)" : "収集なし"}</span>`);
+    box.querySelector(".g2").innerHTML = "";
     box.hidden = false; relayout();
   }
   function renderWx2() {
