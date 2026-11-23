@@ -230,7 +230,7 @@
   #garbage .gi b { width: .65em; height: .65em; margin-right: .25em; }
   #today { gap: .3em; white-space: normal; max-width: none; }
   #today .lbl { display: block; font-size: .6em; }
-  #todayname { white-space: normal; text-overflow: clip; line-height: 1.3; }
+  #todayname { flex: none; overflow: visible; white-space: normal; text-overflow: clip; overflow-wrap: anywhere; word-break: break-word; line-height: 1.3; }
   #nbtn { flex-direction: row; justify-content: center; align-items: center; gap: .5em; padding: 0 calc(var(--u) * 6); white-space: nowrap; font-size: calc(var(--u) * 14); color: var(--fg); }
   #nbtn .nic { font-size: 1.7em; line-height: 1; }
   #nbtn .nic ~ span { font-size: 1em; }
