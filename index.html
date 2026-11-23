@@ -313,7 +313,7 @@
 
   let nLast = 0, nErr = false, lastDay = null;
   let qState = 0, alertOn = false;
-  let offset = 0, lastSync = null, lastErr = false, accuracy = null;
+  let offset = 0, lastSync = null, lastErr = false, accuracy = null, syncBusy = true;
   const $ = id => document.getElementById(id);
   const now = () => Date.now() + offset;
 
@@ -339,6 +339,10 @@
   }
 
   async function sync() {
+    syncBusy = true;
+    try { await syncMain(); } finally { syncBusy = false; renderStatus(); }
+  }
+  async function syncMain() {
     for (const src of SOURCES) {
       try {
         const results = [];
@@ -418,12 +422,14 @@
   function renderStatus() {
     const el = $("status");
     const f = t => { const d = new Date(t); return p2(d.getHours()) + ":" + p2(d.getMinutes()) + ":" + p2(d.getSeconds()); };
-    const c = nLast ? `ニュース取得 ${f(nLast)}` + (nErr ? "(再取得失敗)" : "") : (nErr ? "ニュース取得 失敗" : "ニュース取得中…");
-    const a = lastSync ? `時刻取得 ${f(lastSync)}` + (lastErr ? "(再取得失敗)" : "") : "時刻取得 失敗(端末時刻を表示中)";
-    const b = wLast ? `天気取得 ${f(wLast)}${wSrc ? "[" + wSrc + "]" : ""}` + (wErr ? "(再取得失敗)" : "") : (wErr ? "天気取得 失敗" : "天気取得中…");
+    const pend = n => (retryN[n] || 0) > 0;   // 再試行待ちの間は「失敗」と出さない(起動直後の一時的な失敗を隠す)
+    const nFail = nErr && !nLast && !pend("news"), wFail = wErr && !wLast && !pend("weather"), tFail = !lastSync && !syncBusy && !pend("sync");
+    const c = nLast ? `ニュース取得 ${f(nLast)}` + (nErr ? "(再取得失敗)" : "") : (nFail ? "ニュース取得 失敗" : "ニュース取得中…");
+    const a = lastSync ? `時刻取得 ${f(lastSync)}` + (lastErr ? "(再取得失敗)" : "") : (tFail ? "時刻取得 失敗(端末時刻を表示中)" : "時刻取得中…");
+    const b = wLast ? `天気取得 ${f(wLast)}${wSrc ? "[" + wSrc + "]" : ""}` + (wErr ? "(再取得失敗)" : "") : (wFail ? "天気取得 失敗" : "天気取得中…");
     const q = ["地震情報 接続中…", "地震情報 受信待機中", "地震情報 切断(再接続中)"][qState];
     el.textContent = a + "  ・  " + b + "  ・  " + c + "  ・  " + q + ntMsg();
-    el.className = (lastErr || wErr || nErr || !lastSync || qState === 2 || ntBad()) ? "warn" : "";
+    el.className = ((lastErr && lastSync) || (wErr && (wLast || wFail)) || (nErr && (nLast || nFail)) || tFail || qState === 2 || ntBad()) ? "warn" : "";
   }
 
   const WEATHER_INTERVAL = 10 * 60 * 1000;
