@@ -44,6 +44,9 @@
   .empty { color: var(--sub); font-size: 14px; text-align: center; padding: 12px 0; }
   details summary { cursor: pointer; font-size: 14px; color: var(--sub); }
   details[open] summary { margin-bottom: 12px; } details > div { display: flex; flex-direction: column; gap: 12px; }
+  #cv { display: none; width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 12px; object-fit: contain; } #cv.on { display: block; }
+  #cstart { background: var(--acc); color: #06201d; } #cstop { background: rgba(255,255,255,.12); color: var(--fg); border: 1px solid rgba(255,255,255,.3); }
+  #cstart[hidden], #cstop[hidden] { display: none; } #cstat { min-height: 1.4em; }
 </style>
 </head>
 <body>
@@ -62,6 +65,14 @@
   <section>
     <h2>送信済み<span class="acts"><small id="sum"></small><button id="clear" type="button" hidden>すべて削除</button></span></h2>
     <ul id="list"></ul>
+  </section>
+
+  <section>
+    <h2>見守りカメラ<small id="cstat"></small></h2>
+    <video id="cv" autoplay playsinline muted></video>
+    <button id="cstart" type="button">カメラを起動</button>
+    <button id="cstop" type="button" hidden>停止</button>
+    <p class="hint">時計のフロントカメラの映像を表示します。時計の画面には「カメラ配信中」と表示され、15分で自動停止します。</p>
   </section>
 
 </main>
@@ -144,6 +155,48 @@
   document.addEventListener("visibilitychange", () => { if (!document.hidden) load(true); });
   setInterval(() => { if (!document.hidden) load(true); }, POLL_MS);
 
+  // ---- 見守りカメラ(時計のフロントカメラ映像をWebRTCで受信) ----
+  const CAM = "wss://news-proxy.user-x45.workers.dev/api/cam", STUN = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
+  let cws = null, cpc = null, cwant = false, cchain = Promise.resolve();
+  const cst = (t, err) => { $("cstat").textContent = t; $("cstat").style.color = err ? "var(--err)" : ""; };
+  const cSend = o => { try { cws.send(JSON.stringify(o)); } catch (e) {} };
+  const gathered = pc => new Promise(res => {
+    if (pc.iceGatheringState === "complete") return res();
+    const f = () => { if (pc.iceGatheringState === "complete") { pc.removeEventListener("icegatheringstatechange", f); res(); } };
+    pc.addEventListener("icegatheringstatechange", f); setTimeout(res, 2500);
+  });
+  function cClosePc() { if (cpc) { try { cpc.close(); } catch (e) {} cpc = null; } $("cv").srcObject = null; $("cv").classList.remove("on"); }
+  function cEnd(msg, err) {
+    cwant = false; cClosePc();
+    if (cws) { const w = cws; cws = null; w.onclose = null; try { w.close(); } catch (e) {} }
+    $("cstart").hidden = false; $("cstop").hidden = true; cst(msg || "", err);
+  }
+  async function cOffer() {
+    cClosePc();
+    const pc = cpc = new RTCPeerConnection(STUN);
+    pc.addTransceiver("video", { direction: "recvonly" });
+    pc.ontrack = e => { $("cv").srcObject = e.streams[0]; $("cv").classList.add("on"); $("cv").play().catch(() => {}); cst("映像を受信中"); };
+    pc.onconnectionstatechange = () => { if (cpc === pc && pc.connectionState === "failed") cEnd("接続できませんでした(回線によっては中継サーバー(TURN)が必要です)", true); };
+    await pc.setLocalDescription(await pc.createOffer());
+    await gathered(pc);
+    if (cpc !== pc) return;
+    cSend({ t: "offer", sdp: pc.localDescription.sdp }); cst("時計のカメラを起動中…");
+  }
+  async function cOn(m) {
+    if (!cwant) return;
+    if (m.t === "peer") { if (m.on) await cOffer(); else { cClosePc(); cst("時計に接続できません(電源・ネットワークを確認)", true); } }
+    else if (m.t === "answer" && cpc && !cpc.remoteDescription) await cpc.setRemoteDescription({ type: "answer", sdp: m.sdp });
+    else if (m.t === "bye") cEnd("配信が終了しました");
+    else if (m.t === "err") cEnd(m.m || "カメラを起動できません", true);
+  }
+  function cStart() {
+    cEnd(); cwant = true; $("cstart").hidden = true; $("cstop").hidden = false; cst("接続中…");
+    let w; try { w = cws = new WebSocket(CAM + "?role=view"); } catch (e) { cEnd("接続できません", true); return; }
+    w.onmessage = ev => { let m; try { m = JSON.parse(ev.data); } catch (e) { return; } cchain = cchain.then(() => cOn(m)).catch(() => {}); };
+    w.onclose = () => { if (cws === w) cEnd("接続できませんでした", true); };
+  }
+  $("cstart").addEventListener("click", cStart);
+  $("cstop").addEventListener("click", () => cEnd("停止しました"));
   count(); load();
 })();
 </script>
