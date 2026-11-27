@@ -287,7 +287,7 @@
 <div id="push" role="status"><div class="pi"><i class="fa-solid fa-bell"></i></div><div class="pt"><div class="ph"><span>お知らせ</span><span id="pmore"></span></div><div id="ptitle"></div><div id="pbody"></div></div></div>
 <div id="alert"><div id="atitle"></div><div id="amain"></div><div id="asub"></div></div>
 <div id="greet"></div>
-<div id="camlive" hidden><i class="fa-solid fa-video"></i><span>カメラ配信中</span></div>
+<div id="camlive" hidden><i class="fa-solid fa-video"></i><span>カメラ・マイク配信中</span></div>
 <div id="kd" hidden><div id="kbox"><div id="ktitle">OpenWeatherMap APIキー</div><div id="knote">天気の取得にOpenWeatherMapのAPIキー(32文字)を使います。入力したキーはこの端末のローカルストレージに保存され、次回以降は入力不要です。「あとで」を選ぶとOpen-Meteoのみを使い、この画面は表示されなくなります(後から入力する場合はURLに ?setkey=1 を付けて開いてください)。</div><input id="kin" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="APIキーを貼り付け"><div id="kmsg"></div><div id="kbtns"><button id="kskip" type="button">あとで</button><button id="ksave" type="button">保存</button></div></div></div>
 <div id="dim"></div>
 <div id="status">時刻を同期中…</div>
@@ -933,8 +933,14 @@
     $("camlive").hidden = true;
   }
   async function camGet() {
-    try { return await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "user" }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false }); }
-    catch (e) { if (e && e.name === "NotAllowedError") throw e; return navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false }); }
+    const gum = c => navigator.mediaDevices.getUserMedia(c);
+    const audio = { echoCancellation: true, noiseSuppression: true };
+    try { return await gum({ video: { facingMode: { exact: "user" }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio }); }
+    catch (e) {
+      if (e && e.name === "NotAllowedError") throw e;
+      try { return await gum({ video: { facingMode: "user" }, audio }); }
+      catch (e2) { if (e2 && e2.name === "NotAllowedError") throw e2; return gum({ video: { facingMode: "user" }, audio: false }); } // マイクが無い端末は映像のみ
+    }
   }
   const camGathered = pc => new Promise(res => {
     if (pc.iceGatheringState === "complete") return res();
@@ -956,7 +962,7 @@
       camSend({ t: "answer", sdp: pc.localDescription.sdp });
       $("camlive").hidden = false;
       camStopT = setTimeout(() => { camStop(); camSend({ t: "bye" }); }, CAM_MAX_MS);
-    } catch (e) { camStop(); camSend({ t: "err", m: e && e.name === "NotAllowedError" ? "時計側でカメラが許可されていません" : "カメラを起動できません" }); }
+    } catch (e) { camStop(); camSend({ t: "err", m: e && e.name === "NotAllowedError" ? "時計側でカメラ・マイクが許可されていません" : "カメラを起動できません" }); }
   }
   function camConnect() {
     clearTimeout(camT);
@@ -971,9 +977,9 @@
   setInterval(() => { try { if (camWs && camWs.readyState === 1) camWs.send("ping"); } catch (e) {} }, 30000);
   // 初回のタップでカメラの許可だけ先に取っておく(遠隔起動時に許可画面で止まらないように)
   document.body.addEventListener("click", () => {
-    if (lsGet("camPerm")) return;
-    lsSet("camPerm", "1");
-    camGet().then(s => s.getTracks().forEach(t => t.stop())).catch(() => lsDel("camPerm"));
+    if (lsGet("camPerm2")) return;
+    lsSet("camPerm2", "1");
+    camGet().then(s => s.getTracks().forEach(t => t.stop())).catch(() => lsDel("camPerm2"));
   });
   camConnect();
 
