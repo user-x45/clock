@@ -47,6 +47,20 @@
   #cv { display: none; width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 12px; object-fit: contain; } #cv.on { display: block; }
   #cstart { background: var(--acc); color: #06201d; } #cstop { background: rgba(255,255,255,.12); color: var(--fg); border: 1px solid rgba(255,255,255,.3); }
   #cstart[hidden], #cstop[hidden] { display: none; } #cstat { min-height: 1.4em; }
+  #cmute { background: rgba(255,255,255,.12); color: var(--fg); border: 1px solid rgba(255,255,255,.3); } #cmute[hidden] { display: none; }
+  #pad { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,.82); display: flex; align-items: center; justify-content: center;
+    padding: calc(16px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left)); }
+  #pad[hidden] { display: none; }
+  #padbox { width: 100%; max-width: 320px; background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 14px; align-items: center; }
+  #padt { font-size: 16px; font-weight: 500; }
+  #dots { display: flex; gap: 14px; height: 18px; align-items: center; }
+  #dots i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--sub); } #dots i.on { background: var(--acc); border-color: var(--acc); }
+  #padmsg { min-height: 1.4em; font-size: 13px; color: var(--err); text-align: center; }
+  #keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; }
+  #keys button { height: 56px; padding: 0; font-size: 22px; border-radius: 16px; background: rgba(255,255,255,.1); color: var(--fg); border: 1px solid var(--line);
+    touch-action: manipulation; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+  #keys button:active { background: rgba(255,255,255,.22); }
+  #keys button.sm { font-size: 13px; background: none; border-color: transparent; color: var(--sub); }
 </style>
 </head>
 <body>
@@ -69,13 +83,23 @@
 
   <section>
     <h2>見守りカメラ<small id="cstat"></small></h2>
-    <video id="cv" autoplay playsinline muted></video>
+    <video id="cv" autoplay playsinline></video>
+    <button id="cmute" type="button" hidden></button>
     <button id="cstart" type="button">カメラを起動</button>
     <button id="cstop" type="button" hidden>停止</button>
-    <p class="hint">時計のフロントカメラの映像を表示します。時計の画面には「カメラ配信中」と表示され、15分で自動停止します。</p>
+    <p class="hint">時計のフロントカメラの映像とマイクの音声を流します。時計の画面には「カメラ・マイク配信中」と表示され、15分で自動停止します。</p>
   </section>
 
 </main>
+
+<div id="pad" hidden role="dialog" aria-modal="true" aria-label="パスコード入力">
+  <div id="padbox">
+    <div id="padt">パスコードを入力</div>
+    <div id="dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div id="padmsg" role="alert"></div>
+    <div id="keys"></div>
+  </div>
+</div>
 
 <script>
 (() => {
@@ -165,7 +189,9 @@
     const f = () => { if (pc.iceGatheringState === "complete") { pc.removeEventListener("icegatheringstatechange", f); res(); } };
     pc.addEventListener("icegatheringstatechange", f); setTimeout(res, 2500);
   });
-  function cClosePc() { if (cpc) { try { cpc.close(); } catch (e) {} cpc = null; } $("cv").srcObject = null; $("cv").classList.remove("on"); }
+  function cClosePc() { if (cpc) { try { cpc.close(); } catch (e) {} cpc = null; } $("cv").srcObject = null; $("cv").classList.remove("on"); $("cmute").hidden = true; }
+  function updMute() { const b = $("cmute"); b.hidden = !$("cv").classList.contains("on"); b.textContent = $("cv").muted ? "音を出す" : "ミュートにする"; }
+  $("cmute").addEventListener("click", () => { const v = $("cv"); v.muted = !v.muted; if (!v.muted) v.play().catch(() => {}); updMute(); });
   function cEnd(msg, err) {
     cwant = false; cClosePc();
     if (cws) { const w = cws; cws = null; w.onclose = null; try { w.close(); } catch (e) {} }
@@ -174,8 +200,13 @@
   async function cOffer() {
     cClosePc();
     const pc = cpc = new RTCPeerConnection(STUN);
-    pc.addTransceiver("video", { direction: "recvonly" });
-    pc.ontrack = e => { $("cv").srcObject = e.streams[0]; $("cv").classList.add("on"); $("cv").play().catch(() => {}); cst("映像を受信中"); };
+    pc.addTransceiver("video", { direction: "recvonly" }); pc.addTransceiver("audio", { direction: "recvonly" });
+    pc.ontrack = e => {
+      const v = $("cv"); if (v.srcObject !== e.streams[0]) v.srcObject = e.streams[0];
+      v.classList.add("on"); v.muted = false;
+      v.play().catch(() => { v.muted = true; v.play().catch(() => {}); }); // 自動再生が止められたら無音で開始し、ボタンで音を出す
+      updMute(); cst("映像を受信中");
+    };
     pc.onconnectionstatechange = () => { if (cpc === pc && pc.connectionState === "failed") cEnd("接続できませんでした(回線によっては中継サーバー(TURN)が必要です)", true); };
     await pc.setLocalDescription(await pc.createOffer());
     await gathered(pc);
@@ -189,12 +220,46 @@
     else if (m.t === "bye") cEnd("配信が終了しました");
     else if (m.t === "err") cEnd(m.m || "カメラを起動できません", true);
   }
-  function cStart() {
-    cEnd(); cwant = true; $("cstart").hidden = true; $("cstop").hidden = false; cst("接続中…");
-    let w; try { w = cws = new WebSocket(CAM + "?role=view"); } catch (e) { cEnd("接続できません", true); return; }
-    w.onmessage = ev => { let m; try { m = JSON.parse(ev.data); } catch (e) { return; } cchain = cchain.then(() => cOn(m)).catch(() => {}); };
-    w.onclose = () => { if (cws === w) cEnd("接続できませんでした", true); };
+  let pin = "", authMsg = ""; // パスコードは保存せず、このページを開いている間だけメモリに保持する
+  function cConnect() {
+    cEnd(); cwant = true; authMsg = ""; $("cstart").hidden = true; $("cstop").hidden = false; cst("接続中…");
+    let w; try { w = cws = new WebSocket(CAM + "?role=view", ["pin." + pin]); } catch (e) { cEnd("接続できません", true); return; }
+    w.onmessage = ev => {
+      let m; try { m = JSON.parse(ev.data); } catch (e) { return; }
+      if (m.t === "auth") { authMsg = m.locked ? "失敗が続いたため、しばらく使えません。時間をおいてやり直してください" : "パスコードが違います"; return; }
+      cchain = cchain.then(() => cOn(m)).catch(() => {});
+    };
+    w.onclose = ev => {
+      if (cws !== w) return;
+      if (ev.code === 4001) { pin = ""; cEnd(); cst(""); openPad(authMsg || "パスコードが違います"); }
+      else cEnd("接続できませんでした", true);
+    };
   }
+  function cStart() { if (pin) cConnect(); else openPad(""); }
+
+  // ---- パスコード入力(OSのキーボードは出さず、画面内のボタンだけで入力) ----
+  let padBuf = "";
+  const padOpen = () => !$("pad").hidden;
+  function padDraw() { [...$("dots").children].forEach((d, i) => d.classList.toggle("on", i < padBuf.length)); }
+  function openPad(msg) { padBuf = ""; padDraw(); $("padmsg").textContent = msg || ""; $("pad").hidden = false; }
+  function closePad() { $("pad").hidden = true; padBuf = ""; padDraw(); }
+  function padDigit(d) {
+    if (padBuf.length >= 6) return;
+    padBuf += d; padDraw(); $("padmsg").textContent = "";
+    if (padBuf.length === 6) { pin = padBuf; closePad(); cConnect(); }
+  }
+  function padBack() { padBuf = padBuf.slice(0, -1); padDraw(); }
+  (() => {
+    const keys = $("keys"), add = (label, fn, cls, aria) => { const b = mk("button", cls || "", label); b.type = "button"; if (aria) b.setAttribute("aria-label", aria); b.addEventListener("click", fn); keys.appendChild(b); };
+    for (let n = 1; n <= 9; n++) add(String(n), () => padDigit(String(n)));
+    add("キャンセル", () => { closePad(); cst(""); }, "sm");
+    add("0", () => padDigit("0"));
+    add("⌫", padBack, "sm", "1文字消す");
+  })();
+  document.addEventListener("keydown", e => { // パソコンの物理キーボード用(スマホではOSキーボードは出ません)
+    if (!padOpen()) return;
+    if (/^[0-9]$/.test(e.key)) padDigit(e.key); else if (e.key === "Backspace") padBack(); else if (e.key === "Escape") closePad();
+  });
   $("cstart").addEventListener("click", cStart);
   $("cstop").addEventListener("click", () => cEnd("停止しました"));
   count(); load();
