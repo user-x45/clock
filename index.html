@@ -255,6 +255,9 @@
     #right { display: none; }
     main { flex-direction: column; }
   }
+  #camlive { position: fixed; top: calc(1.2vh + env(safe-area-inset-top)); right: calc(1.5vw + env(safe-area-inset-right)); z-index: 30; display: flex; align-items: center; gap: .5em;
+    padding: .35em .9em; border-radius: 999px; background: rgba(190,20,20,.95); color: #fff; font-size: min(2vw, 3.6vh); text-shadow: none; pointer-events: none; }
+  #camlive[hidden] { display: none; }
 </style>
 </head>
 <body data-p="night">
@@ -284,6 +287,7 @@
 <div id="push" role="status"><div class="pi"><i class="fa-solid fa-bell"></i></div><div class="pt"><div class="ph"><span>お知らせ</span><span id="pmore"></span></div><div id="ptitle"></div><div id="pbody"></div></div></div>
 <div id="alert"><div id="atitle"></div><div id="amain"></div><div id="asub"></div></div>
 <div id="greet"></div>
+<div id="camlive" hidden><i class="fa-solid fa-video"></i><span>カメラ配信中</span></div>
 <div id="kd" hidden><div id="kbox"><div id="ktitle">OpenWeatherMap APIキー</div><div id="knote">天気の取得にOpenWeatherMapのAPIキー(32文字)を使います。入力したキーはこの端末のローカルストレージに保存され、次回以降は入力不要です。「あとで」を選ぶとOpen-Meteoのみを使い、この画面は表示されなくなります(後から入力する場合はURLに ?setkey=1 を付けて開いてください)。</div><input id="kin" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="APIキーを貼り付け"><div id="kmsg"></div><div id="kbtns"><button id="kskip" type="button">あとで</button><button id="ksave" type="button">保存</button></div></div></div>
 <div id="dim"></div>
 <div id="status">時刻を同期中…</div>
@@ -917,6 +921,61 @@
   $("push").addEventListener("click", e => { e.stopPropagation(); openList(); });
   $("nl").addEventListener("click", e => { e.stopPropagation(); if (e.target.id === "nl" || e.target.id === "nclose") closeList(); });
   if (kp.get("nttest")) setTimeout(() => showPush({ body: "お知らせの表示確認です" }, 0), 2000);
+
+  // ---- 見守りカメラ: スマホ(send.html)の要求でフロントカメラを起動し、WebRTCで映像を送る ----
+  const CAM_WS = "wss://news-proxy.user-x45.workers.dev/api/cam", CAM_MAX_MS = 15 * 60 * 1000;
+  let camWs = null, camPc = null, camStream = null, camStopT = 0, camT = 0, camChain = Promise.resolve();
+  const camSend = o => { try { camWs.send(JSON.stringify(o)); } catch (e) {} };
+  function camStop() {
+    clearTimeout(camStopT);
+    if (camPc) { try { camPc.close(); } catch (e) {} camPc = null; }
+    if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+    $("camlive").hidden = true;
+  }
+  async function camGet() {
+    try { return await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "user" }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false }); }
+    catch (e) { if (e && e.name === "NotAllowedError") throw e; return navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false }); }
+  }
+  const camGathered = pc => new Promise(res => {
+    if (pc.iceGatheringState === "complete") return res();
+    const f = () => { if (pc.iceGatheringState === "complete") { pc.removeEventListener("icegatheringstatechange", f); res(); } };
+    pc.addEventListener("icegatheringstatechange", f); setTimeout(res, 2500);
+  });
+  async function camOn(m) {
+    if (m.t === "bye") return camStop();
+    if (m.t !== "offer") return;
+    camStop();
+    try {
+      camStream = await camGet();
+      const pc = camPc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
+      camStream.getTracks().forEach(t => pc.addTrack(t, camStream));
+      await pc.setRemoteDescription({ type: "offer", sdp: m.sdp });
+      await pc.setLocalDescription(await pc.createAnswer());
+      await camGathered(pc);
+      if (camPc !== pc) return;
+      camSend({ t: "answer", sdp: pc.localDescription.sdp });
+      $("camlive").hidden = false;
+      camStopT = setTimeout(() => { camStop(); camSend({ t: "bye" }); }, CAM_MAX_MS);
+    } catch (e) { camStop(); camSend({ t: "err", m: e && e.name === "NotAllowedError" ? "時計側でカメラが許可されていません" : "カメラを起動できません" }); }
+  }
+  function camConnect() {
+    clearTimeout(camT);
+    if (camWs && camWs.readyState <= 1) return;
+    let w; try { w = camWs = new WebSocket(CAM_WS + "?role=cam"); } catch (e) { camT = setTimeout(camConnect, 15000); return; }
+    w.onmessage = ev => { let m; try { m = JSON.parse(ev.data); } catch (e) { return; } camChain = camChain.then(() => camOn(m)).catch(() => {}); };
+    w.onerror = () => { try { w.close(); } catch (e) {} };
+    w.onclose = () => { if (camWs === w) { camStop(); camT = setTimeout(camConnect, 15000); } };
+  }
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) camConnect(); });
+  window.addEventListener("online", camConnect);
+  setInterval(() => { try { if (camWs && camWs.readyState === 1) camWs.send("ping"); } catch (e) {} }, 30000);
+  // 初回のタップでカメラの許可だけ先に取っておく(遠隔起動時に許可画面で止まらないように)
+  document.body.addEventListener("click", () => {
+    if (lsGet("camPerm")) return;
+    lsSet("camPerm", "1");
+    camGet().then(s => s.getTracks().forEach(t => t.stop())).catch(() => lsDel("camPerm"));
+  });
+  camConnect();
 
   document.body.addEventListener("click", () => {
     if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().then(() => screen.orientation?.lock?.("landscape").catch(() => {})).catch(() => {});
