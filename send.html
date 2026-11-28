@@ -203,16 +203,17 @@
   // ---- ハウリング除去: 鳴っている周波数だけを自動で削る(音声全体は止めない) ----
   // 受信音を Web Audio に通し、「同じ周波数の鋭い音が0.5秒続く」状態を見つけたら、その周波数に狭い除去フィルタを掛ける(最大6か所)。
   // 話し声は周波数が揺れ、周りにも倍音が並ぶので、鋭さ(隣との差)で区別している。除去しきれなければミュートする。
-  let actx = null, hsrc = null, hnode = null, hout = null, hagc = null, hlim = null, hdb = 0, hf = [], hused = 0, htimer = null, amute = false, pipe = false;
+  let actx = null, hsrc = null, hnode = null, hout = null, hagc = null, hlim = null, hael = null, hdb = 0, hf = [], hused = 0, htimer = null, amute = false, pipe = false;
   const isMuted = () => pipe ? amute : $("cv").muted;
   function setMute(b) {
     amute = b;
-    if (pipe) { hout.gain.value = b ? 0 : 1; $("cv").muted = true; } else { $("cv").muted = b; if (!b) $("cv").play().catch(() => {}); }
+    if (pipe) { hout.gain.value = b ? 0 : 1; $("cv").muted = true; if (!b && hael) hael.play().catch(() => {}); } else { $("cv").muted = b; if (!b) $("cv").play().catch(() => {}); }
     updMute();
   }
-  function ensureCtx() { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume().catch(() => {}); } catch (e) {} }
+  function ensureCtx() { try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {} try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume().catch(() => {}); } catch (e) {} }
   function howlStop() {
     clearInterval(htimer); htimer = null;
+    if (hael) { try { hael.pause(); hael.srcObject = null; } catch (e) {} }
     try { if (hsrc) hsrc.disconnect(); hf.forEach(f => f.disconnect()); if (hnode) hnode.disconnect(); if (hagc) hagc.disconnect(); if (hlim) hlim.disconnect(); if (hout) hout.disconnect(); } catch (e) {}
     hsrc = hnode = hout = hagc = hlim = null; hdb = 0; hf = []; hused = 0; pipe = false;
   }
@@ -227,7 +228,13 @@
       // 音量を一定に: 分析(ここまでの音)→ 自動ゲイン → リミッタ(急な大音量で割れないように)→ 出力
       hagc = actx.createGain(); hlim = actx.createDynamicsCompressor();
       hlim.threshold.value = -3; hlim.knee.value = 0; hlim.ratio.value = 20; hlim.attack.value = .003; hlim.release.value = .1;
-      hout = actx.createGain(); hnode.connect(hagc); hagc.connect(hlim); hlim.connect(hout); hout.connect(actx.destination);
+      hout = actx.createGain(); hnode.connect(hagc); hagc.connect(hlim); hlim.connect(hout); // iPhone は Web Audio の音を消音スイッチで消すため、対応していれば「再生」扱いにし、未対応なら <audio> 要素経由で鳴らす(要素の音は消音でも鳴る)
+      if (navigator.audioSession) hout.connect(actx.destination);
+      else {
+        const md = actx.createMediaStreamDestination(); hout.connect(md);
+        hael = hael || new Audio(); hael.srcObject = md.stream;
+        hael.play().catch(() => { amute = true; hout.gain.value = 0; updMute(); });
+      }
       pipe = true; $("cv").muted = true;
       if (actx.state !== "running") amute = true; // 自動再生が止められた場合は「音を出す」ボタンで開始
       hout.gain.value = amute ? 0 : 1;
