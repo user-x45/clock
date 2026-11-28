@@ -90,7 +90,7 @@
     <label><span>画質</span><select id="cq"><option value="low">低(通信量が少ない)</option><option value="mid">標準</option><option value="high">高(通信量が多い)</option></select></label>
     <button id="cstart" type="button">カメラを起動</button>
     <button id="cstop" type="button" hidden>停止</button>
-    <p class="hint">時計のフロントカメラの映像とマイクの音声を流します。15分で自動停止します。画質を変えると映像が一度途切れます。<br>選択中の画質: <span id="cqinfo"></span></p>
+    <p class="hint">時計のフロントカメラの映像とマイクの音声を流します。15分で自動停止します。画質を変えると映像が一度途切れます。<br>音声は、ハウリング(キーンという音)を検知すると、その周波数だけ自動で除去します。<br>選択中の画質: <span id="cqinfo"></span></p>
   </section>
 
 </main>
@@ -192,13 +192,64 @@
     const f = () => { if (pc.iceGatheringState === "complete") { pc.removeEventListener("icegatheringstatechange", f); res(); } };
     pc.addEventListener("icegatheringstatechange", f); setTimeout(res, 2500);
   });
-  function cClosePc() { if (cpc) { try { cpc.close(); } catch (e) {} cpc = null; } $("cv").srcObject = null; $("cv").classList.remove("on"); $("cmute").hidden = true; }
-  function updMute() { const b = $("cmute"); b.hidden = !$("cv").classList.contains("on"); b.textContent = $("cv").muted ? "音を出す" : "ミュートにする"; }
-  $("cmute").addEventListener("click", () => { const v = $("cv"); v.muted = !v.muted; if (!v.muted) v.play().catch(() => {}); updMute(); });
+  function cClosePc() { howlStop(); if (cpc) { try { cpc.close(); } catch (e) {} cpc = null; } $("cv").srcObject = null; $("cv").muted = true; $("cv").classList.remove("on"); $("cmute").hidden = true; }
+  function updMute() { const b = $("cmute"); b.hidden = !$("cv").classList.contains("on"); b.textContent = isMuted() ? "音を出す" : "ミュートにする"; }
+  $("cmute").addEventListener("click", () => { const m = !isMuted(); if (!m) ensureCtx(); setMute(m); });
   function cEnd(msg, err) {
     cwant = false; cClosePc();
     if (cws) { const w = cws; cws = null; w.onclose = null; try { w.close(); } catch (e) {} }
     $("cstart").hidden = false; $("cstop").hidden = true; cst(msg || "", err);
+  }
+  // ---- ハウリング除去: 鳴っている周波数だけを自動で削る(音声全体は止めない) ----
+  // 受信音を Web Audio に通し、「同じ周波数の鋭い音が0.5秒続く」状態を見つけたら、その周波数に狭い除去フィルタを掛ける(最大6か所)。
+  // 話し声は周波数が揺れ、周りにも倍音が並ぶので、鋭さ(隣との差)で区別している。除去しきれなければミュートする。
+  let actx = null, hsrc = null, hnode = null, hout = null, hf = [], hused = 0, htimer = null, amute = false, pipe = false;
+  const isMuted = () => pipe ? amute : $("cv").muted;
+  function setMute(b) {
+    amute = b;
+    if (pipe) { hout.gain.value = b ? 0 : 1; $("cv").muted = true; } else { $("cv").muted = b; if (!b) $("cv").play().catch(() => {}); }
+    updMute();
+  }
+  function ensureCtx() { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume().catch(() => {}); } catch (e) {} }
+  function howlStop() {
+    clearInterval(htimer); htimer = null;
+    try { if (hsrc) hsrc.disconnect(); hf.forEach(f => f.disconnect()); if (hnode) hnode.disconnect(); if (hout) hout.disconnect(); } catch (e) {}
+    hsrc = hnode = hout = null; hf = []; hused = 0; pipe = false;
+  }
+  function howlStart(stream) {
+    howlStop();
+    try {
+      if (!actx || !stream || !stream.getAudioTracks().length) return;
+      hsrc = actx.createMediaStreamSource(new MediaStream(stream.getAudioTracks()));
+      let prev = hsrc;
+      for (let i = 0; i < 6; i++) { const f = actx.createBiquadFilter(); f.type = "peaking"; f.frequency.value = 1000; f.Q.value = 15; f.gain.value = 0; prev.connect(f); prev = f; hf.push(f); }
+      hnode = actx.createAnalyser(); hnode.fftSize = 2048; hnode.smoothingTimeConstant = 0; prev.connect(hnode); // フィルタ通過後の音を監視
+      hout = actx.createGain(); hnode.connect(hout); hout.connect(actx.destination);
+      pipe = true; $("cv").muted = true;
+      if (actx.state !== "running") amute = true; // 自動再生が止められた場合は「音を出す」ボタンで開始
+      hout.gain.value = amute ? 0 : 1;
+      const node = hnode, buf = new Float32Array(node.frequencyBinCount); let last = -1, run = 0;
+      htimer = setInterval(() => {
+        if (isMuted()) { run = 0; last = -1; return; }
+        node.getFloatFrequencyData(buf);
+        let pk = 12, mx = -Infinity;
+        for (let i = 12; i < buf.length - 12; i++) if (buf[i] > mx) { mx = buf[i]; pk = i; } // 約280Hz以上を見る
+        let side = -Infinity; for (let d = 6; d <= 10; d++) side = Math.max(side, buf[pk - d], buf[pk + d]);
+        const tonal = mx > -35 && mx - side > 20;
+        if (tonal && (last < 0 || Math.abs(pk - last) <= 1)) run++; else run = tonal ? 1 : 0;
+        last = tonal ? pk : -1;
+        if (run < 5) return;
+        run = 0; last = -1;
+        const a = buf[pk - 1], b = buf[pk], c = buf[pk + 1], den = a - 2 * b + c, off = den ? Math.max(-.5, Math.min(.5, .5 * (a - c) / den)) : 0;
+        const hz = (pk + off) * actx.sampleRate / node.fftSize;
+        let f = hf.find((x, k) => k < hused && Math.abs(x.frequency.value - hz) < hz * .03);
+        if (f) { if (f.gain.value <= -45) { setMute(true); cst("ハウリングを除去しきれないため音を止めました。時計とスマホを離してから「音を出す」を押してください", true); return; } f.gain.value = -45; }
+        else if (hused < hf.length) { f = hf[hused++]; f.frequency.value = hz; f.gain.value = -30; }
+        else { setMute(true); cst("ハウリングを除去しきれないため音を止めました。時計とスマホを離してから「音を出す」を押してください", true); return; }
+        cst("ハウリングを検知: " + Math.round(hz) + "Hz付近を除去しました");
+        setTimeout(() => { if (cpc) cst("映像を受信中"); }, 4000);
+      }, 100);
+    } catch (e) { pipe = false; }
   }
   // 音声コーデック(Opus)を高音質寄りに: 64kbps・モノラル・パケット欠損の補正(FEC)あり
   function opusHQ(sdp) {
@@ -214,8 +265,12 @@
     pc.addTransceiver("video", { direction: "recvonly" }); pc.addTransceiver("audio", { direction: "recvonly" });
     pc.ontrack = e => {
       const v = $("cv"); if (v.srcObject !== e.streams[0]) v.srcObject = e.streams[0];
-      v.classList.add("on"); v.muted = false;
-      v.play().catch(() => { v.muted = true; v.play().catch(() => {}); }); // 自動再生が止められたら無音で開始し、ボタンで音を出す
+      v.classList.add("on");
+      if (e.track.kind === "audio") {
+        howlStart(e.streams[0]);
+        if (!pipe) { v.muted = amute; if (!amute) v.play().catch(() => { v.muted = true; amute = true; updMute(); }); } // Web Audio が使えない場合は通常再生
+      }
+      v.play().catch(() => {});
       updMute(); cst("映像を受信中");
     };
     pc.onconnectionstatechange = () => { if (cpc === pc && pc.connectionState === "failed") cEnd("接続できませんでした(回線によっては中継サーバー(TURN)が必要です)", true); };
@@ -235,7 +290,7 @@
   }
   let pin = "", authMsg = ""; // パスコードは保存せず、このページを開いている間だけメモリに保持する
   function cConnect() {
-    cEnd(); cwant = true; authMsg = ""; $("cstart").hidden = true; $("cstop").hidden = false; cst("接続中…");
+    cEnd(); cwant = true; authMsg = ""; amute = false; ensureCtx(); $("cstart").hidden = true; $("cstop").hidden = false; cst("接続中…");
     let w; try { w = cws = new WebSocket(CAM + "?role=view", ["pin." + pin]); } catch (e) { cEnd("接続できません", true); return; }
     w.onmessage = ev => {
       let m; try { m = JSON.parse(ev.data); } catch (e) { return; }
