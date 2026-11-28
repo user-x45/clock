@@ -2,1018 +2,344 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<title>時計</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>お知らせを送る</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#000000">
 <meta name="color-scheme" content="dark">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon-192.png" type="image/png">
-<link rel="apple-touch-icon" href="icon-180.png">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root { color-scheme: dark; --bg:#000; --fg:#f2f2f2; --sub:rgba(255,255,255,.95); --acc:#4fd1c5; --warn:#f6ad55; 
-    --glass-bg: rgba(18,24,38,.38); --glass-bd: rgba(255,255,255,.2); --glass-r: clamp(14px, 2.4vh, 26px);
-    --glass-blur: blur(16px) saturate(1.25); --glass-sh: 0 6px 22px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.16); }
+  :root { color-scheme: dark; --bg:#000; --panel:#1b1d22; --line:rgba(255,255,255,.14); --fg:#f2f2f2; --sub:#b5bac1; --acc:#4fd1c5; --warn:#f6ad55; --err:#fc8181; }
   * { box-sizing: border-box; margin: 0; }
-  html, body { height: 100%; background: var(--bg); color: var(--fg); overflow: hidden;
-    font-family: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", -apple-system, "Segoe UI", sans-serif;
-    -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
-  main { height: 100%; display: flex; flex-direction: row; align-items: stretch; gap: 2vw;
-    padding: calc(2.5vh + env(safe-area-inset-top)) calc(3vw + env(safe-area-inset-right)) calc(4.5vh + env(safe-area-inset-bottom)) calc(3vw + env(safe-area-inset-left)); }
-  #left { gap: 2vh; flex: 1.45; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  #right { overflow: hidden; flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 1.5vh; }
-  .card { overflow: hidden; background: rgba(0,0,0,.5); border-radius: 14px; padding: 1.4vh 1.2vw; text-shadow: none; }
-  .card h3 { font-size: min(1.4vw, 2.6vh); font-weight: 400; color: var(--sub); letter-spacing: .1em; margin-bottom: .6vh; font-weight: 500; }
-  #hourly { display: grid; grid-template-columns: repeat(4, auto); justify-content: space-between; text-align: center; font-size: min(1.9vw, 3.6vh); line-height: 1.25; }
-  #hourly { font-family: "Montserrat", "Zen Kaku Gothic New", sans-serif; font-weight: 500; }
-  #hourly .h, #hourly .p { color: var(--sub); font-size: .85em; }
-  #hourly i { display: block; font-size: 1.35em; margin: .1em 0; }
-  #tomorrow { display: flex; align-items: center; flex-wrap: wrap; gap: .2em .7em; font-size: min(2.3vw, 4.2vh); font-weight: 500; }
-  #tomorrow i { font-size: 1.2em; } #tomorrow .p { color: var(--sub); font-size: .8em; }
-  #newslist { list-style: none; padding: 0; }
-  #newslist li { font-size: 1em; font-weight: 500; line-height: 1.35; padding: .5vh 0; border-bottom: 1px solid rgba(255,255,255,.12);
-  }
-  #newslist li:last-child { border-bottom: 0; }
-  #time { font-family: "Montserrat", "Zen Kaku Gothic New", sans-serif; font-size: min(12.5vw, 32vh); font-weight: 300; line-height: 1; letter-spacing: .02em;
-    font-variant-numeric: tabular-nums; white-space: nowrap; }
-  #sec { font-size: .45em; font-weight: 400; color: var(--acc); margin-left: .08em; }
-  #date { white-space: nowrap; line-height: 1.2; letter-spacing: .08em; font-size: min(3.4vw, 7vh); font-weight: 500; }
-  #wday { margin-left: .5em; color: var(--acc); }
-  #weather { line-height: 1.2; font-size: min(3vw, 6vh); font-weight: 700; color: var(--fg); white-space: nowrap; }
-  #weather .city { color: var(--sub); font-size: .8em; font-weight: 500; margin-right: .6em; }
-  #weather .wi { margin-right: .35em; font-size: 1.25em; }
-  #today { white-space: nowrap; display: flex; align-items: baseline; justify-content: center; gap: .7em; font-size: min(2vw, 4vh); max-width: 100%; }
-  #today[hidden] { display: none; }
-  #today .lbl { font-size: .72em; font-weight: 500; color: var(--sub); white-space: nowrap; letter-spacing: .1em; }
-  #todayname { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: opacity .5s; }
-  #weather.stale { opacity: .5; }
-  #weather2 { white-space: nowrap; line-height: 1.2; letter-spacing: .04em; }
-  #weather2:empty { display: none; }
-  #wx { display: flex; flex-direction: column; align-items: center; gap: .9vh; background: rgba(0,0,0,.5); border-radius: 14px; padding: 1.4vh 1.6vw; text-shadow: none; }
-  #weather2 { font-size: min(2.2vw, 4.4vh); font-weight: 500; color: var(--fg); } #weather2 .hi { color: #ff9b8a; } #weather2 .lo { color: #8ec8ff; } #weather2 .k { color: var(--sub); font-size: .8em; margin: 0 .3em 0 .9em; } #weather2 i { color: var(--acc); margin-right: .3em; }
-  #garbage { display: flex; flex-direction: column; align-items: center; gap: .25em; background: rgba(0,0,0,.5); border-radius: 12px; padding: .3em .6em; font-size: min(3vw, 6vh); text-shadow: none; }
-  #garbage[hidden] { display: none; }
-  #garbage .g1, #garbage .g2 { white-space: nowrap; line-height: 1.25; }
-  #garbage .g2 { font-size: .75em; color: var(--sub); }
-  #garbage .lbl { font-size: .65em; font-weight: 500; color: var(--sub); letter-spacing: .06em; margin-right: .5em; }
-  #garbage .g2 .lbl { font-size: 1em; margin-right: .5em; }
-  #garbage .gi b { display: inline-block; width: .7em; height: .7em; border-radius: 50%; margin-right: .3em; vertical-align: -.02em; }
-  #garbage .pl { margin: 0 .25em; opacity: .7; } #garbage .none { color: var(--sub); }
-  #newslist li[data-link] { cursor: pointer; }
-  #hourly, #tomorrow { cursor: pointer; }
-  .card:has(#hourly), .card:has(#tomorrow) { cursor: pointer; }
-  #wm { position: fixed; inset: 0; z-index: 15; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.8); text-shadow: none; }
-  #wm[hidden] { display: none; }
-  #wbox { background: #1b1d22; color: #f2f2f2; border: 1px solid rgba(255,255,255,.14); border-radius: 16px; padding: 2.4vh 2.4vw;
-    width: min(90vw, 820px); max-width: 100%; max-height: 90vh; max-height: 90dvh; overflow: auto; display: flex; flex-direction: column; gap: 1.8vh; }
-  #wtitle { font-size: min(2.8vw, 5vh); font-weight: 500; }
-  #wtitle small { font-size: .55em; color: #b5bac1; margin-left: .8em; font-weight: 400; }
-  #wsum { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.2vh 1.6vw; }
-  #wsum div { font-size: min(2.2vw, 4vh); white-space: nowrap; } #wsum span { display: block; font-size: .6em; color: #b5bac1; }
-  #wtbl { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: min(2.2vw, 4vh); font-variant-numeric: tabular-nums; }
-  #wtbl th { font-weight: 400; font-size: .7em; color: #b5bac1; text-align: left; padding: .4vh .6vw; }
-  #wtbl td { padding: .7vh .6vw; border-top: 1px solid rgba(255,255,255,.12); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #wtbl th:nth-child(1) { width: 18%; } #wtbl th:nth-child(2) { width: 38%; } #wtbl th:nth-child(3) { width: 18%; } #wtbl th:nth-child(4) { width: 26%; }
-  #wtbl i { margin-right: .3em; }
-  @media (orientation: portrait) {
-    #wsum { grid-template-columns: repeat(2, 1fr); } #wsum div { font-size: 4vw; } #wtitle { font-size: 5vw; }
-    #wtbl { font-size: 4vw; } #wsum div { white-space: normal; } #wbox { padding: 2vh 4vw; }
-  }
-  #qr { position: fixed; inset: 0; z-index: 15; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.85); text-shadow: none; }
-  #qr[hidden] { display: none; }
-  #qrbox { background: #1b1d22; color: #f2f2f2; border: 1px solid rgba(255,255,255,.14); border-radius: 16px;
-    width: min(96vw, 1300px); height: 92vh; height: 92dvh; padding: 1.6vh 1.2vw; display: flex; gap: 1.6vw; overflow: hidden; }
-  #artf { flex: 1 1 0; min-width: 0; height: 100%; border: 0; border-radius: 10px; background: #14161a; }
-  #qrside { flex: 0 0 min(24vw, 40vh); display: flex; flex-direction: column; align-items: center; gap: 1.6vh; overflow: auto; }
-  #qrcv { width: 100%; height: auto; aspect-ratio: 1; image-rendering: pixelated; border-radius: 6px; }
-  #qrcv[hidden] { display: none; }
-  #qrtxt { width: 100%; flex: 1; display: flex; flex-direction: column; gap: 1.2vh; min-height: 0; }
-  #qrtitle { font-size: min(1.5vw, 2.8vh); font-weight: 500; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
-  #qrnote { font-size: min(1.15vw, 2.1vh); color: #b5bac1; line-height: 1.5; }
-  #qrclose { margin-top: auto; font: inherit; font-size: min(1.5vw, 2.8vh); color: #f2f2f2; background: rgba(255,255,255,.12);
-    border: 1px solid rgba(255,255,255,.3); border-radius: 999px; padding: .8vh 1.2vw; cursor: pointer; }
-  #qrclose:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
-  @media (orientation: portrait) {
-    #qrbox { flex-direction: column; padding: 1.4vh 3vw; gap: 1.4vh; }
-    #qrside { flex: none; flex-direction: row; width: 100%; align-items: center; gap: 3vw; }
-    #qrcv { width: min(30vw, 16vh); flex: none; }
-    #qrtitle { font-size: 3.4vw; -webkit-line-clamp: 3; } #qrnote { font-size: 2.6vw; } #qrclose { font-size: 3.4vw; padding: .8vh 4vw; margin-top: 0; align-self: flex-start; }
-  }
-  #nbtn { flex: none; display: flex; align-items: center; justify-content: center; gap: .7em; font: inherit; font-size: min(1.8vw, 3.4vh); letter-spacing: .1em;
-    color: var(--sub); background: rgba(0,0,0,.5); border: 0; border-radius: 12px; padding: .4em .9em; cursor: pointer; text-shadow: none; }
-  #nbtn.has { color: var(--fg); } #nbtn.has i { color: var(--acc); } #nbtn.bad { opacity: .6; }
-  #nbtn:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
-  .nic { position: relative; display: inline-block; }
-  #nbadge { position: absolute; top: -.7em; right: -1.1em; min-width: 1.5em; height: 1.5em; padding: 0 .35em; border-radius: 999px; background: #e53e3e; color: #fff;
-    font-size: .62em; font-weight: 500; line-height: 1; display: flex; align-items: center; justify-content: center; letter-spacing: 0; }
-  #nbadge[hidden] { display: none; }
-  #push { position: fixed; top: calc(1.5vh + env(safe-area-inset-top)); left: 50%; z-index: 19; width: min(92vw, 1300px); display: flex; gap: 2vw; align-items: flex-start;
-    color: #f2f2f2; background: rgba(38,40,46,.97); border: 1px solid rgba(255,255,255,.16); border-radius: 18px; padding: 2.4vh 2.2vw;
-    box-shadow: 0 10px 30px rgba(0,0,0,.5); text-shadow: none; cursor: pointer; pointer-events: none;
-    transform: translate(-50%, -160%); transition: transform .5s cubic-bezier(.2,.8,.2,1); }
-  #push.show { transform: translate(-50%, 0); pointer-events: auto; }
-  .pi { flex: none; width: min(7vw, 13vh); aspect-ratio: 1; border-radius: 22%; background: #4fd1c5; color: #06201d; display: flex; align-items: center; justify-content: center; font-size: min(3.4vw, 6.5vh); }
-  .pt { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: .3vh; }
-  .ph { display: flex; justify-content: space-between; gap: 1em; font-size: min(2.2vw, 4vh); color: #9aa0a6; }
-  #ptitle { font-size: min(4vw, 7.5vh); font-weight: 500; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #pbody { font-size: min(3.2vw, 6vh); color: #c9cdd3; line-height: 1.4; white-space: pre-line; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
-  #pbody[hidden], #ptitle[hidden] { display: none; }
-  #pbody.only { font-size: min(4vw, 7.5vh); color: #f2f2f2; }
-  #nl { position: fixed; inset: 0; z-index: 15; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.8); text-shadow: none; }
-  #nl[hidden] { display: none; }
-  #nbox { background: #1b1d22; color: #f2f2f2; border: 1px solid rgba(255,255,255,.14); border-radius: 16px; padding: 3vh 2.6vw;
-    width: min(94vw, 1300px); max-height: 90vh; max-height: 90dvh; display: flex; flex-direction: column; gap: 1.6vh; }
-  #nhead { display: flex; align-items: center; justify-content: space-between; gap: 1em; }
-  #ntitle { font-size: min(4vw, 7vh); font-weight: 500; }
-  #nacts { display: flex; gap: 1vw; align-items: center; }
-  #nclear { color: #fc8181 !important; }
-  #nclose, #nclear { font: inherit; font-size: min(2.4vw, 4.5vh); color: #f2f2f2; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.3); border-radius: 999px; padding: .9vh 2.2vw; cursor: pointer; }
-  #nclose:focus-visible, #nclear:focus-visible, .ni-del:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
-  #nitems { list-style: none; padding: 0; overflow: auto; min-height: 0; display: flex; flex-direction: column; gap: 1vh; }
-  #nitems li { padding: 2vh 2vw; border-radius: 12px; background: rgba(255,255,255,.05); border: 1px solid transparent; }
-  #nitems li.new { border-color: rgba(79,209,197,.6); background: rgba(79,209,197,.1); }
-  #nitems li.ni-empty { background: none; text-align: center; color: #b5bac1; font-size: min(3vw, 5.5vh); }
-  .ni-del { font: inherit; background: none; border: 0; color: #b5bac1; padding: .35em .7em; margin: -.35em -.7em -.35em 0; cursor: pointer; }
-  .ni-h { display: flex; justify-content: space-between; align-items: center; gap: 1em; font-size: min(2.2vw, 4vh); color: #b5bac1; } .ni-tag { color: #4fd1c5; font-weight: 500; }
-  .ni-t { font-size: min(3.8vw, 7vh); font-weight: 500; line-height: 1.35; }
-  .ni-b.ni-only { font-size: min(3.8vw, 7vh); color: #f2f2f2; margin-top: 0; }
-  .ni-b { font-size: min(3vw, 5.8vh); color: #d5d8dd; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; margin-top: .4vh; }
-  @media (orientation: portrait) {
-    #push { width: 92vw; gap: 3vw; padding: 2vh 3.5vw; } .pi { width: 14vw; font-size: 7vw; } .ph { font-size: 4vw; } #ptitle { font-size: 6.4vw; } #pbody { font-size: 5.4vw; }
-    #nbox { padding: 2vh 4vw; } #ntitle { font-size: 6.4vw; } #nclose, #nclear { font-size: 4.2vw; padding: 1vh 3.5vw; } .ni-h { font-size: 4vw; } .ni-t { font-size: 6vw; } .ni-b { font-size: 5.2vw; } .ni-b.ni-only { font-size: 6vw; } #pbody.only { font-size: 6.4vw; }
-  }
-  body[data-p="morning"] { --fg:#fffaf0; --sub:rgba(255,255,255,.95); --acc:#fff0c2; }
-  body[data-p="day"]     { --fg:#ffffff; --sub:rgba(255,255,255,.95); --acc:#ffe58a; }
-  body[data-p="evening"] { --fg:#fff7ee; --sub:rgba(255,255,255,.95); --acc:#ffd89b; }
-  .bg { position: fixed; inset: 0; opacity: 0; transition: opacity 4s; z-index: 0; pointer-events: none; }
-  #bg-morning { background: linear-gradient(180deg, #1f2f52 0%, #7a4560 55%, #a8694a 100%); }
-  #bg-day     { background: linear-gradient(180deg, #0f3560 0%, #1f5a8f 55%, #3a7fb0 100%); }
-  #bg-evening { background: linear-gradient(180deg, #1c1438 0%, #6e2a3c 55%, #a8602c 100%); }
-  #bg-night   { background: linear-gradient(180deg, #000106 0%, #040b18 60%, #08142b 100%); }
-  #bg-night::after { content: ""; position: absolute; inset: 0; opacity: .8;
-    background-image:
-      radial-gradient(1.2px 1.2px at 20px 30px, #fff, transparent),
-      radial-gradient(1px 1px at 80px 120px, #cfe3ff, transparent),
-      radial-gradient(1.5px 1.5px at 140px 60px, #fff, transparent),
-      radial-gradient(1px 1px at 190px 170px, #fff, transparent),
-      radial-gradient(1.2px 1.2px at 40px 180px, #dfe9ff, transparent),
-      radial-gradient(1px 1px at 120px 200px, #fff, transparent);
-    background-size: 220px 220px; }
-  body[data-p="morning"] #bg-morning, body[data-p="day"] #bg-day,
-  body[data-p="evening"] #bg-evening, body[data-p="night"] #bg-night { opacity: 1; }
-  main { position: relative; z-index: 1; text-shadow: 0 1px 2px rgba(0,0,0,.9), 0 2px 12px rgba(0,0,0,.7); }
-  body.nm .bg { opacity: 0 !important; }
-  body.nm #right, body.nm #nbtn, body.nm #date, body.nm #weather2, body.nm #garbage, body.nm #today, body.nm #status { display: none !important; }
-  body.nm main { text-shadow: none; }
-  body.nm #tiles { display: flex; justify-content: center; gap: 0; }
-  body.nm #wx { flex: none; width: auto; height: auto; padding: 0; border-color: transparent; }
-  body.nm #weather { margin: 0; gap: .9em; }
-  body.nm #weather .wl-col, body.nm #weather .wr { flex-direction: row; align-items: center; gap: .5em; }
-  body.nm #weather .wi { font-size: 1.2em; }
-  body.nm #weather .wt { font-size: 1.4em; }
-  body.nm #weather .wc, body.nm #weather .ws { font-size: 1em; }
-  body.nm #weather .wl { font-size: 1em; }
-  body.nm #wx { background: none; border-color: transparent; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
-  #greet { position: fixed; inset: 0; z-index: 12; display: flex; align-items: center; justify-content: center; text-align: center;
-    background: rgba(0,0,0,.6); color: #fff; text-shadow: 0 2px 16px rgba(0,0,0,.6); font-size: min(8vw, 14vh); font-weight: 300; letter-spacing: .12em;
-    opacity: 0; pointer-events: none; transition: opacity 1.5s ease-in-out; }
-  #greet.show { opacity: 1; }
-  #dim { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity 3s; z-index: 10; }
-  #kd { position: fixed; inset: 0; z-index: 25; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.88); text-shadow: none; }
-  #kd[hidden] { display: none; }
-  #kbox { background: #1b1d22; color: #f2f2f2; border: 1px solid rgba(255,255,255,.14); border-radius: 16px; padding: 3vh 2.6vw;
-    width: min(92vw, 760px); max-height: 92vh; max-height: 92dvh; overflow: auto; display: flex; flex-direction: column; gap: 1.8vh; }
-  #ktitle { font-size: min(2.8vw, 5vh); font-weight: 500; }
-  #knote { font-size: min(1.7vw, 3.2vh); color: #b5bac1; line-height: 1.6; }
-  #kmsg { font-size: min(1.7vw, 3.2vh); color: #fc8181; line-height: 1.5; } #kmsg:empty { display: none; }
-  #kin { width: 100%; font: inherit; font-size: min(2vw, 3.8vh); color: #f2f2f2; background: #0f1114; border: 1px solid rgba(255,255,255,.3); border-radius: 10px; padding: 1vh 1vw;
-    -webkit-user-select: text; user-select: text; letter-spacing: .04em; }
-  #kin:focus-visible, #ksave:focus-visible, #kskip:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
-  #kbtns { display: flex; gap: 1.2vw; justify-content: flex-end; }
-  #ksave, #kskip { font: inherit; font-size: min(2vw, 3.8vh); color: #f2f2f2; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.3); border-radius: 999px; padding: .9vh 2.2vw; cursor: pointer; }
-  #ksave { background: var(--acc); color: #06201d; border-color: transparent; font-weight: 500; }
-  @media (orientation: portrait) {
-    #kbox { padding: 2.4vh 5vw; } #ktitle { font-size: 5.4vw; } #knote, #kmsg { font-size: 3.6vw; } #kin { font-size: 4vw; } #ksave, #kskip { font-size: 4vw; padding: 1vh 5vw; }
-  }
-  /* ウィジェット風タイル(2×2の正方形。サイズは layout() が --sq / --u に設定) */
-  #tiles { --tw: 30vw; --th: 20vh; --u: .2vh; --tg: 2vh; --c: 2; display: grid; grid-template-columns: repeat(var(--c), var(--tw)); grid-auto-rows: var(--th); gap: var(--tg); justify-content: center; }
-  #wx, #garbage, #today, #nbtn { box-sizing: border-box; min-width: 0; overflow: hidden; text-align: left; text-shadow: none; padding: calc(var(--u) * 4.5); border-radius: calc(var(--u) * 10);
-    background: linear-gradient(160deg, rgba(34,40,54,.62), rgba(0,0,0,.5)); -webkit-backdrop-filter: blur(18px) saturate(1.3); backdrop-filter: blur(18px) saturate(1.3);
-    border: 1px solid rgba(255,255,255,.22); box-shadow: 0 8px 24px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.2); }
-  /* ウィジェット・ニュースなどの背景を統一(半透明ガラス) */
-  .card, #wx, #garbage, #today, #nbtn { background: var(--glass-bg); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-bd); border-radius: var(--glass-r); box-shadow: var(--glass-sh); }
-  #wx, #garbage, #today { display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; font-size: calc(var(--u) * 10); }
-  #garbage[hidden], #today[hidden] { display: flex; visibility: hidden; }
-  #wx { flex-direction: row; align-items: stretch; justify-content: flex-start; gap: 0; }
-  #weather { width: max-content; margin: auto; display: flex; flex-direction: row; align-items: center; gap: .7em; font-size: 1em; font-weight: 500; line-height: 1.1; white-space: nowrap; }
-  #weather .wl-col { display: flex; flex-direction: column; align-items: center; gap: .05em; }
-  #weather .wr { display: flex; flex-direction: column; align-items: flex-start; gap: .12em; min-width: 0; }
-  #weather .wc, #weather .ws { color: var(--sub); font-size: .9em; }
-  #weather .wi { margin: 0; font-size: 2.4em; line-height: 1; }
-  #weather .wt { font-family: "Montserrat", "Zen Kaku Gothic New", sans-serif; font-size: 3em; font-weight: 500; line-height: 1; }
-  #weather .wl { font-size: 1.3em; font-weight: 700; }
-  #weather2 { font-size: .9em; font-weight: 500; color: var(--sub); white-space: nowrap; line-height: 1.1; letter-spacing: .02em; }
-  #garbage { flex-direction: column; justify-content: space-evenly; align-items: stretch; gap: .25em; }
-  #garbage .g1, #garbage .g2 { flex: none; width: 100%; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: .05em .7em; white-space: normal; line-height: 1.2; }
-  #garbage .g1 { font-size: 1.15em; font-weight: 700; color: var(--fg); }
-  #garbage .g2 { font-size: .85em; font-weight: 500; color: var(--fg); }
-  #garbage .g2:empty { display: none; }
-  #garbage .lbl, #garbage .g2 .lbl { display: block; flex: 0 0 100%; font-size: .55em; font-weight: 500; color: var(--sub); letter-spacing: .1em; margin: 0; }
-  #garbage .gi, #garbage .none { display: inline-block; white-space: nowrap; }
-  #garbage .gi b { width: .65em; height: .65em; margin-right: .25em; }
-  #today { gap: .3em; white-space: normal; max-width: none; }
-  #today .lbl { display: block; font-size: .6em; }
-  #todayname { flex: none; overflow: visible; white-space: normal; text-overflow: clip; overflow-wrap: anywhere; word-break: break-word; line-height: 1.3; }
-  #nbtn { flex-direction: row; justify-content: center; align-items: center; gap: .5em; padding: 0 calc(var(--u) * 6); white-space: nowrap; font-size: calc(var(--u) * 14); color: var(--fg); }
-  #nbtn .nic { font-size: 1.7em; line-height: 1; }
-  #nbtn .nic ~ span { font-size: 1em; }
-  #nbadge { font-size: .4em; }
-  #status { z-index: 2; text-shadow: 0 1px 6px rgba(0,0,0,.4); position: fixed; bottom: calc(8px + env(safe-area-inset-bottom)); left: 0; right: 0; text-align: center;
-    font-size: 12px; color: var(--sub); }
-  #status.warn { color: var(--warn); }
-  #alert { position: fixed; top: 0; left: 0; right: 0; z-index: 20; pointer-events: none; text-align: center; color: #fff;
-    display: flex; flex-direction: column; gap: .6vh; padding: calc(2.5vh + env(safe-area-inset-top)) 4vw 2.5vh;
-    border-radius: 0 0 18px 18px; box-shadow: 0 10px 30px rgba(0,0,0,.45); text-shadow: none;
-    transform: translateY(-110%); transition: transform .5s cubic-bezier(.2,.8,.2,1); }
-  #alert.show { transform: translateY(0); }
-  #alert.eew { background: rgba(190,20,20,.97); }
-  #alert.quake { background: rgba(200,95,10,.97); }
-  #atitle { font-size: min(2.2vw, 4vh); font-weight: 500; letter-spacing: .15em; }
-  #amain { font-size: min(5.5vw, 11vh); font-weight: 500; line-height: 1.15; }
-  #asub { font-size: min(2.4vw, 4.4vh); font-weight: 400; line-height: 1.35; white-space: pre-line; }
-  @media (orientation: portrait) {
-    main::before { content: "横向きにしてください"; position: fixed; top: 12px; font-size: 13px; color: var(--sub); }
-    #time { font-size: 17vw; }
-    #date { font-size: 5vw; }
-    #right { display: none; }
-    main { flex-direction: column; }
-  }
+  body { background: var(--bg); color: var(--fg); font-family: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", -apple-system, "Segoe UI", sans-serif;
+    line-height: 1.6; padding: calc(20px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(32px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left)); }
+  main { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+  h1 { font-size: 22px; font-weight: 500; }
+  h1 + p, .hint { color: var(--sub); font-size: 13px; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  h2 { font-size: 15px; font-weight: 500; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  h2 small { font-size: 12px; font-weight: 400; color: var(--sub); }
+  label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--sub); }
+  label span { display: flex; justify-content: space-between; }
+  select { font: inherit; font-size: 16px; color: var(--fg); background: #101216; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; width: 100%; }
+  select:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+  input, textarea { font: inherit; font-size: 16px; color: var(--fg); background: #101216; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; width: 100%; resize: vertical; -webkit-user-select: text; user-select: text; }
+  input:focus-visible, textarea:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+  button { font: inherit; font-size: 16px; font-weight: 500; border-radius: 999px; border: 0; padding: 11px 20px; cursor: pointer; }
+  #send { background: var(--acc); color: #06201d; } #send:disabled { opacity: .5; cursor: default; }
+  #savekey { background: rgba(255,255,255,.12); color: var(--fg); border: 1px solid rgba(255,255,255,.3); padding: 9px 18px; }
+  #msg { min-height: 1.6em; font-size: 13px; color: var(--sub); } #msg.ok { color: var(--acc); } #msg.err { color: var(--err); }
+  #list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  #list li { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 4px; }
+  #list li.read { border-color: rgba(79,209,197,.35); }
+  .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 12px; color: var(--sub); }
+  .chip { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; color: var(--warn); }
+  .chip.read { color: var(--acc); }
+  .t { font-weight: 500; overflow-wrap: anywhere; white-space: pre-wrap; } .b { font-size: 14px; color: #d5d8dd; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .acts { display: flex; align-items: center; gap: 12px; }
+  #clear { font-size: 13px; font-weight: 400; padding: 4px 12px; background: none; color: var(--err); border: 1px solid rgba(252,129,129,.5); }
+  #clear[hidden] { display: none; }
+  .rt { display: flex; align-items: center; gap: 6px; }
+  .del { font-size: 14px; font-weight: 400; padding: 6px 10px; margin: -6px -8px -6px 0; background: none; color: var(--sub); border-radius: 8px; }
+  .empty { color: var(--sub); font-size: 14px; text-align: center; padding: 12px 0; }
+  details summary { cursor: pointer; font-size: 14px; color: var(--sub); }
+  details[open] summary { margin-bottom: 12px; } details > div { display: flex; flex-direction: column; gap: 12px; }
+  #cv { display: none; width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 12px; object-fit: contain; } #cv.on { display: block; }
+  #cstart { background: var(--acc); color: #06201d; } #cstop { background: rgba(255,255,255,.12); color: var(--fg); border: 1px solid rgba(255,255,255,.3); }
+  #cstart[hidden], #cstop[hidden] { display: none; } #cstat { min-height: 1.4em; }
+  #cmute { background: rgba(255,255,255,.12); color: var(--fg); border: 1px solid rgba(255,255,255,.3); } #cmute[hidden] { display: none; }
+  #pad { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,.82); display: flex; align-items: center; justify-content: center;
+    padding: calc(16px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left)); }
+  #pad[hidden] { display: none; }
+  #padbox { width: 100%; max-width: 320px; background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 14px; align-items: center; }
+  #padt { font-size: 16px; font-weight: 500; }
+  #dots { display: flex; gap: 14px; height: 18px; align-items: center; }
+  #dots i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--sub); } #dots i.on { background: var(--acc); border-color: var(--acc); }
+  #padmsg { min-height: 1.4em; font-size: 13px; color: var(--err); text-align: center; }
+  #keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; }
+  #keys button { height: 56px; padding: 0; font-size: 22px; border-radius: 16px; background: rgba(255,255,255,.1); color: var(--fg); border: 1px solid var(--line);
+    touch-action: manipulation; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+  #keys button:active { background: rgba(255,255,255,.22); }
+  #keys button.sm { font-size: 13px; background: none; border-color: transparent; color: var(--sub); }
 </style>
 </head>
-<body data-p="night">
-<div class="bg" id="bg-morning"></div><div class="bg" id="bg-day"></div><div class="bg" id="bg-evening"></div><div class="bg" id="bg-night"></div>
+<body>
 <main>
-  <div id="left">
-    <div id="time">--:--<span id="sec">--</span></div>
-    <div id="date">----年--月--日<span id="wday">-曜日</span></div>
-    <div id="tiles">
-      <div id="wx">
-        <div id="weather"><div class="wr"><div class="wc">札幌</div><div class="wl">取得中…</div></div></div>
-      </div>
-      <div id="garbage" hidden><div class="g1"></div><div class="g2"></div></div>
-      <div id="today" hidden><span class="lbl">今日は何の日</span><span id="todayname"></span></div>
-      <button id="nbtn" type="button" aria-label="お知らせ"><span class="nic"><i id="nicon" class="fa-solid fa-bell"></i><b id="nbadge" hidden></b></span><span>お知らせ</span></button>
-    </div>
+  <div>
+    <h1>お知らせを送る</h1>
+    <p>送ると時計の画面に通知が出ます。時計で一覧を開くと既読になります。</p>
   </div>
-  <div id="right">
-    <div class="card"><h3>これからの天気</h3><div id="hourly"></div></div>
-    <div class="card"><h3>明日の天気</h3><div id="tomorrow">取得中…</div></div>
-    <div class="card"><h3 id="newsh">ニュース</h3><ul id="newslist"><li>取得中…</li></ul></div>
-  </div>
-</main>
-<div id="wm" hidden><div id="wbox"><div id="wtitle"></div><div id="wsum"></div><table id="wtbl"></table></div></div>
-<div id="qr" hidden><div id="qrbox"><iframe id="artf" title="記事" sandbox referrerpolicy="no-referrer"></iframe><div id="qrside"><canvas id="qrcv"></canvas><div id="qrtxt"><div id="qrtitle"></div><div id="qrnote">本文だけを抜き出したリーダー表示です。うまく表示されないときや、スマートフォンで読むときは、QRコードを読み取ってください。</div><button id="qrclose" type="button">閉じる</button></div></div></div></div>
-<div id="nl" hidden><div id="nbox"><div id="nhead"><div id="ntitle">お知らせ</div><div id="nacts"><button id="nclear" type="button">すべて削除</button><button id="nclose" type="button">閉じる</button></div></div><ul id="nitems"></ul></div></div>
-<div id="push" role="status"><div class="pi"><i class="fa-solid fa-bell"></i></div><div class="pt"><div class="ph"><span>お知らせ</span><span id="pmore"></span></div><div id="ptitle"></div><div id="pbody"></div></div></div>
-<div id="alert"><div id="atitle"></div><div id="amain"></div><div id="asub"></div></div>
-<div id="greet"></div>
-<div id="kd" hidden><div id="kbox"><div id="ktitle">OpenWeatherMap APIキー</div><div id="knote">天気の取得にOpenWeatherMapのAPIキー(32文字)を使います。入力したキーはこの端末のローカルストレージに保存され、次回以降は入力不要です。「あとで」を選ぶとOpen-Meteoのみを使い、この画面は表示されなくなります(後から入力する場合はURLに ?setkey=1 を付けて開いてください)。</div><input id="kin" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="APIキーを貼り付け"><div id="kmsg"></div><div id="kbtns"><button id="kskip" type="button">あとで</button><button id="ksave" type="button">保存</button></div></div></div>
-<div id="dim"></div>
-<div id="status">時刻を同期中…</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <section>
+    <label><span>お知らせの内容<em id="bcount" style="font-style:normal"></em></span><textarea id="body" rows="5" maxlength="300"></textarea></label>
+    <button id="send" type="button">送信する</button>
+    <div id="msg" role="status"></div>
+  </section>
+
+  <section>
+    <h2>送信済み<span class="acts"><small id="sum"></small><button id="clear" type="button" hidden>すべて削除</button></span></h2>
+    <ul id="list"></ul>
+  </section>
+
+  <section>
+    <h2>見守りカメラ<small id="cstat"></small></h2>
+    <video id="cv" autoplay playsinline></video>
+    <button id="cmute" type="button" hidden></button>
+    <label><span>画質</span><select id="cq"><option value="low">低(通信量が少ない)</option><option value="mid">標準</option><option value="high">高(通信量が多い)</option></select></label>
+    <button id="cstart" type="button">カメラを起動</button>
+    <button id="cstop" type="button" hidden>停止</button>
+    <p class="hint">時計のフロントカメラの映像とマイクの音声を流します。15分で自動停止します。画質を変えると映像が一度途切れます。<br>音声は、ハウリング(キーンという音)を検知すると、その周波数だけ自動で除去します。<br>選択中の画質: <span id="cqinfo"></span></p>
+  </section>
+
+</main>
+
+<div id="pad" hidden role="dialog" aria-modal="true" aria-label="パスコード入力">
+  <div id="padbox">
+    <div id="padt">パスコードを入力</div>
+    <div id="dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div id="padmsg" role="alert"></div>
+    <div id="keys"></div>
+  </div>
+</div>
+
 <script>
 (() => {
-  const SYNC_INTERVAL = 5 * 60 * 1000;
-  const SAMPLES = 3;
-  const NIGHT_START = 0;
-  const NIGHT_END = 5;
-  const FORCE_NIGHT = new URLSearchParams(location.search).get("night") === "1";
-  const DIM_LEVEL = 0;
-  const GREET_MS = 10 * 1000;
-  let prevNight = null, prevNm = null, greetUntil = 0;
-
-  const iso = (t, utc) => Date.parse(String(t).replace(/(\.\d{3})\d+/, "$1") + (utc && !/[zZ]|[+-]\d\d:?\d\d$/.test(t) ? "Z" : ""));
-  const SOURCES = [
-    { url: "https://timeapi.io/api/time/current/zone?timeZone=UTC",
-      parse: async r => { const j = await r.json(); return iso(j.dateTime || j.currentLocalTime, true); } },
-    { url: "https://time.now/developer/api/timezone/Etc/UTC",
-      parse: async r => { const j = await r.json(); return iso(j.utc_datetime || j.datetime, true); } }
-  ];
-
-  let nLast = 0, nErr = false, lastDay = null;
-  let qState = 0, alertOn = false;
-  let offset = 0, lastSync = null, lastErr = false, accuracy = null, syncBusy = true;
+  const API = "https://news-proxy.user-x45.workers.dev/api/notices";
+  const POLL_MS = 5000; // 既読の反映を確認する間隔(画面を開いている間だけ)
   const $ = id => document.getElementById(id);
-  const now = () => Date.now() + offset;
-
-  const RETRY_DELAYS = [10000, 30000, 60000];
-  const retryN = {}, retryT = {};
-  function retryLater(name, fn) {
-    const n = retryN[name] || 0;
-    clearTimeout(retryT[name]);
-    if (n >= RETRY_DELAYS.length) { retryN[name] = 0; return; }
-    retryN[name] = n + 1;
-    retryT[name] = setTimeout(fn, RETRY_DELAYS[n]);
-  }
-  function retryOk(name) { retryN[name] = 0; clearTimeout(retryT[name]); }
-
-  async function sample(src) {
-    const t0 = performance.now();
-    const r = await fetch(src.url, { cache: "no-store" });
-    if (!r.ok) throw new Error(r.status);
-    const ms = await src.parse(r);
-    if (!isFinite(ms)) throw new Error("parse");
-    const rtt = performance.now() - t0;
-    return { rtt, offset: ms + rtt / 2 - Date.now() };
-  }
-
-  async function sync() {
-    syncBusy = true;
-    try { await syncMain(); } finally { syncBusy = false; renderStatus(); }
-  }
-  async function syncMain() {
-    for (const src of SOURCES) {
-      try {
-        const results = [];
-        for (let i = 0; i < SAMPLES; i++) results.push(await sample(src));
-        const best = results.reduce((a, b) => a.rtt < b.rtt ? a : b);
-        offset = best.offset;
-        accuracy = best.rtt / 2;
-        lastSync = Date.now();
-        lastErr = false; retryOk("sync");
-        return renderStatus();
-      } catch (e) { }
-    }
-    lastErr = true; retryLater("sync", sync);
-    renderStatus();
-  }
 
   const p2 = n => String(n).padStart(2, "0");
-  const WD = ["日","月","火","水","木","金","土"];
-
-  const LAT = 43.108398, LON = 141.341071, MIN = 6e4;
-  let sunCache = { key: "", rise: 0, set: 0 }, sunApi = null;
-  const dayKey = ms => new Date(ms + 9 * 36e5).toISOString().slice(0, 10);
-  // 天気APIで取得した日の出・日の入り(ms)を保存する
-  function setSun(s) { if (s && isFinite(s.rise) && isFinite(s.set)) sunApi = { key: dayKey(s.rise), rise: s.rise, set: s.set }; }
-  // 日の出・日の入り: 天気APIの値を優先し、未取得(起動直後・日付変更直後・取得失敗時)は札幌の緯度経度から計算する
-  function sunTimes(ms) {
-    const key = dayKey(ms);
-    if (sunApi && sunApi.key === key) return sunApi;
-    if (sunCache.key === key) return sunCache;
-    const d = new Date(ms + 9 * 36e5), y = d.getUTCFullYear(), mo = d.getUTCMonth(), da = d.getUTCDate();
-    const R = Math.PI / 180, jd = Date.UTC(y, mo, da, 12) / 864e5 + 2440587.5;
-    const n = Math.round(jd - 2451545.0 + 0.0008), js = n + 0.0009 - LON / 360;
-    const M = (357.5291 + 0.98560028 * js) % 360, C = 1.9148 * Math.sin(M * R) + 0.02 * Math.sin(2 * M * R) + 0.0003 * Math.sin(3 * M * R);
-    const lam = (M + C + 180 + 102.9372) % 360, jt = 2451545.0 + js + 0.0053 * Math.sin(M * R) - 0.0069 * Math.sin(2 * lam * R);
-    const sd = Math.sin(lam * R) * Math.sin(23.4397 * R), cd = Math.cos(Math.asin(sd));
-    const w = Math.acos(Math.max(-1, Math.min(1, (Math.sin(-0.833 * R) - Math.sin(LAT * R) * sd) / (Math.cos(LAT * R) * cd)))) / R;
-    const tm = j => (j - 2440587.5) * 864e5;
-    return (sunCache = { key, rise: tm(jt - w / 360), set: tm(jt + w / 360) });
-  }
-  // 日の出30分前〜2時間後=朝 / 日没1.5時間前〜30分後=夕方 / その間=昼 / それ以外=夜
-  function phase(ms) {
-    const s = sunTimes(ms);
-    return ms < s.rise - 30 * MIN ? "night" : ms < s.rise + 120 * MIN ? "morning" : ms < s.set - 90 * MIN ? "day" : ms < s.set + 30 * MIN ? "evening" : "night";
-  }
-
-  function render() {
-    const d = new Date(now());
-    $("time").firstChild.nodeValue = p2(d.getHours()) + ":" + p2(d.getMinutes());
-    $("sec").textContent = p2(d.getSeconds());
-    $("date").firstChild.nodeValue = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
-    $("wday").textContent = WD[d.getDay()] + "曜日";
-    const dk = d.getDate();
-    if (lastDay !== null && dk !== lastDay) { weather(); news(); today(); renderDay(); }
-    lastDay = dk;
-    if (gMode(d) !== lastGm) renderDay();   // 8:30 と 0:00 で今日/明日を切り替え
-    const h = d.getHours();
-    document.body.dataset.p = phase(now());
-    const night = FORCE_NIGHT || (NIGHT_START > NIGHT_END ? (h >= NIGHT_START || h < NIGHT_END) : (h >= NIGHT_START && h < NIGHT_END));
-    if (prevNight !== null && night !== prevNight) {
-      greetUntil = now() + GREET_MS;
-      $("greet").textContent = night ? "おやすみなさい" : "おはようございます";
-      $("greet").classList.add("show");
-    }
-    prevNight = night;
-    const greeting = now() < greetUntil;
-    if (!greeting) $("greet").classList.remove("show");
-    const nmOn = night && !greeting;
-    document.body.classList.toggle("nm", nmOn);
-    if (nmOn !== prevNm) { prevNm = nmOn; relayout(); }
-    $("dim").style.opacity = (nmOn && !alertOn) ? DIM_LEVEL : 0;
-    setTimeout(render, 1000 - (now() % 1000) + 5);
-  }
-
-  function renderStatus() {
-    const el = $("status");
-    const f = t => { const d = new Date(t); return p2(d.getHours()) + ":" + p2(d.getMinutes()) + ":" + p2(d.getSeconds()); };
-    const pend = n => (retryN[n] || 0) > 0;   // 再試行待ちの間は「失敗」と出さない(起動直後の一時的な失敗を隠す)
-    const nFail = nErr && !nLast && !pend("news"), wFail = wErr && !wLast && !pend("weather"), tFail = !lastSync && !syncBusy && !pend("sync");
-    const c = nLast ? `ニュース取得 ${f(nLast)}` + (nErr ? "(再取得失敗)" : "") : (nFail ? "ニュース取得 失敗" : "ニュース取得中…");
-    const a = lastSync ? `時刻取得 ${f(lastSync)}` + (lastErr ? "(再取得失敗)" : "") : (tFail ? "時刻取得 失敗(端末時刻を表示中)" : "時刻取得中…");
-    const b = wLast ? `天気取得 ${f(wLast)}${wSrc ? "[" + wSrc + "]" : ""}` + (wErr ? "(再取得失敗)" : "") : (wFail ? "天気取得 失敗" : "天気取得中…");
-    const q = ["地震情報 接続中…", "地震情報 受信待機中", "地震情報 切断(再接続中)"][qState];
-    el.textContent = a + "  ・  " + b + "  ・  " + c + "  ・  " + q + ntMsg();
-    el.className = ((lastErr && lastSync) || (wErr && (wLast || wFail)) || (nErr && (nLast || nFail)) || tFail || qState === 2 || ntBad()) ? "warn" : "";
-  }
-
-  const WEATHER_INTERVAL = 10 * 60 * 1000;
-  const WURL = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,apparent_temperature,weather_code,is_day&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max,sunrise,sunset&forecast_days=2&wind_speed_unit=ms&timezone=Asia%2FTokyo`;
-  const WMAP = (c, day) => c === 0 ? [day ? "fa-sun" : "fa-moon", "快晴", day ? "#f6c945" : "#cbd5e0"]
-    : c <= 2 ? [day ? "fa-cloud-sun" : "fa-cloud-moon", "晴れ", day ? "#f6c945" : "#cbd5e0"]
-    : c === 3 ? ["fa-cloud", "曇り", "#a0aec0"]
-    : c <= 48 ? ["fa-smog", "霧", "#a0aec0"]
-    : c <= 57 ? ["fa-cloud-rain", "霧雨", "#90cdf4"]
-    : c <= 67 ? ["fa-cloud-showers-heavy", "雨", "#63b3ed"]
-    : c <= 77 ? ["fa-snowflake", "雪", "#bee3f8"]
-    : c <= 82 ? ["fa-cloud-sun-rain", "にわか雨", "#90cdf4"]
-    : c <= 86 ? ["fa-snowflake", "にわか雪", "#bee3f8"]
-    : ["fa-cloud-bolt", "雷雨", "#ecc94b"];
-  let wLast = 0, wErr = false, wJ = null, wSrc = "", keyBadShown = false;
-
-  const KEY_LS = "owmApiKey", SKIP_LS = "owmKeySkipped";
-  const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
-  const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
-  const lsDel = k => { try { localStorage.removeItem(k); } catch (e) {} };
-  function kdOpen(msg) { $("kmsg").textContent = msg || ""; $("kin").value = lsGet(KEY_LS) || ""; $("kd").hidden = false; }
-  $("kd").addEventListener("click", e => e.stopPropagation());
-  $("ksave").addEventListener("click", () => {
-    const v = $("kin").value.trim();
-    if (!/^[0-9a-f]{32}$/i.test(v)) { $("kmsg").textContent = "APIキーは32文字の英数字です。もう一度確認してください。"; return; }
-    lsSet(KEY_LS, v); lsDel(SKIP_LS); keyBadShown = false; $("kd").hidden = true; weather();
-  });
-  $("kskip").addEventListener("click", () => { if (!lsGet(KEY_LS)) lsSet(SKIP_LS, "1"); $("kd").hidden = true; });
-  $("kin").addEventListener("keydown", e => { if (e.key === "Enter") $("ksave").click(); });
-  if (new URLSearchParams(location.search).get("setkey")) kdOpen();
-
-  // OpenWeatherMap の天気ID → Open-Meteo(WMO)コード
-  const OWM_CODE = id => id < 300 ? 95 : id < 400 ? 53 : id === 511 ? 67 : id < 505 ? 63 : id < 600 ? 81
-    : id <= 602 ? 73 : id <= 616 ? 67 : id <= 622 ? 85 : id < 700 ? 73 : id < 800 ? 45
-    : id === 800 ? 0 : id === 801 ? 1 : id === 802 ? 2 : 3;
-  const jstStr = ms => new Date(ms + 9 * 36e5).toISOString().slice(0, 16);
-
-  // 無料プランの「現在の天気」+「5日間/3時間ごと予報」を、Open-Meteo形式に変換して既存の描画コードを共用する
-  function owmToOM(cur, fc) {
-    const DAY = 864e5, HR = 36e5, nowMs = cur.dt * 1000;
-    const pts = [{ t: nowMs, temp: cur.main.temp, code: OWM_CODE(cur.weather[0].id), pop: 0, wind: (cur.wind && cur.wind.speed) || 0 }];
-    (fc.list || []).forEach(x => { if (x.dt * 1000 > nowMs) pts.push({ t: x.dt * 1000, temp: x.main.temp, code: OWM_CODE(x.weather[0].id), pop: Math.round((x.pop || 0) * 100), wind: (x.wind && x.wind.speed) || 0 }); });
-    if (pts.length < 2) throw new Error("forecast");
-    pts[0].pop = pts[1].pop;
-    const t0 = Math.floor((nowMs + 9 * HR) / DAY) * DAY - 9 * HR, last = pts[pts.length - 1].t;
-    const H = { time: [], temperature_2m: [], weather_code: [], precipitation_probability: [] };
-    for (let t = t0; t <= last; t += HR) {
-      let temp, ref;
-      if (t <= pts[0].t) { temp = pts[0].temp; ref = pts[0]; }
-      else {
-        let k = 0; while (k < pts.length - 2 && pts[k + 1].t < t) k++;
-        const a = pts[k], b = pts[k + 1], f = Math.min(1, Math.max(0, (t - a.t) / (b.t - a.t)));
-        temp = a.temp + (b.temp - a.temp) * f; ref = f < 0.5 ? a : b;
-      }
-      H.time.push(jstStr(t)); H.temperature_2m.push(temp); H.weather_code.push(ref.code); H.precipitation_probability.push(ref.pop);
-    }
-    const D = { weather_code: [], temperature_2m_max: [], temperature_2m_min: [], precipitation_probability_max: [], wind_speed_10m_max: [] };
-    for (let d = 0; d < 2; d++) {
-      const key = jstStr(t0 + d * DAY).slice(0, 10), sl = pts.filter(p => jstStr(p.t).slice(0, 10) === key);
-      if (!sl.length) throw new Error("forecast");
-      const temps = sl.map(p => p.temp); const mx = Math.max(...temps), mn = Math.min(...temps);
-      const dayS = sl.filter(p => { const h = +jstStr(p.t).slice(11, 13); return h >= 6 && h < 21; });
-      D.weather_code.push(Math.max(...(dayS.length ? dayS : sl).map(p => p.code)));
-      D.temperature_2m_max.push(mx); D.temperature_2m_min.push(mn);
-      D.precipitation_probability_max.push(Math.max(...sl.map(p => p.pop)));
-      D.wind_speed_10m_max.push(Math.max(...sl.map(p => p.wind)));
-    }
-    const sec = nowMs / 1000;
-    return { current: { time: jstStr(nowMs), temperature_2m: cur.main.temp, apparent_temperature: cur.main.feels_like, weather_code: pts[0].code,
-      is_day: (cur.sys && sec >= cur.sys.sunrise && sec < cur.sys.sunset) ? 1 : 0 }, hourly: H, daily: D,
-      sun: cur.sys ? { rise: cur.sys.sunrise * 1000, set: cur.sys.sunset * 1000 } : null };
-  }
-  async function owmLoad(key) {
-    const q = `lat=${LAT}&lon=${LON}&units=metric&lang=ja&appid=${encodeURIComponent(key)}`;
-    const get = async u => { const r = await fetch(u + q, { cache: "no-store" }); if (!r.ok) { const e = new Error(r.status); e.status = r.status; throw e; } return r.json(); };
-    const [cur, fc] = await Promise.all([get("https://api.openweathermap.org/data/2.5/weather?"), get("https://api.openweathermap.org/data/2.5/forecast?")]);
-    return owmToOM(cur, fc);
-  }
-  async function loadWeather() {
-    const key = lsGet(KEY_LS);
-    if (!key && !lsGet(SKIP_LS) && $("kd").hidden) kdOpen();
-    if (key) {
-      try { const j = await owmLoad(key); wSrc = "OWM"; return j; }
-      catch (e) {
-        if (e.status === 401 && !keyBadShown) { keyBadShown = true; kdOpen("APIキーが無効です。発行直後の場合は有効になるまで最大2時間ほどかかります。それまではOpen-Meteoで表示します。"); }
-      }
-    }
-    const r = await fetch(WURL, { cache: "no-store" });
-    if (!r.ok) throw new Error(r.status);
-    const j = await r.json(); wSrc = "Open-Meteo";
-    try { j.sun = { rise: Date.parse(j.daily.sunrise[0] + ":00+09:00"), set: Date.parse(j.daily.sunset[0] + ":00+09:00") }; } catch (e) {}
-    return j;
-  }
-  async function weather() {
-    const el = $("weather");
-    try {
-      const j = await loadWeather(), c = j.current; wJ = j; setSun(j.sun);
-      const [icon, label, color] = WMAP(c.weather_code, c.is_day === 1);
-      el.innerHTML = `<div class="wl-col"><i class="fa-solid ${icon} wi" style="color:${color}"></i><div class="wt">${Math.round(c.temperature_2m)}°</div></div><div class="wr"><div class="wc">札幌</div><div class="wl">${label}</div><div class="ws">体感 ${Math.round(c.apparent_temperature)}°</div><div id="weather2"></div></div>`;
-      el.className = "";
-      const H = j.hourly, i0 = H.time.findIndex(t => t > c.time && parseInt(t.slice(11, 13), 10) % 3 === 0);
-      let hh = "";
-      for (let k = 0; k < 4; k++) {
-        const i = i0 + k * 3; if (i0 < 0 || i >= H.time.length) break;
-        const hr = parseInt(H.time[i].slice(11, 13), 10);
-        const [ic, , ico] = WMAP(H.weather_code[i], hr >= 6 && hr < 18);
-        hh += `<div><div class="h">${hr}時</div><i class="fa-solid ${ic}" style="color:${ico}"></i><div>${Math.round(H.temperature_2m[i])}°</div><div class="p">${H.precipitation_probability[i]}%</div></div>`;
-      }
-      $("hourly").innerHTML = hh;
-      const D = j.daily, [dic, dlabel, dco] = WMAP(D.weather_code[1], true);
-      $("tomorrow").innerHTML = `<i class="fa-solid ${dic}" style="color:${dco}"></i><span>${dlabel}</span><span>${Math.round(D.temperature_2m_max[1])}° / ${Math.round(D.temperature_2m_min[1])}°</span><span class="p">降水確率 ${D.precipitation_probability_max[1]}%</span>`;
-      renderWx2(); wLast = Date.now(); wErr = false; retryOk("weather"); renderStatus(); relayout();
-    } catch (e) {
-      wErr = true; retryLater("weather", weather); renderStatus();
-      if (wLast) el.className = "stale";
-      else el.innerHTML = '<div class="wr"><div class="wc">札幌</div><div class="wl">取得できません</div></div>';
-    }
-  }
-
-  const ymd = d => `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
-  let gJ = null;
-  async function garbageLoad() {
-    try {
-      const r = await fetch("garbage.json", { cache: "no-cache" });
-      if (!r.ok) throw new Error(r.status);
-      gJ = await r.json(); retryOk("garbage"); renderDay();
-    } catch (e) { retryLater("garbage", garbageLoad); }
-  }
-  function gItems(d) {
-    if (!gJ) return null;
-    const key = ymd(d), [a, b] = gJ.meta.period.split("/");
-    if (key < a || key > b) return "out";
-    const it = gJ.days[key];
-    if (!it) return [];
-    return it.map(id => gJ.categories[id]).filter(Boolean);
-  }
-  const gHtml = it => it.map(c => `<span class="gi"><b style="background:${c.color}"></b>${c.short || c.name}</span>`).join("");
-  const GARBAGE_SWITCH = 8 * 60 + 30;   // この時刻(8:30)以降は「明日のごみ」だけを表示、それまでは「今日のごみ」だけ
-  const gMode = d => (d.getHours() * 60 + d.getMinutes() >= GARBAGE_SWITCH ? 1 : 0);
-  let lastGm = null;
-  function renderDay() {
-    const d = new Date(now()), m = gMode(d);
-    lastGm = m;
-    const target = m ? new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1) : d;
-    const box = $("garbage"), t = gItems(target);
-    if (t === null || t === "out") { box.hidden = true; relayout(); return; }
-    const noc = gJ.noCollection.includes(ymd(target));
-    box.querySelector(".g1").innerHTML = `<span class="lbl">${m ? "明日のごみ" : "今日のごみ"}</span>` + (t.length ? gHtml(t) : `<span class="none">${noc ? "収集なし(お休み)" : "収集なし"}</span>`);
-    box.querySelector(".g2").innerHTML = "";
-    box.hidden = false; relayout();
-  }
-  function renderWx2() {
-    if (!wJ) return;
-    const D = wJ.daily, R = Math.round;
-    $("weather2").innerHTML = `降水確率 ${D.precipitation_probability_max[0]}%`;
-  }
-
-  const NEWS_INTERVAL = 30 * 60 * 1000;
-  const FEEDS = [
-    { name: "NHK", url: "https://www.nhk.or.jp/rss/news/cat0.xml" },
-    { name: "Yahoo!ニュース", url: "https://news.yahoo.co.jp/rss/topics/top-picks.xml" }
-  ];
-  async function news() {
-    for (const f of FEEDS) {
-      try {
-        const r = await fetch("https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(f.url), { cache: "no-store" });
-        const j = await r.json();
-        if (j.status !== "ok" || !j.items || !j.items.length) throw new Error("feed");
-        const ul = $("newslist"); ul.textContent = "";
-        j.items.slice(0, 3).forEach(it => { const li = document.createElement("li"); li.textContent = it.title; if (it.link) li.dataset.link = it.link; ul.appendChild(li); });
-        $("newsh").textContent = "今日のニュース";
-        nLast = Date.now(); nErr = false; retryOk("news"); renderStatus(); relayout(); return;
-      } catch (e) { }
-    }
-    nErr = true; retryLater("news", news); renderStatus();
-    if (!nLast) { $("newslist").innerHTML = "<li>ニュースを取得できません</li>"; relayout(); }
-  }
-
-  let anniv = [], aIdx = 0, aKey = "", aTry = 0;
-  const mmdd = () => { const d = new Date(now()); return p2(d.getMonth() + 1) + "-" + p2(d.getDate()); };
-  function showAnniv() {
-    const box = $("today"), nm = $("todayname");
-    if (!anniv.length) { box.hidden = true; relayout(); return; }
-    box.hidden = false;
-    nm.style.opacity = 0;
-    setTimeout(() => { nm.textContent = anniv[aIdx % anniv.length]; nm.style.opacity = 1; relayout(); }, 300);
-  }
-  async function today() {
-    aTry = Date.now();
-    const key = mmdd();
-    try {
-      const r = await fetch(`https://ultimatecrazy.jp/whatstoday/api/${key}.json`, { cache: "no-store" });
-      if (!r.ok) throw new Error(r.status);
-      const j = await r.json();
-      anniv = (j.anniversaries || []).map(a => a.name).filter(Boolean);
-      aKey = key; aIdx = 0; retryOk("today"); showAnniv();
-    } catch (e) { retryLater("today", today); }
-  }
-  setInterval(() => { if (anniv.length > 1) { aIdx++; showAnniv(); } }, 15000);
-  setInterval(() => { if (mmdd() !== aKey && Date.now() - aTry > 60000) today(); }, 30000);
-
-  function fit(el, ok, lo, hi) {
-    while (hi - lo > 0.5) {
-      const m = (lo + hi) / 2;
-      el.style.fontSize = m + "px";
-      if (ok()) lo = m; else hi = m;
-    }
-    el.style.fontSize = lo + "px";
-  }
-  function layout() {
-    const L = $("left"), W = L.clientWidth * 0.97, H = L.clientHeight;
-    const one = (el, hMax, lo = 8) => fit(el, () => el.offsetWidth <= W && el.offsetHeight <= H * hMax, lo, 600);
-    one($("time"), 0.24);
-    one($("date"), 0.10);
-    const T = $("tiles"), nm = document.body.classList.contains("nm"), cols = nm ? 1 : 2, tg = Math.round(H * 0.025);
-    const avail = H - $("time").offsetHeight - $("date").offsetHeight - (parseFloat(getComputedStyle(L).rowGap) || 0) * (nm ? 1 : 2);
-    const tw = Math.max(80, Math.floor((L.clientWidth - tg * (cols - 1)) / cols)), th = Math.max(60, Math.floor((avail - tg * (cols - 1)) / cols)), mn = Math.min(tw, th);
-    T.style.setProperty("--tw", tw + "px"); T.style.setProperty("--th", th + "px"); T.style.setProperty("--c", cols); T.style.setProperty("--tg", tg + "px"); T.style.setProperty("--u", mn / 100 + "px");
-    if (nm) { const wx = $("wx"); fit(wx, () => wx.offsetWidth <= W, 10, Math.max(14, $("time").offsetHeight * 0.26)); return; }
-    [["wx", 0.5], ["garbage", 0.45], ["today", 0.3], ["nbtn", 0.3]].forEach(([id, r]) => { const el = $(id); fit(el, () => el.scrollHeight <= el.clientHeight + 1 && el.scrollWidth <= el.clientWidth + 1 && [...el.children].every(c => c.scrollWidth <= c.clientWidth + 1), 6, mn * r); });
-    const R = $("right");
-    if (getComputedStyle(R).display === "none") return;
-    const RH = R.clientHeight, cards = R.querySelectorAll(".card");
-    R.querySelectorAll("h3").forEach(h => h.style.fontSize = Math.max(12, RH * 0.05) + "px");
-    cards[0].style.flex = `0 0 ${RH * 0.32}px`;
-    cards[1].style.flex = `0 0 ${RH * 0.17}px`;
-    cards[2].style.flex = "1 1 0"; cards[2].style.minHeight = "0";
-    [[cards[0], $("hourly"), 120], [cards[1], $("tomorrow"), 90], [cards[2], $("newslist"), 90]].forEach(([card, c, hi]) =>
-      fit(c, () => card.scrollHeight <= card.clientHeight + 1 && c.scrollWidth <= c.clientWidth + 1, 8, hi));
-  }
-  let lq = 0;
-  const relayout = () => { cancelAnimationFrame(lq); lq = requestAnimationFrame(layout); };
-  window.addEventListener("resize", relayout);
-  window.addEventListener("orientationchange", relayout);
-  document.fonts && document.fonts.ready.then(relayout);
-
-  const EQ_WS = "wss://api.p2pquake.net/v2/ws";
-  const EQ_MIN = 30;
-  const EEW_AREA = /石狩地方中部/;
-  const QUAKE_ADDR = /札幌(市)?北区/;
-  const SCALE = { 10: "1", 20: "2", 30: "3", 40: "4", 45: "5弱", 50: "5強", 55: "6弱", 60: "6強", 70: "7" };
-  let alertTimer = 0, lastEew = "", lastQuake = "", lastQuakeScale = 0, curEew = "";
-
-  const pt = s => { const t = Date.parse(String(s || "").replace(/\//g, "-").replace(" ", "T").slice(0, 19) + "+09:00"); return isFinite(t) ? t : null; };
-  const stale = s => { const t = pt(s); return t !== null && Math.abs(now() - t) > 10 * 60 * 1000; };
-  const hhmm = s => { const m = String(s || "").match(/(\d\d):(\d\d)/); return m ? `${+m[1]}:${m[2]}` : ""; };
-  const mag = m => (m !== undefined && m !== null && m >= 0) ? ` M${Number(m).toFixed(1)}` : "";
-
-  function showAlert(kind, title, main, sub, ms) {
-    const el = $("alert");
-    el.className = kind;
-    $("atitle").textContent = title; $("amain").textContent = main; $("asub").textContent = sub;
-    void el.offsetWidth; el.classList.add("show"); alertOn = true;
-    $("dim").style.opacity = 0;
-    clearTimeout(alertTimer); alertTimer = setTimeout(hideAlert, ms);
-  }
-  function hideAlert() { clearTimeout(alertTimer); $("alert").classList.remove("show"); alertOn = false; curEew = ""; }
-
-  function rangeText(from, to) {
-    const a = SCALE[from] || "", b = SCALE[to] || "";
-    if (to === 99) return (a || "3") + "以上";
-    if (a && b && a !== b) return a + "〜" + b;
-    return (b || a) + "程度";
-  }
-
-  function onEew(d) {
-    if (d.test) return;
-    const id = d.issue && d.issue.eventId;
-    if (d.cancelled) { if (id && id === curEew) hideAlert(); return; }
-    if (stale(d.time)) return;
-    const a = (d.areas || []).find(x => EEW_AREA.test(x.name || "") && (x.scaleTo === 99 || x.scaleTo >= EQ_MIN));
-    if (!a) return;
-    const key = id + "-" + (d.issue && d.issue.serial);
-    if (key === lastEew) return;
-    lastEew = key; curEew = id || "";
-    const h = (d.earthquake && d.earthquake.hypocenter) || {};
-    showAlert("eew", "緊急地震速報(警報)", "震度" + rangeText(a.scaleFrom, a.scaleTo) + "の予想",
-      `札幌市北区を含む石狩地方中部` + (h.name ? `\n震源 ${h.name}${mag(h.magnitude)}` : ""), 10000);
-  }
-
-  function onQuake(d) {
-    if (stale(d.time)) return;
-    const pts = (d.points || []).filter(p => !p.isArea && QUAKE_ADDR.test(p.addr || "") && p.scale >= EQ_MIN);
-    if (!pts.length) return;
-    const sc = Math.max(...pts.map(p => p.scale));
-    const eq = d.earthquake || {}, key = eq.time || d.time;
-    if (key === lastQuake && sc <= lastQuakeScale) return;
-    lastQuake = key; lastQuakeScale = sc;
-    const h = eq.hypocenter || {};
-    showAlert("quake", "地震情報", `札幌市北区 震度${SCALE[sc] || "?"}`,
-      `${hhmm(eq.time)}ごろ 震源 ${h.name || "調査中"}${mag(h.magnitude)}`, 8000);
-  }
-
-  function eqHandle(d) { if (d.code === 556) onEew(d); else if (d.code === 551) onQuake(d); }
-
-  let ws = null, wsTimer = 0;
-  function eqConnect() {
-    clearTimeout(wsTimer);
-    if (ws && ws.readyState <= 1) return;
-    qState = 0; renderStatus();
-    try { ws = new WebSocket(EQ_WS); } catch (e) { qState = 2; renderStatus(); wsTimer = setTimeout(eqConnect, 10000); return; }
-    ws.onopen = () => { qState = 1; renderStatus(); };
-    ws.onmessage = ev => { try { eqHandle(JSON.parse(ev.data)); } catch (e) {} };
-    ws.onerror = () => { try { ws.close(); } catch (e) {} };
-    ws.onclose = () => { qState = 2; renderStatus(); wsTimer = setTimeout(eqConnect, 10000); };
-  }
-  const qt = new URLSearchParams(location.search).get("eqtest");
-  if (qt) setTimeout(() => eqHandle(qt === "eew"
-    ? { code: 556, time: "", issue: { eventId: "test", serial: "1" }, earthquake: { hypocenter: { name: "石狩地方中部", magnitude: 6.1 } }, areas: [{ name: "石狩地方中部", scaleFrom: 45, scaleTo: 99 }] }
-    : { code: 551, time: "", earthquake: { time: "test", hypocenter: { name: "石狩地方中部", magnitude: 4.8 } }, points: [{ addr: "札幌北区新琴似", isArea: false, scale: 40 }] }), 2000);
-
-  let wmT = 0;
-  function hideW() { clearTimeout(wmT); $("wm").hidden = true; }
-  function showWeather(kind) {
-    if (!wJ) return;
-    const H = wJ.hourly, D = wJ.daily, c = wJ.current, R = v => Math.round(v);
-    const day = kind === "hourly" ? 0 : 1, idx = [];
-    if (day === 0) { const i0 = H.time.findIndex(t => t > c.time && parseInt(t.slice(11, 13), 10) % 3 === 0); if (i0 < 0) return; for (let k = 0; k < 6; k++) if (i0 + k * 3 < H.time.length) idx.push(i0 + k * 3); }
-    else for (let h = 6; h < 24; h += 3) idx.push(24 + h);
-    const [ic, lb, co] = WMAP(D.weather_code[day], true);
-    const sum = [
-      ["天気", `<i class="fa-solid ${ic}" style="color:${co}"></i> ${lb}`],
-      ["最高 / 最低", `${R(D.temperature_2m_max[day])}° / ${R(D.temperature_2m_min[day])}°`],
-      ["降水確率", `${D.precipitation_probability_max[day]}%`],
-      ["最大風速", `${Math.round(D.wind_speed_10m_max[day])}m/s`]
-    ];
-    $("wtitle").innerHTML = (day === 0 ? "これからの天気<small>今日のまとめと3時間ごとの予報</small>" : "明日の天気<small>3時間ごとの予報</small>");
-    $("wsum").innerHTML = sum.filter(([k]) => !(day === 0 && k === "最高 / 最低")).map(([k, v]) => `<div><span>${k}</span>${v}</div>`).join("");
-    $("wtbl").innerHTML = "<tr><th>時刻</th><th>天気</th><th>気温</th><th>降水確率</th></tr>" +
-      idx.map(i => {
-        const hr = parseInt(H.time[i].slice(11, 13), 10), [ic2, lb2, co2] = WMAP(H.weather_code[i], hr >= 6 && hr < 18);
-        return `<tr><td>${hr}時</td><td><i class="fa-solid ${ic2}" style="color:${co2}"></i>${lb2}</td><td>${R(H.temperature_2m[i])}°</td><td>${H.precipitation_probability[i]}%</td></tr>`;
-      }).join("");
-    $("wm").hidden = false;
-    clearTimeout(wmT); wmT = setTimeout(hideW, 30000);
-  }
-  $("hourly").parentElement.addEventListener("click", e => { e.stopPropagation(); showWeather("hourly"); });
-  $("tomorrow").parentElement.addEventListener("click", e => { e.stopPropagation(); showWeather("tomorrow"); });
-  $("wm").addEventListener("click", e => { e.stopPropagation(); hideW(); });
-
-  const PROXY = "https://news-proxy.user-x45.workers.dev/";
-  let qrT = 0;
-  function hideQR() { clearTimeout(qrT); $("qr").hidden = true; $("artf").src = "about:blank"; }
-  function showQR(title, url) {
-    const cv = $("qrcv");
-    $("qrtitle").textContent = title;
-    $("artf").src = PROXY + "?url=" + encodeURIComponent(url);
-    cv.hidden = true;
-    try {
-      const qr = qrcode(0, "M"); qr.addData(url); qr.make();
-      const n = qr.getModuleCount(), q = 4, sc = Math.max(4, Math.floor(640 / (n + 2 * q))), size = (n + 2 * q) * sc;
-      cv.width = cv.height = size;
-      const g = cv.getContext("2d");
-      g.fillStyle = "#fff"; g.fillRect(0, 0, size, size); g.fillStyle = "#000";
-      for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (qr.isDark(r, c)) g.fillRect((c + q) * sc, (r + q) * sc, sc, sc);
-      cv.hidden = false;
-    } catch (e) { }
-    $("qr").hidden = false;
-    clearTimeout(qrT); qrT = setTimeout(hideQR, 3 * 60 * 1000);
-  }
-  $("newslist").addEventListener("click", e => {
-    const li = e.target.closest("li[data-link]");
-    if (!li) return;
-    e.stopPropagation();
-    showQR(li.textContent, li.dataset.link);
-  });
-  $("qr").addEventListener("click", e => { e.stopPropagation(); if (e.target.id === "qr" || e.target.id === "qrclose") hideQR(); });
-
-  const NOTICE_API = "https://news-proxy.user-x45.workers.dev/api/notices";
-  const NOTICE_INTERVAL = 10 * 1000;
-  const PUSH_MS = 8000;
-  const NOTICE_SOUND = true;
-  const NOTICE_SOUND_NIGHT = false;
-  const NOTICE_VOLUME = 0.8;
-  let audioCtx = null;
-  function unlockAudio() {
-    try {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === "suspended") audioCtx.resume();
-    } catch (e) {}
-  }
-  ["pointerdown", "touchstart", "keydown"].forEach(t => document.addEventListener(t, unlockAudio, { capture: true, passive: true }));
-  function playChime() {
-    if (!NOTICE_SOUND || !audioCtx || audioCtx.state !== "running") return;
-    if (!NOTICE_SOUND_NIGHT && document.body.classList.contains("nm")) return;
-    const t0 = audioCtx.currentTime;
-    [[880, 0], [1320, 0.16]].forEach(([f, d]) => {
-      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-      o.type = "sine"; o.frequency.value = f;
-      g.gain.setValueAtTime(0.0001, t0 + d);
-      g.gain.exponentialRampToValueAtTime(NOTICE_VOLUME, t0 + d + 0.02);
-      g.gain.exponentialRampToValueAtTime(0.0001, t0 + d + 0.6);
-      o.connect(g); g.connect(audioCtx.destination);
-      o.start(t0 + d); o.stop(t0 + d + 0.65);
-    });
-  }
-  const LIST_MS = 60 * 1000;
-  const kp = new URLSearchParams(location.search);
-  let ntList = [], ntInit = false, ntErr = false, ntBusy = false, ntOpen = false, pushT = 0, listT = 0;
-  const ntSeen = new Set(), ntNew = new Set(), ntGone = new Set();
-  const ntBad = () => ntErr;
-  const ntMsg = () => ntErr ? "  ・  お知らせ 接続エラー" : "";
+  const fmt = ms => { const d = new Date(ms); return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${p2(d.getMinutes())}`; };
   const mk = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; };
-  const ntTime = ms => { const d = new Date(ms); return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${p2(d.getMinutes())}`; };
+  const say = (t, cls) => { $("msg").textContent = t; $("msg").className = cls || ""; };
 
-  async function ntFetch(path, opt = {}) {
-    const r = await fetch(NOTICE_API + path, { cache: "no-store", ...opt,
+  async function api(path, opt = {}) {
+    const r = await fetch(API + path, { cache: "no-store", ...opt,
       headers: opt.body ? { "Content-Type": "application/json" } : {} });
-    if (!r.ok) throw new Error(r.status);
+    if (!r.ok) { let m = ""; try { m = (await r.json()).error || ""; } catch (e) {} throw Object.assign(new Error(m || r.status), { code: "http" }); }
     return r.json();
   }
+  const errText = e => e.code === "http" ? e.message : "通信に失敗しました";
 
-  async function ntPoll() {
-    if (ntBusy) return;
-    ntBusy = true;
-    try { const j = await ntFetch(""); ntErr = false; ntApply(j.notices || []); }
-    catch (e) { ntErr = true; }
-    ntBusy = false; renderNt(); renderStatus();
-  }
-
-  function ntApply(list) {
-    list = list.filter(n => !ntGone.has(n.id));
-    const fresh = list.filter(n => !ntSeen.has(n.id)), first = !ntInit;
-    list.forEach(n => ntSeen.add(n.id)); ntInit = true; ntList = list;
-    if (ntOpen) { fresh.forEach(n => ntNew.add(n.id)); renderList(); ntMarkRead(); }
-    else if (!first) { const arr = fresh.filter(n => !n.readAt); if (arr.length) showPush(arr[0], arr.length - 1); }
-  }
-
-  function renderNt() {
-    const u = ntList.filter(n => !n.readAt).length, b = $("nbadge"), off = ntBad();
-    b.hidden = !u; b.textContent = u > 99 ? "99+" : String(u);
-    $("nbtn").classList.toggle("has", u > 0); $("nbtn").classList.toggle("bad", off);
-    $("nicon").className = "fa-solid " + (off ? "fa-bell-slash" : "fa-bell");
-    $("nbtn").setAttribute("aria-label", u ? `お知らせ 未読${u}件` : "お知らせ");
-  }
-
-  function showPush(n, more) {
-    $("ptitle").textContent = n.title || ""; $("ptitle").hidden = !n.title; $("pbody").textContent = n.body || ""; $("pbody").hidden = !n.body; $("pbody").classList.toggle("only", !n.title);
-    $("pmore").textContent = more > 0 ? `ほか${more}件` : "たった今";
-    const el = $("push"); el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
-    clearTimeout(pushT); pushT = setTimeout(hidePush, PUSH_MS);
-    playChime();
-  }
-  function hidePush() { clearTimeout(pushT); $("push").classList.remove("show"); }
-
-  function renderList() {
-    const ul = $("nitems"); ul.textContent = ""; $("nclear").hidden = !ntList.length;
-    if (!ntList.length) { ul.appendChild(mk("li", "ni-empty", ntErr ? "お知らせを取得できません" : ntInit ? "お知らせはありません" : "読み込み中…")); return; }
-    ntList.forEach(n => {
-      const li = mk("li", ntNew.has(n.id) ? "new" : ""), h = mk("div", "ni-h"), l = mk("span", "", ntTime(n.createdAt) + (ntNew.has(n.id) ? "  " : ""));
-      if (ntNew.has(n.id)) l.appendChild(mk("span", "ni-tag", "NEW"));
-      const d = mk("button", "ni-del"); d.type = "button"; d.dataset.id = n.id; d.setAttribute("aria-label", "削除"); d.appendChild(mk("i", "fa-solid fa-trash-can"));
-      h.appendChild(l); h.appendChild(d);
-      li.appendChild(h); if (n.title) li.appendChild(mk("div", "ni-t", n.title));
-      if (n.body) li.appendChild(mk("div", n.title ? "ni-b" : "ni-b ni-only", n.body));
+  function render(list) {
+    const ul = $("list"); ul.textContent = "";
+    const unread = list.filter(n => !n.readAt).length; lastIds = list.map(n => n.id);
+    $("sum").textContent = list.length ? `未読 ${unread}件 / 既読 ${list.length - unread}件` : "";
+    $("clear").hidden = !list.length;
+    if (!list.length) { ul.appendChild(mk("li", "empty", "まだ送っていません")); return; }
+    list.forEach(n => {
+      const li = mk("li", n.readAt ? "read" : ""), row = mk("div", "row"), chip = mk("span", "chip" + (n.readAt ? " read" : ""));
+      chip.appendChild(mk("i", "fa-solid " + (n.readAt ? "fa-check-double" : "fa-check")));
+      chip.appendChild(document.createTextNode(n.readAt ? `既読 ${fmt(n.readAt)}` : "未読"));
+      const del = mk("button", "del"); del.type = "button"; del.dataset.id = n.id; del.setAttribute("aria-label", "削除"); del.appendChild(mk("i", "fa-solid fa-trash-can"));
+      const rt = mk("span", "rt"); rt.appendChild(chip); rt.appendChild(del);
+      row.appendChild(mk("span", "", fmt(n.createdAt))); row.appendChild(rt);
+      li.appendChild(row); if (n.title) li.appendChild(mk("div", "t", n.title));
+      if (n.body) li.appendChild(mk("div", n.title ? "b" : "t", n.body));
       ul.appendChild(li);
     });
   }
 
-  async function ntMarkRead() {
-    const ids = ntList.filter(n => !n.readAt).map(n => n.id);
+  let busy = false, ver = 0, lastIds = []; // ver: 削除の前に始めた取得結果で一覧を上書きしないための番号
+  async function load(quiet) {
+    if (busy) return;
+    busy = true;
+    const v = ver;
+    try { const j = await api(""); if (v === ver) render(j.notices || []); }
+    catch (e) { if (!quiet) say(errText(e), "err"); }
+    busy = false;
+  }
+
+  async function send() {
+    const body = $("body").value.trim();
+    if (!body) { say("内容を入力してください", "err"); $("body").focus(); return; }
+    $("send").disabled = true; say("送信中…");
+    try {
+      const j = await api("", { method: "POST", body: JSON.stringify({ body }) });
+      $("body").value = ""; count();
+      render(j.notices || []); say("送信しました。時計には10秒ほどで届きます", "ok");
+    } catch (e) { say(errText(e), "err"); }
+    $("send").disabled = false;
+  }
+
+  function count() {
+    $("bcount").textContent = `${$("body").value.length}/300`;
+  }
+
+  async function remove(ids) {
     if (!ids.length) return;
-    const t = Date.now();
-    ntList.forEach(n => { if (ids.includes(n.id)) n.readAt = t; });
-    renderNt();
-    try { const j = await ntFetch("/read", { method: "POST", body: JSON.stringify({ ids }) }); ntApply(j.notices || []); }
-    catch (e) { ntList.forEach(n => { if (n.readAt === t) n.readAt = null; }); }
-    renderNt(); if (ntOpen) renderList();
+    ver++;
+    try { const j = await api("/delete", { method: "POST", body: JSON.stringify({ ids }) }); ver++; render(j.notices || []); say("削除しました", "ok"); }
+    catch (e) { say(errText(e), "err"); }
   }
+  $("list").addEventListener("click", e => { const b = e.target.closest(".del"); if (b) remove([b.dataset.id]); });
+  $("clear").addEventListener("click", () => { if (confirm("送信済みのお知らせをすべて削除しますか?時計の一覧からも消えます。")) remove(lastIds); });
+  $("send").addEventListener("click", send);
+  $("body").addEventListener("input", count);
+  $("body").addEventListener("keydown", e => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") send(); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) load(true); });
+  setInterval(() => { if (!document.hidden) load(true); }, POLL_MS);
 
-  function openList() {
-    hidePush(); ntNew.clear(); ntList.forEach(n => { if (!n.readAt) ntNew.add(n.id); });
-    ntOpen = true; renderList(); $("nl").hidden = false;
-    clearTimeout(listT); listT = setTimeout(closeList, LIST_MS);
-    ntMarkRead();
-  }
-  function closeList() { clearTimeout(listT); ntOpen = false; ntNew.clear(); $("nl").hidden = true; }
-
-  async function ntDelete(ids) {
-    if (!ids.length) return;
-    ids.forEach(id => ntGone.add(id));
-    ntList = ntList.filter(n => !ntGone.has(n.id)); renderNt(); renderList();
-    clearTimeout(listT); listT = setTimeout(closeList, LIST_MS);
-    try { const j = await ntFetch("/delete", { method: "POST", body: JSON.stringify({ ids }) }); ids.forEach(id => ntGone.delete(id)); ntApply(j.notices || []); }
-    catch (e) { ids.forEach(id => ntGone.delete(id)); ntErr = true; renderStatus(); }
-    renderNt(); if (ntOpen) renderList();
-  }
-  $("nitems").addEventListener("click", e => { const b = e.target.closest(".ni-del"); if (b) { e.stopPropagation(); ntDelete([b.dataset.id]); } });
-  $("nclear").addEventListener("click", e => { e.stopPropagation(); if (confirm("お知らせをすべて削除しますか?")) ntDelete(ntList.map(n => n.id)); });
-  $("nbtn").addEventListener("click", e => { e.stopPropagation(); openList(); });
-  $("push").addEventListener("click", e => { e.stopPropagation(); openList(); });
-  $("nl").addEventListener("click", e => { e.stopPropagation(); if (e.target.id === "nl" || e.target.id === "nclose") closeList(); });
-  if (kp.get("nttest")) setTimeout(() => showPush({ body: "お知らせの表示確認です" }, 0), 2000);
-
-  // ---- 見守りカメラ: スマホ(send.html)の要求でフロントカメラを起動し、WebRTCで映像を送る ----
-  const CAM_WS = "wss://news-proxy.user-x45.workers.dev/api/cam", CAM_MAX_MS = 15 * 60 * 1000;
-  let camWs = null, camPc = null, camStream = null, camStopT = 0, camT = 0, camChain = Promise.resolve();
-  const camSend = o => { try { camWs.send(JSON.stringify(o)); } catch (e) {} };
-  function camStop() {
-    clearTimeout(camStopT);
-    if (camPc) { try { camPc.close(); } catch (e) {} camPc = null; }
-    if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
-  }
-  const CAM_Q = { low: { w: 320, h: 180, fps: 10, br: 150e3 }, mid: { w: 640, h: 360, fps: 15, br: 600e3 }, high: { w: 1280, h: 720, fps: 30, br: 2e6 } };
-  async function camGet(q) {
-    q = q || CAM_Q.mid;
-    const gum = c => navigator.mediaDevices.getUserMedia(c);
-    // 時計は音を再生しないのでエコー除去は不要。ノイズ抑制も音を削って劣化させるため切り、小さい音は自動ゲインで持ち上げる
-    const audio = { echoCancellation: false, noiseSuppression: false, autoGainControl: true, channelCount: 1, sampleRate: 48000 };
-    const vid = f => ({ ...f, width: { ideal: q.w }, height: { ideal: q.h }, aspectRatio: { ideal: 16 / 9 }, frameRate: { ideal: q.fps } });
-    try { return await gum({ video: vid({ facingMode: { exact: "user" } }), audio }); }
-    catch (e) {
-      if (e && e.name === "NotAllowedError") throw e;
-      try { return await gum({ video: vid({ facingMode: "user" }), audio }); }
-      catch (e2) { if (e2 && e2.name === "NotAllowedError") throw e2; return gum({ video: vid({ facingMode: "user" }), audio: false }); } // マイクが無い端末は映像のみ
-    }
-  }
-  const camGathered = pc => new Promise(res => {
+  // ---- 見守りカメラ(時計のフロントカメラ映像をWebRTCで受信) ----
+  const CAM = "wss://news-proxy.user-x45.workers.dev/api/cam", STUN = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
+  let cws = null, cpc = null, cwant = false, cchain = Promise.resolve();
+  const cst = (t, err) => { $("cstat").textContent = t; $("cstat").style.color = err ? "var(--err)" : ""; };
+  const cSend = o => { try { cws.send(JSON.stringify(o)); } catch (e) {} };
+  const gathered = pc => new Promise(res => {
     if (pc.iceGatheringState === "complete") return res();
     const f = () => { if (pc.iceGatheringState === "complete") { pc.removeEventListener("icegatheringstatechange", f); res(); } };
     pc.addEventListener("icegatheringstatechange", f); setTimeout(res, 2500);
   });
-  async function camOn(m) {
-    if (m.t === "bye") return camStop();
-    if (m.t !== "offer") return;
-    camStop();
+  function cClosePc() { howlStop(); if (cpc) { try { cpc.close(); } catch (e) {} cpc = null; } $("cv").srcObject = null; $("cv").muted = true; $("cv").classList.remove("on"); $("cmute").hidden = true; }
+  function updMute() { const b = $("cmute"); b.hidden = !$("cv").classList.contains("on"); b.textContent = isMuted() ? "音を出す" : "ミュートにする"; }
+  $("cmute").addEventListener("click", () => { const m = !isMuted(); if (!m) ensureCtx(); setMute(m); });
+  function cEnd(msg, err) {
+    cwant = false; cClosePc();
+    if (cws) { const w = cws; cws = null; w.onclose = null; try { w.close(); } catch (e) {} }
+    $("cstart").hidden = false; $("cstop").hidden = true; cst(msg || "", err);
+  }
+  // ---- ハウリング除去: 鳴っている周波数だけを自動で削る(音声全体は止めない) ----
+  // 受信音を Web Audio に通し、「同じ周波数の鋭い音が0.5秒続く」状態を見つけたら、その周波数に狭い除去フィルタを掛ける(最大6か所)。
+  // 話し声は周波数が揺れ、周りにも倍音が並ぶので、鋭さ(隣との差)で区別している。除去しきれなければミュートする。
+  let actx = null, hsrc = null, hnode = null, hout = null, hf = [], hused = 0, htimer = null, amute = false, pipe = false;
+  const isMuted = () => pipe ? amute : $("cv").muted;
+  function setMute(b) {
+    amute = b;
+    if (pipe) { hout.gain.value = b ? 0 : 1; $("cv").muted = true; } else { $("cv").muted = b; if (!b) $("cv").play().catch(() => {}); }
+    updMute();
+  }
+  function ensureCtx() { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume().catch(() => {}); } catch (e) {} }
+  function howlStop() {
+    clearInterval(htimer); htimer = null;
+    try { if (hsrc) hsrc.disconnect(); hf.forEach(f => f.disconnect()); if (hnode) hnode.disconnect(); if (hout) hout.disconnect(); } catch (e) {}
+    hsrc = hnode = hout = null; hf = []; hused = 0; pipe = false;
+  }
+  function howlStart(stream) {
+    howlStop();
     try {
-      const q = CAM_Q[m.q] || CAM_Q.mid;
-      camStream = await camGet(q);
-      const pc = camPc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
-      camStream.getTracks().forEach(t => {
-        const sd = pc.addTrack(t, camStream);
-        if (t.kind === "audio") { try { const p = sd.getParameters(); if (!p.encodings || !p.encodings.length) p.encodings = [{}]; p.encodings[0].maxBitrate = 64000; sd.setParameters(p).catch(() => {}); } catch (e) {} }
-        if (t.kind === "video") { try { const p = sd.getParameters(); if (!p.encodings || !p.encodings.length) p.encodings = [{}]; p.encodings[0].maxBitrate = q.br; sd.setParameters(p).catch(() => {}); } catch (e) {} }
-      });
-      await pc.setRemoteDescription({ type: "offer", sdp: m.sdp });
-      await pc.setLocalDescription(await pc.createAnswer());
-      await camGathered(pc);
-      if (camPc !== pc) return;
-      camSend({ t: "answer", sdp: pc.localDescription.sdp });
-      camStopT = setTimeout(() => { camStop(); camSend({ t: "bye" }); }, CAM_MAX_MS);
-    } catch (e) { camStop(); camSend({ t: "err", m: e && e.name === "NotAllowedError" ? "時計側でカメラ・マイクが許可されていません" : "カメラを起動できません" }); }
+      if (!actx || !stream || !stream.getAudioTracks().length) return;
+      hsrc = actx.createMediaStreamSource(new MediaStream(stream.getAudioTracks()));
+      let prev = hsrc;
+      for (let i = 0; i < 6; i++) { const f = actx.createBiquadFilter(); f.type = "peaking"; f.frequency.value = 1000; f.Q.value = 15; f.gain.value = 0; prev.connect(f); prev = f; hf.push(f); }
+      hnode = actx.createAnalyser(); hnode.fftSize = 2048; hnode.smoothingTimeConstant = 0; prev.connect(hnode); // フィルタ通過後の音を監視
+      hout = actx.createGain(); hnode.connect(hout); hout.connect(actx.destination);
+      pipe = true; $("cv").muted = true;
+      if (actx.state !== "running") amute = true; // 自動再生が止められた場合は「音を出す」ボタンで開始
+      hout.gain.value = amute ? 0 : 1;
+      const node = hnode, buf = new Float32Array(node.frequencyBinCount); let last = -1, run = 0;
+      htimer = setInterval(() => {
+        if (isMuted()) { run = 0; last = -1; return; }
+        node.getFloatFrequencyData(buf);
+        let pk = 12, mx = -Infinity;
+        for (let i = 12; i < buf.length - 12; i++) if (buf[i] > mx) { mx = buf[i]; pk = i; } // 約280Hz以上を見る
+        let side = -Infinity; for (let d = 6; d <= 10; d++) side = Math.max(side, buf[pk - d], buf[pk + d]);
+        const tonal = mx > -35 && mx - side > 20;
+        if (tonal && (last < 0 || Math.abs(pk - last) <= 1)) run++; else run = tonal ? 1 : 0;
+        last = tonal ? pk : -1;
+        if (run < 5) return;
+        run = 0; last = -1;
+        const a = buf[pk - 1], b = buf[pk], c = buf[pk + 1], den = a - 2 * b + c, off = den ? Math.max(-.5, Math.min(.5, .5 * (a - c) / den)) : 0;
+        const hz = (pk + off) * actx.sampleRate / node.fftSize;
+        let f = hf.find((x, k) => k < hused && Math.abs(x.frequency.value - hz) < hz * .03);
+        if (f) { if (f.gain.value <= -45) { setMute(true); cst("ハウリングを除去しきれないため音を止めました。時計とスマホを離してから「音を出す」を押してください", true); return; } f.gain.value = -45; }
+        else if (hused < hf.length) { f = hf[hused++]; f.frequency.value = hz; f.gain.value = -30; }
+        else { setMute(true); cst("ハウリングを除去しきれないため音を止めました。時計とスマホを離してから「音を出す」を押してください", true); return; }
+        cst("ハウリングを検知: " + Math.round(hz) + "Hz付近を除去しました");
+        setTimeout(() => { if (cpc) cst("映像を受信中"); }, 4000);
+      }, 100);
+    } catch (e) { pipe = false; }
   }
-  function camConnect() {
-    clearTimeout(camT);
-    if (camWs && camWs.readyState <= 1) return;
-    let w; try { w = camWs = new WebSocket(CAM_WS + "?role=cam"); } catch (e) { camT = setTimeout(camConnect, 15000); return; }
-    w.onmessage = ev => { let m; try { m = JSON.parse(ev.data); } catch (e) { return; } camChain = camChain.then(() => camOn(m)).catch(() => {}); };
-    w.onerror = () => { try { w.close(); } catch (e) {} };
-    w.onclose = () => { if (camWs === w) { camStop(); camT = setTimeout(camConnect, 15000); } };
+  // 音声コーデック(Opus)を高音質寄りに: 64kbps・モノラル・パケット欠損の補正(FEC)あり
+  function opusHQ(sdp) {
+    const m = sdp.match(/a=rtpmap:(\d+) opus\/48000/); if (!m) return sdp;
+    const add = "maxaveragebitrate=64000;stereo=0;sprop-stereo=0;useinbandfec=1;usedtx=0";
+    const re = new RegExp("a=fmtp:" + m[1] + " ([^\\r\\n]*)");
+    if (re.test(sdp)) return sdp.replace(re, (x, p) => "a=fmtp:" + m[1] + " " + p.replace(/;?(maxaveragebitrate|stereo|sprop-stereo|useinbandfec|usedtx)=\d+/g, "").replace(/^;/, "") + ";" + add);
+    return sdp.replace(new RegExp("(a=rtpmap:" + m[1] + " opus/48000[^\\r\\n]*)"), "$1\r\na=fmtp:" + m[1] + " " + add);
   }
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) camConnect(); });
-  window.addEventListener("online", camConnect);
-  setInterval(() => { try { if (camWs && camWs.readyState === 1) camWs.send("ping"); } catch (e) {} }, 30000);
-  // 初回のタップでカメラの許可だけ先に取っておく(遠隔起動時に許可画面で止まらないように)
-  document.body.addEventListener("click", () => {
-    if (lsGet("camPerm2")) return;
-    lsSet("camPerm2", "1");
-    camGet().then(s => s.getTracks().forEach(t => t.stop())).catch(() => lsDel("camPerm2"));
+  async function cOffer() {
+    cClosePc();
+    const pc = cpc = new RTCPeerConnection(STUN);
+    pc.addTransceiver("video", { direction: "recvonly" }); pc.addTransceiver("audio", { direction: "recvonly" });
+    pc.ontrack = e => {
+      const v = $("cv"); if (v.srcObject !== e.streams[0]) v.srcObject = e.streams[0];
+      v.classList.add("on");
+      if (e.track.kind === "audio") {
+        howlStart(e.streams[0]);
+        if (!pipe) { v.muted = amute; if (!amute) v.play().catch(() => { v.muted = true; amute = true; updMute(); }); } // Web Audio が使えない場合は通常再生
+      }
+      v.play().catch(() => {});
+      updMute(); cst("映像を受信中");
+    };
+    pc.onconnectionstatechange = () => { if (cpc === pc && pc.connectionState === "failed") cEnd("接続できませんでした(回線によっては中継サーバー(TURN)が必要です)", true); };
+    const off = await pc.createOffer();
+    off.sdp = opusHQ(off.sdp);
+    await pc.setLocalDescription(off);
+    await gathered(pc);
+    if (cpc !== pc) return;
+    cSend({ t: "offer", sdp: pc.localDescription.sdp, q: $("cq").value }); cst("時計のカメラを起動中…");
+  }
+  async function cOn(m) {
+    if (!cwant) return;
+    if (m.t === "peer") { if (m.on) await cOffer(); else { cClosePc(); cst("時計に接続できません(電源・ネットワークを確認)", true); } }
+    else if (m.t === "answer" && cpc && !cpc.remoteDescription) await cpc.setRemoteDescription({ type: "answer", sdp: m.sdp });
+    else if (m.t === "bye") cEnd("配信が終了しました");
+    else if (m.t === "err") cEnd(m.m || "カメラを起動できません", true);
+  }
+  let pin = "", authMsg = ""; // パスコードは保存せず、このページを開いている間だけメモリに保持する
+  function cConnect() {
+    cEnd(); cwant = true; authMsg = ""; amute = false; ensureCtx(); $("cstart").hidden = true; $("cstop").hidden = false; cst("接続中…");
+    let w; try { w = cws = new WebSocket(CAM + "?role=view", ["pin." + pin]); } catch (e) { cEnd("接続できません", true); return; }
+    w.onmessage = ev => {
+      let m; try { m = JSON.parse(ev.data); } catch (e) { return; }
+      if (m.t === "auth") { authMsg = m.locked ? "失敗が続いたため、しばらく使えません。時間をおいてやり直してください" : "パスコードが違います"; return; }
+      cchain = cchain.then(() => cOn(m)).catch(() => {});
+    };
+    w.onclose = ev => {
+      if (cws !== w) return;
+      if (ev.code === 4001) { pin = ""; cEnd(); cst(""); openPad(authMsg || "パスコードが違います"); }
+      else cEnd("接続できませんでした", true);
+    };
+  }
+  function cStart() { if (pin) cConnect(); else openPad(""); }
+
+  // ---- パスコード入力(OSのキーボードは出さず、画面内のボタンだけで入力) ----
+  let padBuf = "";
+  const padOpen = () => !$("pad").hidden;
+  function padDraw() { [...$("dots").children].forEach((d, i) => d.classList.toggle("on", i < padBuf.length)); }
+  function openPad(msg) { padBuf = ""; padDraw(); $("padmsg").textContent = msg || ""; $("pad").hidden = false; }
+  function closePad() { $("pad").hidden = true; padBuf = ""; padDraw(); }
+  function padDigit(d) {
+    if (padBuf.length >= 6) return;
+    padBuf += d; padDraw(); $("padmsg").textContent = "";
+    if (padBuf.length === 6) { pin = padBuf; closePad(); cConnect(); }
+  }
+  function padBack() { padBuf = padBuf.slice(0, -1); padDraw(); }
+  (() => {
+    const keys = $("keys"), add = (label, fn, cls, aria) => { const b = mk("button", cls || "", label); b.type = "button"; if (aria) b.setAttribute("aria-label", aria); b.addEventListener("click", fn); keys.appendChild(b); };
+    for (let n = 1; n <= 9; n++) add(String(n), () => padDigit(String(n)));
+    add("キャンセル", () => { closePad(); cst(""); }, "sm");
+    add("0", () => padDigit("0"));
+    add("⌫", padBack, "sm", "1文字消す");
+  })();
+  document.addEventListener("keydown", e => { // パソコンの物理キーボード用(スマホではOSキーボードは出ません)
+    if (!padOpen()) return;
+    if (/^[0-9]$/.test(e.key)) padDigit(e.key); else if (e.key === "Backspace") padBack(); else if (e.key === "Escape") closePad();
   });
-  camConnect();
-
-  document.body.addEventListener("click", () => {
-    if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().then(() => screen.orientation?.lock?.("landscape").catch(() => {})).catch(() => {});
+  try { const q = localStorage.getItem("camQ"); if (q && $("cq").querySelector(`option[value="${q}"]`)) $("cq").value = q; } catch (e) {}
+  const QI = { low: "320×180 / 10fps / 約150kbps", mid: "640×360 / 15fps / 約600kbps", high: "1280×720 / 30fps / 約2Mbps" };
+  const qinfo = () => { $("cqinfo").textContent = QI[$("cq").value] + "(映像の上限。実際は端末や回線で下がることがあります)"; };
+  qinfo();
+  $("cq").addEventListener("change", () => {
+    qinfo();
+    try { localStorage.setItem("camQ", $("cq").value); } catch (e) {}
+    if (cwant && cws && cws.readyState === 1 && cpc) cchain = cchain.then(cOffer).catch(() => {}); // 配信中なら新しい画質で取り直す
   });
-  document.addEventListener("contextmenu", e => e.preventDefault());
-
-  let wl = null;
-  async function keepAwake() { try { wl = await navigator.wakeLock?.request("screen"); } catch (e) {} }
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") { keepAwake(); sync(); render(); weather(); news(); today(); renderDay(); eqConnect(); ntPoll(); }
-  });
-  window.addEventListener("online", () => { sync(); weather(); news(); today(); garbageLoad(); eqConnect(); ntPoll(); });
-
-  keepAwake();
-  render();
-  relayout();
-  sync();
-  setInterval(sync, SYNC_INTERVAL);
-  weather();
-  setInterval(weather, WEATHER_INTERVAL);
-  news();
-  setInterval(news, NEWS_INTERVAL);
-  today();
-  garbageLoad();
-  renderDay();
-  eqConnect();
-  ntPoll();
-  setInterval(ntPoll, NOTICE_INTERVAL);
-
+  $("cstart").addEventListener("click", cStart);
+  $("cstop").addEventListener("click", () => cEnd("停止しました"));
+  count(); load();
 })();
 </script>
 </body>
