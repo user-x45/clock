@@ -255,9 +255,6 @@
     #right { display: none; }
     main { flex-direction: column; }
   }
-  #camlive { position: fixed; top: calc(1.2vh + env(safe-area-inset-top)); right: calc(1.5vw + env(safe-area-inset-right)); z-index: 30; display: flex; align-items: center; gap: .5em;
-    padding: .35em .9em; border-radius: 999px; background: rgba(190,20,20,.95); color: #fff; font-size: min(2vw, 3.6vh); text-shadow: none; pointer-events: none; }
-  #camlive[hidden] { display: none; }
 </style>
 </head>
 <body data-p="night">
@@ -287,7 +284,6 @@
 <div id="push" role="status"><div class="pi"><i class="fa-solid fa-bell"></i></div><div class="pt"><div class="ph"><span>お知らせ</span><span id="pmore"></span></div><div id="ptitle"></div><div id="pbody"></div></div></div>
 <div id="alert"><div id="atitle"></div><div id="amain"></div><div id="asub"></div></div>
 <div id="greet"></div>
-<div id="camlive" hidden><i class="fa-solid fa-video"></i><span>カメラ・マイク配信中</span></div>
 <div id="kd" hidden><div id="kbox"><div id="ktitle">OpenWeatherMap APIキー</div><div id="knote">天気の取得にOpenWeatherMapのAPIキー(32文字)を使います。入力したキーはこの端末のローカルストレージに保存され、次回以降は入力不要です。「あとで」を選ぶとOpen-Meteoのみを使い、この画面は表示されなくなります(後から入力する場合はURLに ?setkey=1 を付けて開いてください)。</div><input id="kin" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="APIキーを貼り付け"><div id="kmsg"></div><div id="kbtns"><button id="kskip" type="button">あとで</button><button id="ksave" type="button">保存</button></div></div></div>
 <div id="dim"></div>
 <div id="status">時刻を同期中…</div>
@@ -930,16 +926,18 @@
     clearTimeout(camStopT);
     if (camPc) { try { camPc.close(); } catch (e) {} camPc = null; }
     if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
-    $("camlive").hidden = true;
   }
-  async function camGet() {
+  const CAM_Q = { low: { w: 320, h: 240, fps: 10, br: 150e3 }, mid: { w: 640, h: 480, fps: 15, br: 600e3 }, high: { w: 1280, h: 720, fps: 30, br: 2e6 } };
+  async function camGet(q) {
+    q = q || CAM_Q.mid;
     const gum = c => navigator.mediaDevices.getUserMedia(c);
     const audio = { echoCancellation: true, noiseSuppression: true };
-    try { return await gum({ video: { facingMode: { exact: "user" }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio }); }
+    const vid = f => ({ ...f, width: { ideal: q.w }, height: { ideal: q.h }, frameRate: { ideal: q.fps } });
+    try { return await gum({ video: vid({ facingMode: { exact: "user" } }), audio }); }
     catch (e) {
       if (e && e.name === "NotAllowedError") throw e;
-      try { return await gum({ video: { facingMode: "user" }, audio }); }
-      catch (e2) { if (e2 && e2.name === "NotAllowedError") throw e2; return gum({ video: { facingMode: "user" }, audio: false }); } // マイクが無い端末は映像のみ
+      try { return await gum({ video: vid({ facingMode: "user" }), audio }); }
+      catch (e2) { if (e2 && e2.name === "NotAllowedError") throw e2; return gum({ video: vid({ facingMode: "user" }), audio: false }); } // マイクが無い端末は映像のみ
     }
   }
   const camGathered = pc => new Promise(res => {
@@ -952,15 +950,18 @@
     if (m.t !== "offer") return;
     camStop();
     try {
-      camStream = await camGet();
+      const q = CAM_Q[m.q] || CAM_Q.mid;
+      camStream = await camGet(q);
       const pc = camPc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
-      camStream.getTracks().forEach(t => pc.addTrack(t, camStream));
+      camStream.getTracks().forEach(t => {
+        const sd = pc.addTrack(t, camStream);
+        if (t.kind === "video") { try { const p = sd.getParameters(); if (!p.encodings || !p.encodings.length) p.encodings = [{}]; p.encodings[0].maxBitrate = q.br; sd.setParameters(p).catch(() => {}); } catch (e) {} }
+      });
       await pc.setRemoteDescription({ type: "offer", sdp: m.sdp });
       await pc.setLocalDescription(await pc.createAnswer());
       await camGathered(pc);
       if (camPc !== pc) return;
       camSend({ t: "answer", sdp: pc.localDescription.sdp });
-      $("camlive").hidden = false;
       camStopT = setTimeout(() => { camStop(); camSend({ t: "bye" }); }, CAM_MAX_MS);
     } catch (e) { camStop(); camSend({ t: "err", m: e && e.name === "NotAllowedError" ? "時計側でカメラ・マイクが許可されていません" : "カメラを起動できません" }); }
   }
