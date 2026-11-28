@@ -23,6 +23,8 @@
   h2 small { font-size: 12px; font-weight: 400; color: var(--sub); }
   label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--sub); }
   label span { display: flex; justify-content: space-between; }
+  select { font: inherit; font-size: 16px; color: var(--fg); background: #101216; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; width: 100%; }
+  select:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
   input, textarea { font: inherit; font-size: 16px; color: var(--fg); background: #101216; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; width: 100%; resize: vertical; -webkit-user-select: text; user-select: text; }
   input:focus-visible, textarea:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
   button { font: inherit; font-size: 16px; font-weight: 500; border-radius: 999px; border: 0; padding: 11px 20px; cursor: pointer; }
@@ -85,9 +87,10 @@
     <h2>見守りカメラ<small id="cstat"></small></h2>
     <video id="cv" autoplay playsinline></video>
     <button id="cmute" type="button" hidden></button>
+    <label><span>画質</span><select id="cq"><option value="low">低(通信量が少ない)</option><option value="mid">標準</option><option value="high">高(通信量が多い)</option></select></label>
     <button id="cstart" type="button">カメラを起動</button>
     <button id="cstop" type="button" hidden>停止</button>
-    <p class="hint">時計のフロントカメラの映像とマイクの音声を流します。時計の画面には「カメラ・マイク配信中」と表示され、15分で自動停止します。</p>
+    <p class="hint">時計のフロントカメラの映像とマイクの音声を流します。15分で自動停止します。画質を変えると映像が一度途切れます。<br>選択中の画質: <span id="cqinfo"></span></p>
   </section>
 
 </main>
@@ -211,7 +214,7 @@
     await pc.setLocalDescription(await pc.createOffer());
     await gathered(pc);
     if (cpc !== pc) return;
-    cSend({ t: "offer", sdp: pc.localDescription.sdp }); cst("時計のカメラを起動中…");
+    cSend({ t: "offer", sdp: pc.localDescription.sdp, q: $("cq").value }); cst("時計のカメラを起動中…");
   }
   async function cOn(m) {
     if (!cwant) return;
@@ -259,6 +262,15 @@
   document.addEventListener("keydown", e => { // パソコンの物理キーボード用(スマホではOSキーボードは出ません)
     if (!padOpen()) return;
     if (/^[0-9]$/.test(e.key)) padDigit(e.key); else if (e.key === "Backspace") padBack(); else if (e.key === "Escape") closePad();
+  });
+  try { const q = localStorage.getItem("camQ"); if (q && $("cq").querySelector(`option[value="${q}"]`)) $("cq").value = q; } catch (e) {}
+  const QI = { low: "320×240 / 10fps / 約150kbps", mid: "640×480 / 15fps / 約600kbps", high: "1280×720 / 30fps / 約2Mbps" };
+  const qinfo = () => { $("cqinfo").textContent = QI[$("cq").value] + "(映像の上限。実際は端末や回線で下がることがあります)"; };
+  qinfo();
+  $("cq").addEventListener("change", () => {
+    qinfo();
+    try { localStorage.setItem("camQ", $("cq").value); } catch (e) {}
+    if (cwant && cws && cws.readyState === 1 && cpc) cchain = cchain.then(cOffer).catch(() => {}); // 配信中なら新しい画質で取り直す
   });
   $("cstart").addEventListener("click", cStart);
   $("cstop").addEventListener("click", () => cEnd("停止しました"));
