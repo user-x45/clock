@@ -200,6 +200,14 @@
     if (cws) { const w = cws; cws = null; w.onclose = null; try { w.close(); } catch (e) {} }
     $("cstart").hidden = false; $("cstop").hidden = true; cst(msg || "", err);
   }
+  // 音声コーデック(Opus)を高音質寄りに: 64kbps・モノラル・パケット欠損の補正(FEC)あり
+  function opusHQ(sdp) {
+    const m = sdp.match(/a=rtpmap:(\d+) opus\/48000/); if (!m) return sdp;
+    const add = "maxaveragebitrate=64000;stereo=0;sprop-stereo=0;useinbandfec=1;usedtx=0";
+    const re = new RegExp("a=fmtp:" + m[1] + " ([^\\r\\n]*)");
+    if (re.test(sdp)) return sdp.replace(re, (x, p) => "a=fmtp:" + m[1] + " " + p.replace(/;?(maxaveragebitrate|stereo|sprop-stereo|useinbandfec|usedtx)=\d+/g, "").replace(/^;/, "") + ";" + add);
+    return sdp.replace(new RegExp("(a=rtpmap:" + m[1] + " opus/48000[^\\r\\n]*)"), "$1\r\na=fmtp:" + m[1] + " " + add);
+  }
   async function cOffer() {
     cClosePc();
     const pc = cpc = new RTCPeerConnection(STUN);
@@ -211,7 +219,9 @@
       updMute(); cst("映像を受信中");
     };
     pc.onconnectionstatechange = () => { if (cpc === pc && pc.connectionState === "failed") cEnd("接続できませんでした(回線によっては中継サーバー(TURN)が必要です)", true); };
-    await pc.setLocalDescription(await pc.createOffer());
+    const off = await pc.createOffer();
+    off.sdp = opusHQ(off.sdp);
+    await pc.setLocalDescription(off);
     await gathered(pc);
     if (cpc !== pc) return;
     cSend({ t: "offer", sdp: pc.localDescription.sdp, q: $("cq").value }); cst("時計のカメラを起動中…");
