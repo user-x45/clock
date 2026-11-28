@@ -927,13 +927,13 @@
     if (camPc) { try { camPc.close(); } catch (e) {} camPc = null; }
     if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
   }
-  const CAM_Q = { low: { w: 320, h: 240, fps: 10, br: 150e3 }, mid: { w: 640, h: 480, fps: 15, br: 600e3 }, high: { w: 1280, h: 720, fps: 30, br: 2e6 } };
+  const CAM_Q = { low: { w: 320, h: 180, fps: 10, br: 150e3 }, mid: { w: 640, h: 360, fps: 15, br: 600e3 }, high: { w: 1280, h: 720, fps: 30, br: 2e6 } };
   async function camGet(q) {
     q = q || CAM_Q.mid;
     const gum = c => navigator.mediaDevices.getUserMedia(c);
     // 時計は音を再生しないのでエコー除去は不要。ノイズ抑制も音を削って劣化させるため切り、小さい音は自動ゲインで持ち上げる
     const audio = { echoCancellation: false, noiseSuppression: false, autoGainControl: true, channelCount: 1, sampleRate: 48000 };
-    const vid = f => ({ ...f, width: { ideal: q.w }, height: { ideal: q.h }, frameRate: { ideal: q.fps } });
+    const vid = f => ({ ...f, width: { ideal: q.w }, height: { ideal: q.h }, aspectRatio: { ideal: 16 / 9 }, frameRate: { ideal: q.fps } });
     try { return await gum({ video: vid({ facingMode: { exact: "user" } }), audio }); }
     catch (e) {
       if (e && e.name === "NotAllowedError") throw e;
