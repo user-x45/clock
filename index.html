@@ -931,7 +931,8 @@
   async function camGet(q) {
     q = q || CAM_Q.mid;
     const gum = c => navigator.mediaDevices.getUserMedia(c);
-    const audio = { echoCancellation: true, noiseSuppression: true };
+    // 時計は音を再生しないのでエコー除去は不要。ノイズ抑制も音を削って劣化させるため切り、小さい音は自動ゲインで持ち上げる
+    const audio = { echoCancellation: false, noiseSuppression: false, autoGainControl: true, channelCount: 1, sampleRate: 48000 };
     const vid = f => ({ ...f, width: { ideal: q.w }, height: { ideal: q.h }, frameRate: { ideal: q.fps } });
     try { return await gum({ video: vid({ facingMode: { exact: "user" } }), audio }); }
     catch (e) {
@@ -955,6 +956,7 @@
       const pc = camPc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
       camStream.getTracks().forEach(t => {
         const sd = pc.addTrack(t, camStream);
+        if (t.kind === "audio") { try { const p = sd.getParameters(); if (!p.encodings || !p.encodings.length) p.encodings = [{}]; p.encodings[0].maxBitrate = 64000; sd.setParameters(p).catch(() => {}); } catch (e) {} }
         if (t.kind === "video") { try { const p = sd.getParameters(); if (!p.encodings || !p.encodings.length) p.encodings = [{}]; p.encodings[0].maxBitrate = q.br; sd.setParameters(p).catch(() => {}); } catch (e) {} }
       });
       await pc.setRemoteDescription({ type: "offer", sdp: m.sdp });
